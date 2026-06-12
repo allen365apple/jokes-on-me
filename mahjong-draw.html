@@ -75,6 +75,13 @@ body {
   gap: 4.5vh;
 }
 #ad-logo { height: 12vh; max-width: 82vw; object-fit: contain; }
+#ad-lead {
+  font-size: min(2.8vh, 17px);
+  font-weight: 400;
+  letter-spacing: 3px;
+  opacity: .65;
+  margin-bottom: -2.5vh;
+}
 #ad-slogan {
   font-size: min(7.5vh, 8.5vw);
   font-weight: var(--fw);
@@ -202,6 +209,7 @@ body {
 
 <div id="adview">
   <img id="ad-logo" src="shenlaiye-logo.png" alt="神來也麻將">
+  <div id="ad-lead">請用這句做結尾：</div>
   <div id="ad-slogan"></div>
 </div>
 
@@ -438,7 +446,7 @@ function showSlogan() {
   drawview.style.display = 'none';
   const idx = (lastSloganIdx + 1) % SLOGANS.length;
   lastSloganIdx = idx;
-  document.getElementById('ad-slogan').textContent = '「' + SLOGANS[idx] + '」';
+  document.getElementById('ad-slogan').textContent = SLOGANS[idx];
   adview.style.display = 'flex';
   adview.classList.remove('pop');
   void adview.offsetWidth;
