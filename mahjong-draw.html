@@ -6,9 +6,9 @@
 <title>看我摸牌｜看我笑話工作室</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;900&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
 <style>
-:root { --kai: 'LXGW WenKai TC', 'Kaiti TC', 'BiauKai', 'DFKai-SB', 'KaiTi', serif; }
+:root { --face: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif; --fw: 900; }
 html, body { margin: 0; }
 html { background: #000; scrollbar-color: #2e2e2e #000; }
 ::-webkit-scrollbar { width: 10px; background: #000; }
@@ -18,7 +18,7 @@ html { background: #000; scrollbar-color: #2e2e2e #000; }
 body {
   background: #000;
   color: #f9f5ea;
-  font-family: var(--kai);
+  font-family: var(--face);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39,7 +39,7 @@ body {
 }
 #intro h1 {
   font-size: min(13vw, 19vh);
-  font-weight: 700;
+  font-weight: var(--fw);
   letter-spacing: .08em;
   margin: 0;
   white-space: nowrap;
@@ -60,7 +60,7 @@ body {
 }
 #reading {
   font-size: min(6.5vh, 8vw);
-  font-weight: 700;
+  font-weight: var(--fw);
   letter-spacing: .08em;
   margin-bottom: 2.5vh;
   white-space: nowrap;
@@ -74,7 +74,7 @@ body {
 
 #controls { text-align: center; margin-top: 3.5vh; }
 #mo {
-  font-family: var(--kai);
+  font-family: inherit;
   font-size: 19px;
   font-weight: 700;
   letter-spacing: 4px;
@@ -88,12 +88,12 @@ body {
 #mo:hover { background: #1d1d1d; }
 #mo:active { transform: scale(.95); }
 #hint { margin-top: 9px; font-size: 13px; opacity: .4; letter-spacing: 1px; }
-#fs {
+#fs, #console-link {
   cursor: pointer;
   text-decoration: underline dotted;
   text-underline-offset: 4px;
 }
-#fs:hover { color: #f9f5ea; opacity: 1; }
+#fs:hover, #console-link:hover { color: #f9f5ea; opacity: 1; }
 #home-link {
   color: inherit;
   text-decoration: underline dotted;
@@ -105,22 +105,17 @@ body {
   #intro { gap: 3vw; }
   .deco svg { height: 9vh; }
   .deco { gap: 1.8vh; }
-  #panel { right: 12px; max-width: calc(100vw - 24px); box-sizing: border-box; }
+  #panel { bottom: 12px; }
 }
 
-#secret {
-  position: fixed;
-  right: 0; bottom: 0;
-  width: 44px; height: 44px;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 9;
-}
 #panel {
   display: none;
   position: fixed;
-  right: 20px; bottom: 56px;
-  width: 320px;
+  left: 50%; bottom: 56px;
+  transform: translateX(-50%);
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  box-sizing: border-box;
   background: #161616;
   border: 1px solid #3a3a3a;
   border-radius: 12px;
@@ -129,13 +124,26 @@ body {
   font-size: 15px;
 }
 #panel-title { font-size: 17px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+.psec { font-size: 13px; letter-spacing: 2px; color: rgba(249,245,234,.5); margin: 14px 0 8px; }
+#font-btns { display: flex; gap: 8px; }
+#font-btns button {
+  flex: 1;
+  font-size: 15px;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(249,245,234,.3);
+  background: #222;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#font-btns button.on { background: #f9f5ea; color: #111; border-color: #f9f5ea; }
 .prow { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
 .gname { width: 42px; flex: 0 0 auto; }
 .prow input[type=range] { flex: 1; accent-color: #1e7d3c; }
 .gpct { width: 56px; text-align: right; flex: 0 0 auto; color: #bfe3c8; }
 #panel-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 #panel-btns button {
-  font-family: var(--kai);
+  font-family: inherit;
   font-size: 14px;
   padding: 4px 14px;
   border-radius: 8px;
@@ -163,20 +171,26 @@ body {
 
 <div id="controls">
   <button id="mo">摸牌</button>
-  <div id="hint">按按鈕或空白鍵抽一張<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
+  <div id="hint">按按鈕或空白鍵抽一張<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
 </div>
 
 <div id="bottom-pad"></div>
 
-<div id="secret"></div>
 <div id="panel">
-  <div id="panel-title">機率調整</div>
+  <div id="panel-title">控制台</div>
+  <div class="psec">字體</div>
+  <div id="font-btns">
+    <button data-f="hei" style="font-family:'Noto Sans TC','PingFang TC',sans-serif;font-weight:900">粗黑體</button>
+    <button data-f="kai" style="font-family:'LXGW WenKai TC','Kaiti TC','BiauKai',serif">楷書</button>
+    <button data-f="ming" style="font-family:'Noto Serif TC','Songti TC',serif">明體</button>
+  </div>
+  <div class="psec">出現比例</div>
   <div id="panel-rows"></div>
   <div id="panel-btns">
-    <button id="panel-reset">恢復預設</button>
+    <button id="panel-reset">恢復預設比例</button>
     <button id="panel-close">關閉</button>
   </div>
-  <div id="panel-note">百分比是該系列整組被抽到的機率，調整後會自動記住。面板開啟時空白鍵暫停作用。</div>
+  <div id="panel-note">百分比是該系列整組被抽到的機率；字體與比例都會自動記住。面板開啟時空白鍵暫停作用。</div>
 </div>
 
 <script>
@@ -186,6 +200,15 @@ body {
 const DEFAULT_W = { wan: 0.4, tong: 1, tiao: 1, zi: 1, hua: 1 };
 let W = { ...DEFAULT_W };
 try { Object.assign(W, JSON.parse(localStorage.getItem('mopai-weights') || '{}')); } catch (e) {}
+
+/* ===== 字體設定（控制台可切換，預設粗黑體） ===== */
+const FONTS = {
+  hei:  { stack: 'Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif', weight: 900 },
+  kai:  { stack: 'LXGW WenKai TC, Kaiti TC, BiauKai, DFKai-SB, KaiTi, serif', weight: 700 },
+  ming: { stack: 'Noto Serif TC, Songti TC, PMingLiU, serif', weight: 900 }
+};
+let fontKey = localStorage.getItem('mopai-font') || 'hei';
+if (!FONTS[fontKey]) fontKey = 'hei';
 
 /* ===== 顏色 ===== */
 const B = '#1a56a8', R = '#c0392b', G = '#1e7d3c', NB = '#1a3a6b';
@@ -293,16 +316,19 @@ function tileSVG(t) {
       `<g transform="translate(34,27)">${FLOWER_ICON[t.icon]}</g>` +
       `<text x="32" y="70" font-size="26" text-anchor="middle" fill="${t.col}">${t.ch}</text>`;
   }
-  return `<svg viewBox="0 0 64 84" xmlns="http://www.w3.org/2000/svg" font-family="LXGW WenKai TC, Kaiti TC, BiauKai, DFKai-SB, KaiTi, serif" font-weight="700">` +
+  return `<svg viewBox="0 0 64 84" xmlns="http://www.w3.org/2000/svg" font-family="${FONTS[fontKey].stack}" font-weight="${FONTS[fontKey].weight}">` +
     `<rect x="0.5" y="0.5" width="63" height="83" rx="6" fill="${IV}" stroke="#c8bfa8"/>${inner}</svg>`;
 }
 const byId = id => TILES.find(t => t.id === id);
 
 /* ===== 開場裝飾牌 ===== */
-document.getElementById('deco-left').innerHTML =
-  `<span class="a">${tileSVG(byId('z中'))}</span><span class="b">${tileSVG(byId('t1'))}</span>`;
-document.getElementById('deco-right').innerHTML =
-  `<span class="c">${tileSVG(byId('s1'))}</span><span class="d">${tileSVG(byId('z發'))}</span>`;
+function renderDeco() {
+  document.getElementById('deco-left').innerHTML =
+    `<span class="a">${tileSVG(byId('z中'))}</span><span class="b">${tileSVG(byId('t1'))}</span>`;
+  document.getElementById('deco-right').innerHTML =
+    `<span class="c">${tileSVG(byId('s1'))}</span><span class="d">${tileSVG(byId('z發'))}</span>`;
+}
+renderDeco();
 
 /* ===== 加權抽牌（下一張不重複上一張） ===== */
 const weightOf = t => W[t.group];
@@ -322,11 +348,13 @@ const intro = document.getElementById('intro');
 const drawview = document.getElementById('drawview');
 const tilebox = document.getElementById('tilebox');
 const reading = document.getElementById('reading');
+let currentTile = null;
 
 function onDraw() {
   intro.style.display = 'none';
   drawview.style.display = 'flex';
   const t = drawTile();
+  currentTile = t;
   tilebox.innerHTML = tileSVG(t);
   reading.textContent = t.name;
   [tilebox, reading].forEach(el => {
@@ -398,9 +426,17 @@ rowsBox.addEventListener('input', e => {
     refreshPanel();
   }
 });
-document.getElementById('secret').addEventListener('click', () => {
+document.getElementById('console-link').addEventListener('click', () => {
   panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
   refreshPanel();
+});
+document.getElementById('font-btns').addEventListener('click', e => {
+  const f = e.target.dataset ? e.target.dataset.f : null;
+  if (f) {
+    fontKey = f;
+    localStorage.setItem('mopai-font', f);
+    applyFont();
+  }
 });
 document.getElementById('panel-close').addEventListener('click', () => {
   panel.style.display = 'none';
@@ -410,6 +446,18 @@ document.getElementById('panel-reset').addEventListener('click', () => {
   localStorage.setItem('mopai-weights', JSON.stringify(W));
   refreshPanel();
 });
+
+/* ===== 套用字體（牌面 SVG 一併重畫） ===== */
+function applyFont() {
+  const F = FONTS[fontKey];
+  document.documentElement.style.setProperty('--face', F.stack);
+  document.documentElement.style.setProperty('--fw', F.weight);
+  renderDeco();
+  if (currentTile) tilebox.innerHTML = tileSVG(currentTile);
+  document.querySelectorAll('#font-btns button').forEach(b =>
+    b.classList.toggle('on', b.dataset.f === fontKey));
+}
+applyFont();
 </script>
 </body>
 </html>
