@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>看我笑話 觀眾留言抽籤機！</title>
+    <style>
+      html { background: #000; scrollbar-color: #2e2e2e #000; }
+      ::-webkit-scrollbar { width: 10px; background: #000; }
+      ::-webkit-scrollbar-track { background: #000; }
+      ::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 5px; }
+      ::-webkit-scrollbar-thumb:hover { background: #444; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        background-color: #000000;
+        
+        /* 【關鍵修改 1】開啟垂直捲軸，並在上下增加巨大留白空間 */
+        padding-top: 45vh;    /* 上方保留 45% 螢幕高度的緩衝區 */
+        padding-bottom: 55vh; /* 下方保留 55% 螢幕高度的緩衝區 */
+        overflow-y: auto;     /* 允許上下捲動 */
+      }
+      
+      #result {
+        /* 【關鍵修改 2】字體大小設為視窗寬度的比例 (vw)，拉動視窗即可縮放字體 */
+        font-size: 9vw;
+        font-weight: bold;
+        color: #ffffff;
+        margin-bottom: 50px;
+        text-align: center;
+        padding: 0 40px;
+        line-height: 1.2;
+        word-wrap: break-word;
+        max-width: 90%;
+        min-height: 12vw;
+      }
+      
+      .btn-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      button {
+        font-weight: bold;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      #fetchBtn {
+        font-size: 20px;
+        padding: 15px 30px;
+        background-color: transparent;
+        color: #aaaaaa;
+        border: 2px solid #555555;
+      }
+      #fetchBtn:hover:not(:disabled) {
+        border-color: #ffffff;
+        color: #ffffff;
+      }
+      #drawBtn {
+        font-size: 32px;
+        padding: 15px 50px;
+        background-color: #222222;
+        color: #ffffff;
+        border: 2px solid #555555;
+      }
+      #drawBtn:hover:not(:disabled) {
+        background-color: #ffffff;
+        color: #000000;
+      }
+      button:active:not(:disabled) {
+        transform: scale(0.95);
+      }
+      button:disabled {
+        background-color: #111111;
+        border-color: #333333;
+        color: #555555;
+        cursor: not-allowed;
+      }
+      
+      #status-bar {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        font-size: 14px;
+        color: #666666;
+      }
+      #status-bar a {
+        color: #666666;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        cursor: pointer;
+      }
+      #status-bar a:hover {
+        color: #ffffff;
+      }
+      .divider {
+        color: #333333;
+      }
+
+      #qrModal {
+        display: none; 
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.95);
+        z-index: 1000;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer; 
+      }
+      #qrModal img {
+        width: 35vw; 
+        max-width: 500px;
+        min-width: 300px;
+        border: 15px solid #ffffff;
+        border-radius: 10px;
+        background-color: #ffffff;
+      }
+      #qrModal p {
+        color: #ffffff;
+        font-size: 24px;
+        margin-top: 30px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="result">表單更新中...</div>
+    
+    <div class="btn-container">
+      <button id="fetchBtn" onclick="fetchData()" disabled>更新表單資料</button>
+      <button id="drawBtn" onclick="startDraw()" disabled>抽取笑ㄟ留言</button>
+    </div>
+    
+    <div id="status-bar">
+      <span id="status">目前題庫數量：讀取中...</span>
+      <span class="divider">|</span>
+      <a onclick="toggleQR()">顯示 QR Code</a>
+      <span class="divider">|</span>
+      <a href="https://forms.gle/b1CxGYgBDaVnPpSq5" target="_blank">觀眾填寫表單</a>
+      <span class="divider">|</span>
+      <a href="https://docs.google.com/spreadsheets/d/1JzsUf_bv07tlfWQXcD6K-DwIuGf46icqIujWPVLebU8/edit?usp=sharing" target="_blank">觀眾留言清單</a>
+      <span id="fs-wrap"><span class="divider">|</span>
+      <a onclick="toggleFS()" id="fsLink">進入全螢幕</a></span>
+    </div>
+
+    <div id="qrModal" onclick="toggleQR()">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https://forms.gle/b1CxGYgBDaVnPpSq5" alt="表單 QR Code">
+      <p>點擊畫面任意處關閉</p>
+    </div>
+
+    <script>
+      var wordPool = []; 
+      var drawnWords = []; 
+      var drawBtn = document.getElementById('drawBtn');
+      var fetchBtn = document.getElementById('fetchBtn');
+      var resultDiv = document.getElementById('result');
+      var statusDiv = document.getElementById('status');
+      var isDrawing = false;
+      
+      var apiUrl = "https://script.google.com/macros/s/AKfycbwz3LOf_8knXijY47rzNI9y6kFBFwz059bymm08O07Q4fgnSRnSxH7am54c8Si4OiVD/exec?api=true";
+
+      function fetchData() {
+        drawnWords = [];
+        fetchBtn.disabled = true;
+        drawBtn.disabled = true;
+        
+        if (resultDiv.innerText === "請先更新題庫" || resultDiv.innerText === "表單目前還沒有人填寫喔" || resultDiv.innerText === "所有留言都抽完囉！" || resultDiv.innerText === "可以開始抽答案") {
+            resultDiv.innerText = "表單更新中...";
+        }
+        
+        fetchBtn.innerText = "讀取中...";
+        statusDiv.innerText = "目前題庫數量：讀取中...";
+        
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            wordPool = data.filter(function(word) {
+              return drawnWords.indexOf(word) === -1;
+            });
+
+            statusDiv.innerText = "目前題庫數量：" + wordPool.length + " 筆";
+            fetchBtn.innerText = "更新表單資料";
+            fetchBtn.disabled = false;
+            
+            if (wordPool.length > 0) {
+              drawBtn.disabled = false;
+              if (resultDiv.innerText === "表單更新中..." || resultDiv.innerText === "表單目前還沒有人填寫喔" || resultDiv.innerText === "所有留言都抽完囉！") {
+                resultDiv.innerText = "可以開始抽答案";
+              }
+            } else {
+              drawBtn.disabled = true;
+              resultDiv.innerText = "表單目前還沒有人填寫喔";
+            }
+          })
+          .catch(error => {
+            fetchBtn.innerText = "更新失敗，請重試";
+            fetchBtn.disabled = false;
+            resultDiv.innerText = "更新發生錯誤";
+            statusDiv.innerText = "請檢查網路狀態";
+          });
+      }
+
+      function startDraw() {
+        if (wordPool.length === 0 || isDrawing) return;
+
+        isDrawing = true;
+        drawBtn.disabled = true;
+        fetchBtn.disabled = true;
+
+        resultDiv.innerText = "抽選中...";
+
+        setTimeout(function() {
+          var randomIndex = Math.floor(Math.random() * wordPool.length);
+          var finalWord = wordPool[randomIndex];
+          
+          resultDiv.innerText = finalWord;
+          
+          drawnWords.push(finalWord);
+          wordPool.splice(randomIndex, 1);
+          
+          statusDiv.innerText = "目前題庫數量：" + wordPool.length + " 筆";
+          
+          isDrawing = false;
+          fetchBtn.disabled = false;
+
+          if (wordPool.length > 0) {
+            drawBtn.disabled = false;
+          } else {
+            drawBtn.disabled = true;
+            resultDiv.innerText = resultDiv.innerText + "\n(這回合抽完囉！)";
+          }
+        }, 1500);
+      }
+
+      function toggleQR() {
+        var modal = document.getElementById('qrModal');
+        if (modal.style.display === 'flex') {
+          modal.style.display = 'none';
+        } else {
+          modal.style.display = 'flex';
+        }
+      }
+
+      /* iPhone 的 Safari 不支援網頁全螢幕 API，偵測不到就把入口藏起來 */
+      if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) {
+        document.getElementById('fs-wrap').style.display = 'none';
+      }
+      function toggleFS() {
+        var doc = document, root = doc.documentElement;
+        if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+          (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+        } else {
+          (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+        }
+      }
+      ['fullscreenchange', 'webkitfullscreenchange'].forEach(function(ev) {
+        document.addEventListener(ev, function() {
+          var on = document.fullscreenElement || document.webkitFullscreenElement;
+          document.getElementById('fsLink').innerText = on ? '退出全螢幕（或按 Esc）' : '進入全螢幕';
+        });
+      });
+
+      window.onload = function() {
+        fetchData();
+      };
+    </script>
+  </body>
+</html>

@@ -7,6 +7,7 @@
 | 企劃 | 網頁 | 說明 |
 |------|------|------|
 | 看我摸牌 | [mahjong-draw.html](mahjong-draw.html) | 即興劇用的麻將抽牌機：按空白鍵或「摸牌」抽出一張臺灣麻將，顯示牌面與唸法，演員須將其加入臺詞 |
+| 現場抽籤機 | [comment-lottery.html](comment-lottery.html) | 觀眾留言抽籤機：觀眾掃 QR Code 填 Google 表單，現場隨機抽出留言，同回合不重複 |
 
 ## 使用方式
 
