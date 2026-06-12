@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>看我摸牌｜看我笑話工作室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root { --kai: 'LXGW WenKai TC', 'Kaiti TC', 'BiauKai', 'DFKai-SB', 'KaiTi', serif; }
+html, body { margin: 0; }
+html { background: #000; scrollbar-color: #2e2e2e #000; }
+::-webkit-scrollbar { width: 10px; background: #000; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+body {
+  background: #000;
+  color: #f9f5ea;
+  font-family: var(--kai);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#top-pad { height: 14.5vh; flex: 0 0 auto; }
+#bottom-pad { height: 100vh; flex: 0 0 auto; }
+
+#intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4vw;
+  min-height: 62vh;
+}
+#intro h1 {
+  font-size: min(13vw, 19vh);
+  font-weight: 700;
+  letter-spacing: .08em;
+  margin: 0;
+  white-space: nowrap;
+}
+.deco { display: flex; flex-direction: column; gap: 2.5vh; }
+.deco svg { height: 15vh; display: block; }
+.deco .a { transform: rotate(-10deg) translateX(-6px); }
+.deco .b { transform: rotate(7deg) translateX(8px); }
+.deco .c { transform: rotate(9deg) translateX(6px); }
+.deco .d { transform: rotate(-7deg) translateX(-8px); }
+
+#drawview {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 62vh;
+  justify-content: center;
+}
+#reading {
+  font-size: min(6.5vh, 8vw);
+  font-weight: 700;
+  letter-spacing: .08em;
+  margin-bottom: 2.5vh;
+  white-space: nowrap;
+}
+#tilebox svg { height: min(52vh, 58vw); display: block; }
+.pop { animation: pop .28s ease; }
+@keyframes pop {
+  from { transform: scale(.82) rotate(-3deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+#controls { text-align: center; margin-top: 3.5vh; }
+#mo {
+  font-family: var(--kai);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  padding: 7px 30px 8px 34px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(249,245,234,.4);
+  background: #111;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#mo:hover { background: #1d1d1d; }
+#mo:active { transform: scale(.95); }
+#hint { margin-top: 9px; font-size: 13px; opacity: .4; letter-spacing: 1px; }
+#fs {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+#fs:hover { color: #f9f5ea; opacity: 1; }
+
+@media (max-width: 600px) {
+  #intro { gap: 3vw; }
+  .deco svg { height: 9vh; }
+  .deco { gap: 1.8vh; }
+  #panel { right: 12px; max-width: calc(100vw - 24px); box-sizing: border-box; }
+}
+
+#secret {
+  position: fixed;
+  right: 0; bottom: 0;
+  width: 44px; height: 44px;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 9;
+}
+#panel {
+  display: none;
+  position: fixed;
+  right: 20px; bottom: 56px;
+  width: 320px;
+  background: #161616;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 18px 22px 16px;
+  z-index: 10;
+  font-size: 15px;
+}
+#panel-title { font-size: 17px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+.prow { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.gname { width: 42px; flex: 0 0 auto; }
+.prow input[type=range] { flex: 1; accent-color: #1e7d3c; }
+.gpct { width: 56px; text-align: right; flex: 0 0 auto; color: #bfe3c8; }
+#panel-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+#panel-btns button {
+  font-family: var(--kai);
+  font-size: 14px;
+  padding: 4px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(249,245,234,.35);
+  background: #222;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#panel-note { font-size: 12px; opacity: .45; margin-top: 10px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div id="top-pad"></div>
+
+<div id="intro">
+  <div class="deco" id="deco-left"></div>
+  <h1>看我摸牌</h1>
+  <div class="deco" id="deco-right"></div>
+</div>
+
+<div id="drawview">
+  <div id="reading"></div>
+  <div id="tilebox"></div>
+</div>
+
+<div id="controls">
+  <button id="mo">摸牌</button>
+  <div id="hint">按按鈕或空白鍵抽一張<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span></div>
+</div>
+
+<div id="bottom-pad"></div>
+
+<div id="secret"></div>
+<div id="panel">
+  <div id="panel-title">機率調整</div>
+  <div id="panel-rows"></div>
+  <div id="panel-btns">
+    <button id="panel-reset">恢復預設</button>
+    <button id="panel-close">關閉</button>
+  </div>
+  <div id="panel-note">百分比是該系列整組被抽到的機率，調整後會自動記住。面板開啟時空白鍵暫停作用。</div>
+</div>
+
+<script>
+/* ===== 權重設定 ===== */
+/* 每個系列「每張牌」的權重。預設萬子 0.4（整組約 10%）、其他 1。
+   現場可從右下角的隱藏熱區開啟面板調整，設定會自動記住。 */
+const DEFAULT_W = { wan: 0.4, tong: 1, tiao: 1, zi: 1, hua: 1 };
+let W = { ...DEFAULT_W };
+try { Object.assign(W, JSON.parse(localStorage.getItem('mopai-weights') || '{}')); } catch (e) {}
+
+/* ===== 顏色 ===== */
+const B = '#1a56a8', R = '#c0392b', G = '#1e7d3c', NB = '#1a3a6b';
+const IV = '#f9f5ea', PK = '#e0759a', GD = '#d4a017';
+const C = { B, R, G };
+
+/* ===== 牌面繪圖小工具（座標系 64x84） ===== */
+function dot(x, y, c) {
+  const k = C[c];
+  return `<g transform="translate(${x},${y})"><circle r="7" fill="none" stroke="${k}" stroke-width="2"/><circle r="3" fill="none" stroke="${k}" stroke-width="1.6"/></g>`;
+}
+function stick(x, y, c, rot) {
+  const k = C[c];
+  return `<g transform="translate(${x},${y})${rot ? ` rotate(${rot})` : ''}">` +
+    `<rect x="-3.5" y="-9.5" width="7" height="9" rx="3.2" fill="${k}"/>` +
+    `<rect x="-3.5" y="0.5" width="7" height="9" rx="3.2" fill="${k}"/>` +
+    `<circle cy="-5" r="1.2" fill="${IV}"/><circle cy="5" r="1.2" fill="${IV}"/></g>`;
+}
+function rosette() {
+  let s = `<g transform="translate(32,42)"><circle r="18.5" fill="none" stroke="${G}" stroke-width="2"/>`;
+  for (let a = 0; a < 360; a += 30)
+    s += `<ellipse cx="0" cy="-13.5" rx="2.6" ry="4.2" fill="none" stroke="${G}" stroke-width="1.5" transform="rotate(${a})"/>`;
+  s += `<circle r="7.5" fill="none" stroke="${R}" stroke-width="2"/><circle r="2.2" fill="${R}"/>`;
+  s += `<circle cx="4.5" r="1.4" fill="${R}"/><circle cx="-4.5" r="1.4" fill="${R}"/><circle cy="4.5" r="1.4" fill="${R}"/><circle cy="-4.5" r="1.4" fill="${R}"/></g>`;
+  return s;
+}
+function bird() {
+  return `<path d="M29 52 Q20 60 16 70 M29 52 Q26 64 24 73" stroke="${G}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` +
+    `<path d="M29 52 Q23 62 20 72" stroke="${R}" stroke-width="2.2" fill="none" stroke-linecap="round"/>` +
+    `<line x1="33" y1="53" x2="35" y2="64" stroke="#b8860b" stroke-width="1.8" stroke-linecap="round"/>` +
+    `<ellipse cx="31" cy="42" rx="8" ry="12" fill="${G}"/>` +
+    `<ellipse cx="34" cy="44" rx="3.2" ry="7.5" fill="${R}" transform="rotate(15 34 44)"/>` +
+    `<circle cx="30" cy="21" r="6" fill="${G}"/>` +
+    `<path d="M28 15 Q26 10 22 10 M31 15 Q31 9 27 8" stroke="${R}" stroke-width="1.6" fill="none" stroke-linecap="round"/>` +
+    `<circle cx="32" cy="19.5" r="1.4" fill="${IV}"/>` +
+    `<path d="M36 19 L44 22 L36 24 Z" fill="${R}"/>`;
+}
+const FLOWER_ICON = {
+  plum: `<circle cx="0" cy="-5.5" r="3" fill="${PK}"/><circle cx="5.2" cy="-1.7" r="3" fill="${PK}"/><circle cx="3.2" cy="4.5" r="3" fill="${PK}"/><circle cx="-3.2" cy="4.5" r="3" fill="${PK}"/><circle cx="-5.2" cy="-1.7" r="3" fill="${PK}"/><circle r="2" fill="${GD}"/>`,
+  orch: `<ellipse cx="0" cy="-4.5" rx="2.2" ry="4.8" fill="${PK}"/><ellipse cx="0" cy="-4.5" rx="2.2" ry="4.8" fill="${PK}" transform="rotate(55)"/><ellipse cx="0" cy="-4.5" rx="2.2" ry="4.8" fill="${PK}" transform="rotate(-55)"/><ellipse cx="0" cy="-4.5" rx="2.2" ry="4.8" fill="${PK}" transform="rotate(125)"/><ellipse cx="0" cy="-4.5" rx="2.2" ry="4.8" fill="${PK}" transform="rotate(-125)"/><circle r="2" fill="${GD}"/>`,
+  bamb: `<line y1="-8" y2="8" stroke="${G}" stroke-width="2.4"/><line x1="-2" y1="-2" x2="2" y2="-2" stroke="${G}" stroke-width="1.4"/><line x1="-2" y1="4" x2="2" y2="4" stroke="${G}" stroke-width="1.4"/><path d="M0 -5 Q6 -8 9.5 -5.5 Q6 -3.5 0 -5 Z" fill="${G}"/><path d="M0 1 Q-6 -2 -9.5 0.5 Q-6 3 0 1 Z" fill="${G}"/>`,
+  chry: (() => {
+    let s = '';
+    for (let a = 0; a < 360; a += 45) {
+      const r1 = 2, r2 = 7.5, rad = a * Math.PI / 180;
+      s += `<line x1="${(r1 * Math.cos(rad)).toFixed(2)}" y1="${(r1 * Math.sin(rad)).toFixed(2)}" x2="${(r2 * Math.cos(rad)).toFixed(2)}" y2="${(r2 * Math.sin(rad)).toFixed(2)}" stroke="${GD}" stroke-width="2.2"/>`;
+    }
+    return s + `<circle r="2.2" fill="${GD}"/>`;
+  })()
+};
+
+/* ===== 各牌的點/條配置 ===== */
+const DOTS = {
+  2: [[32,24,'B'],[32,60,'G']],
+  3: [[16,20,'B'],[32,42,'R'],[48,64,'G']],
+  4: [[19,24,'B'],[45,24,'G'],[19,60,'G'],[45,60,'B']],
+  5: [[17,21,'B'],[47,21,'G'],[32,42,'R'],[17,63,'G'],[47,63,'B']],
+  6: [[19,20,'G'],[45,20,'G'],[19,42,'R'],[45,42,'R'],[19,64,'R'],[45,64,'R']],
+  7: [[13,15,'G'],[30,20,'G'],[47,25,'G'],[19,46,'R'],[45,46,'R'],[19,67,'R'],[45,67,'R']],
+  8: [[19,14,'B'],[45,14,'B'],[19,33,'B'],[45,33,'B'],[19,52,'B'],[45,52,'B'],[19,71,'B'],[45,71,'B']],
+  9: [[14,18,'B'],[32,18,'B'],[50,18,'B'],[14,42,'R'],[32,42,'R'],[50,42,'R'],[14,66,'G'],[32,66,'G'],[50,66,'G']]
+};
+const STICKS = {
+  2: [[32,24,'G'],[32,60,'G']],
+  3: [[32,22,'G'],[19,60,'G'],[45,60,'G']],
+  4: [[19,24,'G'],[45,24,'B'],[19,60,'G'],[45,60,'B']],
+  5: [[16,21,'G'],[48,21,'G'],[32,42,'R'],[16,63,'G'],[48,63,'G']],
+  6: [[16,24,'G'],[32,24,'G'],[48,24,'G'],[16,60,'G'],[32,60,'G'],[48,60,'G']],
+  7: [[32,14,'R'],[16,42,'G'],[32,42,'G'],[48,42,'G'],[16,66,'G'],[32,66,'G'],[48,66,'G']],
+  8: [[13,25,'G',35],[27,25,'G',-35],[39,25,'G',35],[53,25,'G',-35],[13,59,'G',-35],[27,59,'G',35],[39,59,'G',-35],[53,59,'G',35]],
+  9: [[16,18,'G'],[32,18,'G'],[48,18,'G'],[16,42,'R'],[32,42,'R'],[48,42,'R'],[16,66,'G'],[32,66,'G'],[48,66,'G']]
+};
+
+/* ===== 牌組資料（name 是顯示的唸法，筒/條附上第二種講法） ===== */
+const NUM = ['一','二','三','四','伍','六','七','八','九'];
+const NUM_READ = ['一','二','三','四','五','六','七','八','九'];
+const TILES = [];
+for (let i = 1; i <= 9; i++) TILES.push({ id: 'w' + i, group: 'wan', name: NUM_READ[i-1] + '萬', n: i });
+for (let i = 1; i <= 9; i++) TILES.push({ id: 't' + i, group: 'tong', name: NUM_READ[i-1] + '筒 / ' + NUM_READ[i-1] + '餅', n: i });
+for (let i = 1; i <= 9; i++) TILES.push({ id: 's' + i, group: 'tiao', name: NUM_READ[i-1] + '條 / ' + NUM_READ[i-1] + '索', n: i });
+[['東','東風'],['南','南風'],['西','西風'],['北','北風']].forEach(([c, r]) => TILES.push({ id: 'z' + c, group: 'zi', name: r, ch: c, col: NB }));
+TILES.push({ id: 'z中', group: 'zi', name: '紅中', ch: '中', col: R });
+TILES.push({ id: 'z發', group: 'zi', name: '發財', ch: '發', col: G });
+TILES.push({ id: 'z白', group: 'zi', name: '白板', ch: '白', col: B });
+[['春',1,'plum',R,B],['夏',2,'bamb',R,B],['秋',3,'chry',R,B],['冬',4,'orch',R,B],
+ ['梅',1,'plum',NB,R],['蘭',2,'orch',NB,R],['竹',3,'bamb',NB,R],['菊',4,'chry',NB,R]]
+  .forEach(([c, n, icon, col, ncol]) => TILES.push({ id: 'h' + c, group: 'hua', name: c, ch: c, n, icon, col, ncol }));
+
+/* ===== 把一張牌畫成 SVG ===== */
+function tileSVG(t) {
+  let inner = '';
+  if (t.group === 'wan') {
+    inner = `<text x="32" y="36" font-size="24" text-anchor="middle" fill="${B}">${NUM[t.n-1]}</text><text x="32" y="70" font-size="28" text-anchor="middle" fill="${R}">萬</text>`;
+  } else if (t.group === 'tong') {
+    inner = t.n === 1 ? rosette() : DOTS[t.n].map(d => dot(...d)).join('');
+  } else if (t.group === 'tiao') {
+    inner = t.n === 1 ? bird() : STICKS[t.n].map(s => stick(...s)).join('');
+  } else if (t.group === 'zi') {
+    inner = t.ch === '白'
+      ? `<rect x="13" y="16" width="38" height="52" rx="3" fill="none" stroke="${B}" stroke-width="2.5"/><rect x="17.5" y="20.5" width="29" height="43" rx="2" fill="none" stroke="${B}" stroke-width="1.2"/>`
+      : `<text x="32" y="55" font-size="36" text-anchor="middle" fill="${t.col}">${t.ch}</text>`;
+  } else {
+    inner = `<text x="10" y="18" font-size="11" fill="${t.ncol}">${t.n}</text>` +
+      `<g transform="translate(34,27)">${FLOWER_ICON[t.icon]}</g>` +
+      `<text x="32" y="70" font-size="26" text-anchor="middle" fill="${t.col}">${t.ch}</text>`;
+  }
+  return `<svg viewBox="0 0 64 84" xmlns="http://www.w3.org/2000/svg" font-family="LXGW WenKai TC, Kaiti TC, BiauKai, DFKai-SB, KaiTi, serif" font-weight="700">` +
+    `<rect x="0.5" y="0.5" width="63" height="83" rx="6" fill="${IV}" stroke="#c8bfa8"/>${inner}</svg>`;
+}
+const byId = id => TILES.find(t => t.id === id);
+
+/* ===== 開場裝飾牌 ===== */
+document.getElementById('deco-left').innerHTML =
+  `<span class="a">${tileSVG(byId('z中'))}</span><span class="b">${tileSVG(byId('t1'))}</span>`;
+document.getElementById('deco-right').innerHTML =
+  `<span class="c">${tileSVG(byId('s1'))}</span><span class="d">${tileSVG(byId('z發'))}</span>`;
+
+/* ===== 加權抽牌（下一張不重複上一張） ===== */
+const weightOf = t => W[t.group];
+let lastId = null;
+function drawTile() {
+  const pool = TILES.filter(t => t.id !== lastId);
+  const total = pool.reduce((s, t) => s + weightOf(t), 0);
+  let r = Math.random() * total;
+  let pick = pool[pool.length - 1];
+  for (const t of pool) { r -= weightOf(t); if (r <= 0) { pick = t; break; } }
+  lastId = pick.id;
+  return pick;
+}
+
+/* ===== 畫面更新 ===== */
+const intro = document.getElementById('intro');
+const drawview = document.getElementById('drawview');
+const tilebox = document.getElementById('tilebox');
+const reading = document.getElementById('reading');
+
+function onDraw() {
+  intro.style.display = 'none';
+  drawview.style.display = 'flex';
+  const t = drawTile();
+  tilebox.innerHTML = tileSVG(t);
+  reading.textContent = t.name;
+  [tilebox, reading].forEach(el => {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  });
+}
+
+document.getElementById('mo').addEventListener('click', () => {
+  onDraw();
+  document.getElementById('mo').blur();
+});
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space' && !e.repeat && panel.style.display !== 'block') {
+    e.preventDefault();
+    onDraw();
+  }
+});
+
+/* ===== 全螢幕 ===== */
+/* iPhone 的 Safari 不支援網頁全螢幕 API，偵測不到就把整段入口藏起來 */
+const fsBtn = document.getElementById('fs');
+if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) {
+  document.getElementById('fs-wrap').style.display = 'none';
+}
+fsBtn.addEventListener('click', () => {
+  const doc = document, root = doc.documentElement;
+  if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+    (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+  } else {
+    (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+  }
+  fsBtn.blur();
+});
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, () => {
+    const on = document.fullscreenElement || document.webkitFullscreenElement;
+    fsBtn.textContent = on ? '點我退出全螢幕（或按 Esc）' : '點我進入全螢幕';
+  }));
+
+/* ===== 隱藏的機率調整面板 ===== */
+const panel = document.getElementById('panel');
+const GROUPS = [
+  ['wan', '萬子', 9],
+  ['tong', '筒子', 9],
+  ['tiao', '條子', 9],
+  ['zi', '字牌', 7],
+  ['hua', '花牌', 8]
+];
+const rowsBox = document.getElementById('panel-rows');
+rowsBox.innerHTML = GROUPS.map(([g, label]) =>
+  `<div class="prow"><span class="gname">${label}</span>` +
+  `<input type="range" min="0" max="3" step="0.05" data-g="${g}">` +
+  `<span class="gpct" id="pct-${g}"></span></div>`).join('');
+
+function refreshPanel() {
+  const total = GROUPS.reduce((s, [g, , n]) => s + n * W[g], 0);
+  GROUPS.forEach(([g, , n]) => {
+    document.getElementById('pct-' + g).textContent =
+      total > 0 ? (n * W[g] / total * 100).toFixed(1) + '%' : '—';
+  });
+  rowsBox.querySelectorAll('input').forEach(inp => { inp.value = W[inp.dataset.g]; });
+}
+rowsBox.addEventListener('input', e => {
+  if (e.target.dataset.g) {
+    W[e.target.dataset.g] = parseFloat(e.target.value);
+    localStorage.setItem('mopai-weights', JSON.stringify(W));
+    refreshPanel();
+  }
+});
+document.getElementById('secret').addEventListener('click', () => {
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  refreshPanel();
+});
+document.getElementById('panel-close').addEventListener('click', () => {
+  panel.style.display = 'none';
+});
+document.getElementById('panel-reset').addEventListener('click', () => {
+  W = { ...DEFAULT_W };
+  localStorage.setItem('mopai-weights', JSON.stringify(W));
+  refreshPanel();
+});
+</script>
+</body>
+</html>
