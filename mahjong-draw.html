@@ -262,8 +262,8 @@ const SLOGANS = [
 const DEFAULT_AD_AFTER = 15;
 let adAfter = parseInt(localStorage.getItem('mopai-ad-after'), 10);
 if (!(adAfter >= 1 && adAfter <= 40)) adAfter = DEFAULT_AD_AFTER;
-let lastSloganIdx = parseInt(localStorage.getItem('mopai-slogan-last'), 10);
-if (!(lastSloganIdx >= 0 && lastSloganIdx < SLOGANS.length)) lastSloganIdx = -1;
+/* 標語依固定順序輪播：每次開啟網頁都從第一句開始 */
+let lastSloganIdx = -1;
 let drawsThisRound = 0;
 let roundEnded = false;
 
@@ -436,11 +436,9 @@ function showSlogan() {
   roundEnded = true;
   intro.style.display = 'none';
   drawview.style.display = 'none';
-  let idx;
-  do { idx = Math.floor(Math.random() * SLOGANS.length); } while (idx === lastSloganIdx);
+  const idx = (lastSloganIdx + 1) % SLOGANS.length;
   lastSloganIdx = idx;
-  localStorage.setItem('mopai-slogan-last', idx);
-  document.getElementById('ad-slogan').textContent = SLOGANS[idx];
+  document.getElementById('ad-slogan').textContent = '「' + SLOGANS[idx] + '」';
   adview.style.display = 'flex';
   adview.classList.remove('pop');
   void adview.offsetWidth;
