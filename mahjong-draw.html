@@ -260,6 +260,7 @@ const TILES = [];
 for (let i = 1; i <= 9; i++) TILES.push({ id: 'w' + i, group: 'wan', name: NUM_READ[i-1] + '萬', n: i });
 for (let i = 1; i <= 9; i++) TILES.push({ id: 't' + i, group: 'tong', name: NUM_READ[i-1] + '筒 / ' + NUM_READ[i-1] + '餅', n: i });
 for (let i = 1; i <= 9; i++) TILES.push({ id: 's' + i, group: 'tiao', name: NUM_READ[i-1] + '條 / ' + NUM_READ[i-1] + '索', n: i });
+TILES.find(t => t.id === 's1').name = '一條 / 一索 / 雞';
 [['東','東風'],['南','南風'],['西','西風'],['北','北風']].forEach(([c, r]) => TILES.push({ id: 'z' + c, group: 'zi', name: r, ch: c, col: NB }));
 TILES.push({ id: 'z中', group: 'zi', name: '紅中', ch: '中', col: R });
 TILES.push({ id: 'z發', group: 'zi', name: '發財', ch: '發', col: G });
