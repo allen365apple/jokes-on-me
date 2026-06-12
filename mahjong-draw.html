@@ -66,6 +66,22 @@ body {
   white-space: nowrap;
 }
 #tilebox svg { height: min(52vh, 58vw); display: block; }
+#adview {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 62vh;
+  gap: 4.5vh;
+}
+#ad-logo { height: 12vh; max-width: 82vw; object-fit: contain; }
+#ad-slogan {
+  font-size: min(7.5vh, 8.5vw);
+  font-weight: var(--fw);
+  text-align: center;
+  line-height: 1.45;
+  max-width: 92vw;
+}
 .pop { animation: pop .28s ease; }
 @keyframes pop {
   from { transform: scale(.82) rotate(-3deg); opacity: 0; }
@@ -73,7 +89,22 @@ body {
 }
 
 #controls { text-align: center; margin-top: 3.5vh; }
-#mo {
+#round-info { font-size: 14px; opacity: .4; letter-spacing: 1px; margin-bottom: 10px; min-height: 17px; }
+#btn-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
+#end {
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 2px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(249,245,234,.25);
+  background: transparent;
+  color: rgba(249,245,234,.7);
+  cursor: pointer;
+}
+#end:hover { border-color: rgba(249,245,234,.5); color: #f9f5ea; }
+#end:active { transform: scale(.95); }
+#mo, #next {
   font-family: inherit;
   font-size: 19px;
   font-weight: 700;
@@ -85,8 +116,8 @@ body {
   color: #f9f5ea;
   cursor: pointer;
 }
-#mo:hover { background: #1d1d1d; }
-#mo:active { transform: scale(.95); }
+#mo:hover, #next:hover { background: #1d1d1d; }
+#mo:active, #next:active { transform: scale(.95); }
 #hint { margin-top: 9px; font-size: 13px; opacity: .4; letter-spacing: 1px; }
 #fs, #console-link {
   cursor: pointer;
@@ -169,9 +200,19 @@ body {
   <div id="tilebox"></div>
 </div>
 
+<div id="adview">
+  <img id="ad-logo" src="shenlaiye-logo.png" alt="神來也麻將">
+  <div id="ad-slogan"></div>
+</div>
+
 <div id="controls">
-  <button id="mo">摸牌</button>
-  <div id="hint">按按鈕或空白鍵抽一張<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
+  <div id="round-info"></div>
+  <div id="btn-row">
+    <button id="mo">摸牌</button>
+    <button id="end">結束這回合</button>
+    <button id="next" style="display:none">開始下一回合</button>
+  </div>
+  <div id="hint">空白鍵摸牌 ・ Enter 結束回合<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
 </div>
 
 <div id="bottom-pad"></div>
@@ -186,11 +227,13 @@ body {
   </div>
   <div class="psec">出現比例</div>
   <div id="panel-rows"></div>
+  <div class="psec">廣告標語</div>
+  <div class="prow"><span class="gname">張數</span><input type="range" id="ad-after" min="1" max="40" step="1"><span class="gpct" id="ad-after-val"></span></div>
   <div id="panel-btns">
     <button id="panel-reset">恢復預設比例</button>
     <button id="panel-close">關閉</button>
   </div>
-  <div id="panel-note">百分比是該系列整組被抽到的機率；字體與比例都會自動記住。面板開啟時空白鍵暫停作用。</div>
+  <div id="panel-note">百分比是該系列整組被抽到的機率；「張數」是抽滿幾張後下一按就出現廣告標語。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
 </div>
 
 <script>
@@ -209,6 +252,20 @@ const FONTS = {
 };
 let fontKey = localStorage.getItem('mopai-font') || 'hei';
 if (!FONTS[fontKey]) fontKey = 'hei';
+
+/* ===== 回合與廣告標語設定 ===== */
+const SLOGANS = [
+  '神來也麻將，牌咖最多，一秒湊桌！',
+  '就速神好玩',
+  '隨時隨地想玩就玩'
+];
+const DEFAULT_AD_AFTER = 15;
+let adAfter = parseInt(localStorage.getItem('mopai-ad-after'), 10);
+if (!(adAfter >= 1 && adAfter <= 40)) adAfter = DEFAULT_AD_AFTER;
+let lastSloganIdx = parseInt(localStorage.getItem('mopai-slogan-last'), 10);
+if (!(lastSloganIdx >= 0 && lastSloganIdx < SLOGANS.length)) lastSloganIdx = -1;
+let drawsThisRound = 0;
+let roundEnded = false;
 
 /* ===== 顏色 ===== */
 const B = '#1a56a8', R = '#c0392b', G = '#1e7d3c', NB = '#1a3a6b';
@@ -348,9 +405,16 @@ const intro = document.getElementById('intro');
 const drawview = document.getElementById('drawview');
 const tilebox = document.getElementById('tilebox');
 const reading = document.getElementById('reading');
+const adview = document.getElementById('adview');
+const moBtn = document.getElementById('mo');
+const endBtn = document.getElementById('end');
+const nextBtn = document.getElementById('next');
+const roundInfo = document.getElementById('round-info');
 let currentTile = null;
 
 function onDraw() {
+  if (roundEnded) return;
+  if (drawsThisRound >= adAfter) { showSlogan(); return; }
   intro.style.display = 'none';
   drawview.style.display = 'flex';
   const t = drawTile();
@@ -362,16 +426,52 @@ function onDraw() {
     void el.offsetWidth;
     el.classList.add('pop');
   });
+  drawsThisRound++;
+  roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + adAfter + ' 張';
 }
 
-document.getElementById('mo').addEventListener('click', () => {
+/* ===== 回合結束：出現神來也廣告標語 ===== */
+function showSlogan() {
+  if (roundEnded) return;
+  roundEnded = true;
+  intro.style.display = 'none';
+  drawview.style.display = 'none';
+  let idx;
+  do { idx = Math.floor(Math.random() * SLOGANS.length); } while (idx === lastSloganIdx);
+  lastSloganIdx = idx;
+  localStorage.setItem('mopai-slogan-last', idx);
+  document.getElementById('ad-slogan').textContent = SLOGANS[idx];
+  adview.style.display = 'flex';
+  adview.classList.remove('pop');
+  void adview.offsetWidth;
+  adview.classList.add('pop');
+  moBtn.style.display = 'none';
+  endBtn.style.display = 'none';
+  nextBtn.style.display = '';
+  roundInfo.textContent = '回合結束';
+}
+
+function startNextRound() {
+  roundEnded = false;
+  drawsThisRound = 0;
+  adview.style.display = 'none';
+  nextBtn.style.display = 'none';
+  moBtn.style.display = '';
+  endBtn.style.display = '';
   onDraw();
-  document.getElementById('mo').blur();
-});
+}
+
+moBtn.addEventListener('click', () => { onDraw(); moBtn.blur(); });
+endBtn.addEventListener('click', () => { showSlogan(); endBtn.blur(); });
+nextBtn.addEventListener('click', () => { startNextRound(); nextBtn.blur(); });
 window.addEventListener('keydown', e => {
-  if (e.code === 'Space' && !e.repeat && panel.style.display !== 'block') {
+  if (panel.style.display === 'block') return;
+  if (e.code === 'Space' && !e.repeat) {
     e.preventDefault();
-    onDraw();
+    if (roundEnded) startNextRound(); else onDraw();
+  } else if (e.code === 'Enter' && !e.repeat) {
+    e.preventDefault();
+    if (!roundEnded) showSlogan();
   }
 });
 
@@ -418,7 +518,17 @@ function refreshPanel() {
       total > 0 ? (n * W[g] / total * 100).toFixed(1) + '%' : '—';
   });
   rowsBox.querySelectorAll('input').forEach(inp => { inp.value = W[inp.dataset.g]; });
+  document.getElementById('ad-after').value = adAfter;
+  document.getElementById('ad-after-val').textContent = adAfter + ' 張';
 }
+document.getElementById('ad-after').addEventListener('input', e => {
+  adAfter = parseInt(e.target.value, 10);
+  localStorage.setItem('mopai-ad-after', adAfter);
+  document.getElementById('ad-after-val').textContent = adAfter + ' 張';
+  if (!roundEnded && drawsThisRound > 0) {
+    roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + adAfter + ' 張';
+  }
+});
 rowsBox.addEventListener('input', e => {
   if (e.target.dataset.g) {
     W[e.target.dataset.g] = parseFloat(e.target.value);
