@@ -235,13 +235,15 @@ body {
   </div>
   <div class="psec">出現比例</div>
   <div id="panel-rows"></div>
+  <div class="psec">不重複張數</div>
+  <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="10" step="1"><span class="gpct" id="no-repeat-val"></span></div>
   <div class="psec">廣告標語</div>
   <div class="prow"><span class="gname">張數</span><input type="range" id="ad-after" min="1" max="40" step="1"><span class="gpct" id="ad-after-val"></span></div>
   <div id="panel-btns">
     <button id="panel-reset">恢復預設比例</button>
     <button id="panel-close">關閉</button>
   </div>
-  <div id="panel-note">百分比是該系列整組被抽到的機率；「張數」是抽滿幾張後下一按就出現廣告標語。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
+  <div id="panel-note">百分比是該系列整組被抽到的機率；「前幾張」是抽出的牌不與最近幾張重複（0 為關閉）；「張數」是抽滿幾張後下一按就出現廣告標語。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
 </div>
 
 <script>
@@ -251,6 +253,11 @@ body {
 const DEFAULT_W = { wan: 0.4, tong: 1, tiao: 1, zi: 1, hua: 1 };
 let W = { ...DEFAULT_W };
 try { Object.assign(W, JSON.parse(localStorage.getItem('mopai-weights') || '{}')); } catch (e) {}
+
+/* 抽出的牌不與前面幾張重複（預設 3） */
+const DEFAULT_NO_REPEAT = 3;
+let noRepeat = parseInt(localStorage.getItem('mopai-no-repeat'), 10);
+if (!(noRepeat >= 0 && noRepeat <= 10)) noRepeat = DEFAULT_NO_REPEAT;
 
 /* ===== 字體設定（控制台可切換，預設粗黑體） ===== */
 const FONTS = {
@@ -263,7 +270,7 @@ if (!FONTS[fontKey]) fontKey = 'hei';
 
 /* ===== 回合與廣告標語設定 ===== */
 const SLOGANS = [
-  '神來也麻將，牌咖最多，一秒湊桌！',
+  '牌咖最多，一秒湊桌！',
   '就速神好玩',
   '隨時隨地想玩就玩'
 ];
@@ -395,16 +402,26 @@ function renderDeco() {
 }
 renderDeco();
 
-/* ===== 加權抽牌（下一張不重複上一張） ===== */
+/* ===== 加權抽牌（不重複前面 noRepeat 張） ===== */
 const weightOf = t => W[t.group];
-let lastId = null;
-function drawTile() {
-  const pool = TILES.filter(t => t.id !== lastId);
+let recentIds = [];
+function pickFrom(pool) {
   const total = pool.reduce((s, t) => s + weightOf(t), 0);
   let r = Math.random() * total;
   let pick = pool[pool.length - 1];
   for (const t of pool) { r -= weightOf(t); if (r <= 0) { pick = t; break; } }
-  lastId = pick.id;
+  return pick;
+}
+function drawTile() {
+  /* 先排除前面 noRepeat 張、且權重大於 0 的牌 */
+  let pool = TILES.filter(t => weightOf(t) > 0 && recentIds.indexOf(t.id) === -1);
+  /* 防呆：若排除後沒有可抽的牌（張數設太大或比例調太極端），放寬到只看權重 */
+  if (pool.length === 0 || pool.reduce((s, t) => s + weightOf(t), 0) <= 0) {
+    pool = TILES.filter(t => weightOf(t) > 0);
+  }
+  const pick = pickFrom(pool);
+  recentIds.push(pick.id);
+  while (recentIds.length > noRepeat) recentIds.shift();
   return pick;
 }
 
@@ -526,7 +543,15 @@ function refreshPanel() {
   rowsBox.querySelectorAll('input').forEach(inp => { inp.value = W[inp.dataset.g]; });
   document.getElementById('ad-after').value = adAfter;
   document.getElementById('ad-after-val').textContent = adAfter + ' 張';
+  document.getElementById('no-repeat').value = noRepeat;
+  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 張';
 }
+document.getElementById('no-repeat').addEventListener('input', e => {
+  noRepeat = parseInt(e.target.value, 10);
+  localStorage.setItem('mopai-no-repeat', noRepeat);
+  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 張';
+  while (recentIds.length > noRepeat) recentIds.shift();
+});
 document.getElementById('ad-after').addEventListener('input', e => {
   adAfter = parseInt(e.target.value, 10);
   localStorage.setItem('mopai-ad-after', adAfter);
