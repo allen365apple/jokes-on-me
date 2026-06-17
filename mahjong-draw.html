@@ -250,7 +250,7 @@ body {
 /* ===== 權重設定 ===== */
 /* 每個系列「每張牌」的權重。預設萬子 0.4（整組約 10%）、其他 1。
    現場可從右下角的隱藏熱區開啟面板調整，設定會自動記住。 */
-const DEFAULT_W = { wan: 0.4, tong: 1, tiao: 1, zi: 1, hua: 1 };
+const DEFAULT_W = { wan: 0.647, tong: 1, tiao: 1, zi: 1, hua: 1 };
 let W = { ...DEFAULT_W };
 try { Object.assign(W, JSON.parse(localStorage.getItem('mopai-weights') || '{}')); } catch (e) {}
 
