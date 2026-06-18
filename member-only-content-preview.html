@@ -36,11 +36,16 @@
       <h2 style="font-size:25px;font-weight:800;color:#2E2218;margin:0 0 8px;line-height:1.5;">看我笑話會員走心分享　預覽圖下載 ＆ 全文閱讀
         <span style="display:inline-block;background:linear-gradient(135deg,#FF9136,#FF6A00);color:#fff;font-size:14px;
           font-weight:700;padding:3px 13px;border-radius:999px;vertical-align:middle;">2026 年 6 月號</span></h2>
-      <p style="color:#8a6f57;font-size:15px;margin:0 0 6px;">歡迎下載自己的預覽圖，發到 IG 限動分享</p>
+      <p style="color:#8a6f57;font-size:15px;margin:0 0 6px;">歡迎下載自己的預覽圖，發到 IG 限動分享衝會員（可以按下面的按鈕複製加入會員連結）</p>
       <p style="color:#C8470A;font-size:15px;font-weight:700;margin:0 0 18px;">想看完整走心分享內容，請繼續往下滑 ↓</p>
-      <button id="kwxh-all" style="all:unset;cursor:pointer;font-family:inherit;font-weight:700;border-radius:999px;
-        padding:11px 24px;font-size:15px;background:linear-gradient(135deg,#FF9136,#FF6A00);color:#fff;
-        box-shadow:0 8px 18px rgba(255,106,0,.35);">⬇ 一次下載全部</button>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;">
+        <button id="kwxh-all" style="all:unset;cursor:pointer;font-family:inherit;font-weight:700;border-radius:999px;
+          padding:11px 24px;font-size:15px;background:linear-gradient(135deg,#FF9136,#FF6A00);color:#fff;
+          box-shadow:0 8px 18px rgba(255,106,0,.35);">⬇ 一次下載全部</button>
+        <button id="kwxh-copy" style="all:unset;cursor:pointer;font-family:inherit;font-weight:700;border-radius:999px;
+          padding:11px 24px;font-size:15px;background:#fff;color:#E2560B;border:2px solid #FF8A33;
+          box-shadow:0 4px 12px rgba(0,0,0,.08);">🔗 複製加入會員連結</button>
+      </div>
     </div>
     <div id="kwxh-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;
       margin-top:26px;"></div>
@@ -158,6 +163,15 @@ function card(m){
   }
   document.getElementById('kwxh-all').onclick=async()=>{
     for(const m of PREVIEW){download(m);await new Promise(r=>setTimeout(r,400));}};
+  const MEMBER_URL='https://jokesonme.oen.tw/memberships/38xpb4yTZHc27Ikle7inE78Svie';
+  const copyBtn=document.getElementById('kwxh-copy');
+  copyBtn.onclick=async()=>{
+    try{await navigator.clipboard.writeText(MEMBER_URL);}
+    catch(e){const t=document.createElement('textarea');t.value=MEMBER_URL;t.style.position='fixed';t.style.opacity='0';
+      document.body.appendChild(t);t.focus();t.select();try{document.execCommand('copy');}catch(_){}t.remove();}
+    const old=copyBtn.textContent;copyBtn.textContent='✓ 已複製連結！';
+    setTimeout(()=>{copyBtn.textContent=old;},1800);
+  };
 })();
 })();
 </script>
