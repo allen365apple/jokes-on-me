@@ -220,7 +220,7 @@ body {
     <button id="end">結束這回合</button>
     <button id="next" style="display:none">開始下一回合</button>
   </div>
-  <div id="hint">空白鍵摸牌 ・ Enter 結束回合<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span></span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
+  <div id="hint">空白鍵摸牌 ・ Enter 結束回合<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span>（F 鍵）</span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
 </div>
 
 <div id="bottom-pad"></div>
@@ -495,6 +495,9 @@ window.addEventListener('keydown', e => {
   } else if (e.code === 'Enter' && !e.repeat) {
     e.preventDefault();
     if (!roundEnded) showSlogan();
+  } else if (e.code === 'KeyF' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    toggleFullscreen();
   }
 });
 
@@ -504,15 +507,15 @@ const fsBtn = document.getElementById('fs');
 if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) {
   document.getElementById('fs-wrap').style.display = 'none';
 }
-fsBtn.addEventListener('click', () => {
+function toggleFullscreen() {
   const doc = document, root = doc.documentElement;
   if (doc.fullscreenElement || doc.webkitFullscreenElement) {
     (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
   } else {
     (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
   }
-  fsBtn.blur();
-});
+}
+fsBtn.addEventListener('click', () => { toggleFullscreen(); fsBtn.blur(); });
 ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
   document.addEventListener(ev, () => {
     const on = document.fullscreenElement || document.webkitFullscreenElement;
