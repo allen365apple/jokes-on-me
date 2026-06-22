@@ -2,5 +2,10 @@
 .DS_Store
 神來也logo.png
 
-# 付費會員專屬內容，禁止公開（含電子報全文與成員個人照）
-member-only-content/
+# 付費會員專屬內容，禁止公開（工作檔、原始電子報、成員個人照、產生器…）
+member-only-content/*
+# 例外：只有「預覽頁」要公開上線（設了 noindex），其餘一律私密
+!member-only-content/member-only-content-preview-*.html
+
+# 早期放在根目錄的舊預覽檔（已改放 member-only-content/），不再追蹤
+/member-only-content-preview*.html
