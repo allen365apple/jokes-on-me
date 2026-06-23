@@ -71,7 +71,7 @@ const PREVIEW = [{"name": "巧達", "lead": "從以前就一直在參加別人�
 const IG_COPY = "會員限定電子報之：我的夏日回憶｜2026 年 6 月號\n完全不知道為何定了這個題目，但總之炎炎夏日，一起來看看成員們會有什麼神奇的夏天小故事吧！\n\n🔺想看更多看我笑話成員的走心分享與限定內容？\n每個月只要 $149、成為「重度笑ㄟ」就能享有 ──\n1️⃣ 每月 10 號釋出會員限定 線上內容\n每月期間限定作品演出影片\n每月全成員走心分享 + 花絮彩蛋\n2️⃣ 不定期會員限定 現場演出 / 活動\n3️⃣ 不定期會員限定 周邊商品\n\n有你的力量，看我笑話工作室就能走得更遠、做更多挑戰，\n一起見證養成系漫才團體的持續進化，成為看我笑話的付費會員「重度笑ㄟ」吧！";
 const META={artTitle:'我的夏日回憶',month:'2026 年 6 月號',monthFile:'2026年6月',brandA:'看我笑話工作室',brandB:'會員限定電子報',
   ctaL1:'更多成員的走心電子報、限定作品 / 表演',ctaL2:'歡迎每月 $149 成為「重度笑ㄟ」看更多！'};
-const W=1080,H=1080;
+const W=1080,H=1350;
 const C={o1:'#FF9136',o2:'#FF6A00',oDeep:'#E2560B',ink:'#2E2218',brand:'#9C8264',
   name:'#FF6A00',lead:'#473627',body:'#62513F',muted:'#B29A7E',line:'#F2DAC0'};
 function R(ctx,x,y,w,h,r){if(typeof r==='number')r={tl:r,tr:r,br:r,bl:r};ctx.beginPath();ctx.moveTo(x+r.tl,y);
@@ -111,12 +111,12 @@ function draw(ctx,m){
   if(m.lead){ctx.fillStyle=C.lead;ctx.font='500 36px "Noto Sans TC",sans-serif';
     for(const ln of wrap(ctx,m.lead,cw)){ctx.fillText(ln,L,y);y+=64;}y+=8;}
   ctx.fillStyle=C.body;ctx.font='400 33px "Noto Sans TC",sans-serif';
-  outer:for(const p of (m.teaser||[])){for(const ln of wrap(ctx,p,cw)){if(y>838)break outer;ctx.fillText(ln,L,y);y+=lh;}y+=gap;}
-  let fg=ctx.createLinearGradient(0,560,0,846);
+  outer:for(const p of (m.teaser||[])){for(const ln of wrap(ctx,p,cw)){if(y>1052)break outer;ctx.fillText(ln,L,y);y+=lh;}y+=gap;}
+  let fg=ctx.createLinearGradient(0,580,0,1060);
   fg.addColorStop(0,'rgba(255,255,255,0)');fg.addColorStop(.5,'rgba(255,255,255,.52)');
   fg.addColorStop(.85,'rgba(255,255,255,.9)');fg.addColorStop(1,'rgba(255,255,255,1)');
-  ctx.fillStyle=fg;ctx.fillRect(b,540,W-2*b,310);
-  const bx=L,by=846,bw=Rr-L,bh=180;
+  ctx.fillStyle=fg;ctx.fillRect(b,560,W-2*b,505);
+  const bx=L,by=1058,bw=Rr-L,bh=190;
   let cg=ctx.createLinearGradient(bx,by,bx+bw,by+bh);cg.addColorStop(0,C.o1);cg.addColorStop(1,C.o2);
   ctx.fillStyle=cg;R(ctx,bx,by,bw,bh,30);ctx.fill();
   lock(ctx,bx+66,by+bh/2,52);
