@@ -220,11 +220,13 @@ function pcCol(ctx,m,x0,x1,y0,colH,title){
   let y=y0+130;const lh=40,cw=x1-x0;
   outer:for(const p of [m.lead].concat(m.teaser||[]).filter(Boolean)){
     for(const ln of wrap(ctx,p,cw)){if(y>y0+colH)break outer;ctx.fillText(ln,x0,y);y+=lh;}y+=14;}
-  // 白色漸層：約第 5 行起平滑淡出，並在接到 CTA 前就確實 100% 全白（底部不留淡字）
-  const ft=y0+260;
-  let fg=ctx.createLinearGradient(0,ft,0,y0+colH-50);
+  // 保險做法：上半段平滑淡出(漸層) → 白點(wp)以下鋪 100% 不透明純白，
+  // 不論內文多長，CTA 上方一律不會透出文字。
+  const ft=y0+285, wp=y0+440;
+  let fg=ctx.createLinearGradient(0,ft,0,wp);
   fg.addColorStop(0,'rgba(255,255,255,0)');fg.addColorStop(1,'rgba(255,255,255,1)');
-  ctx.fillStyle=fg;ctx.fillRect(x0-6,ft,cw+12,y0+colH+14-ft);
+  ctx.fillStyle=fg;ctx.fillRect(x0-6,ft,cw+12,wp-ft);
+  ctx.fillStyle='#fff';ctx.fillRect(x0-6,wp,cw+12,(y0+colH+18)-wp);
 }
 function drawTicks(ctx,xa,xb,yc){ctx.strokeStyle='#9a9a9a';ctx.lineWidth=2;
   for(let x=xa;x<=xb;x+=7){ctx.beginPath();ctx.moveTo(x,yc-8);ctx.lineTo(x,yc+8);ctx.stroke();}}
