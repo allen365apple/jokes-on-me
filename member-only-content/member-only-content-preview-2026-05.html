@@ -228,7 +228,8 @@ function pcCol(ctx,m,x0,x1,y0,colH,title,fadeStart){
   const mid=(fadeStart==null?50:fadeStart)/100;
   let fg=ctx.createLinearGradient(0,ft,0,wp);
   fg.addColorStop(0,'rgba(255,255,255,0)');
-  fg.addColorStop(0.5,'rgba(255,255,255,'+mid+')');
+  fg.addColorStop(0.30,'rgba(255,255,255,'+mid+')');
+  fg.addColorStop(0.50,'rgba(255,255,255,'+mid+')');
   fg.addColorStop(1,'rgba(255,255,255,1)');
   ctx.fillStyle=fg;ctx.fillRect(x0-6,ft,cw+12,wp-ft);
   ctx.fillStyle='#fff';ctx.fillRect(x0-6,wp,cw+12,(y0+colH+18)-wp);
