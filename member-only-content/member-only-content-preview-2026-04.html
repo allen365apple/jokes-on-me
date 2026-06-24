@@ -207,7 +207,7 @@ const PW=1748, PH=1240;
 function lockGray(ctx,cx,cy,s){ctx.save();ctx.strokeStyle='#888';ctx.fillStyle='#888';ctx.lineWidth=s*0.13;ctx.lineCap='round';
   ctx.beginPath();ctx.arc(cx,cy-s*0.18,s*0.30,Math.PI,0);ctx.stroke();R(ctx,cx-s*0.42,cy-s*0.06,s*0.84,s*0.66,s*0.12);ctx.fill();
   ctx.fillStyle='#EFEFEF';ctx.beginPath();ctx.arc(cx,cy+s*0.16,s*0.09,0,7);ctx.fill();ctx.fillRect(cx-s*0.035,cy+s*0.16,s*0.07,s*0.18);ctx.restore();}
-function pcCol(ctx,m,x0,x1,y0,colH,title){
+function pcCol(ctx,m,x0,x1,y0,colH,title,fadeStart){
   const d=96,cx=x0+d/2,cy=y0+d/2;
   if(m&&m._img){ctx.save();ctx.filter='grayscale(100%)';ctx.beginPath();ctx.arc(cx,cy,d/2,0,7);ctx.closePath();ctx.clip();
     const ar=m._img.width/m._img.height;let dw,dh;if(ar>1){dh=d;dw=d*ar;}else{dw=d;dh=d/ar;}
@@ -222,8 +222,8 @@ function pcCol(ctx,m,x0,x1,y0,colH,title){
   outer:for(const p of [m.lead].concat(m.teaser||[]).filter(Boolean)){
     for(const ln of wrap(ctx,p,cw)){if(y>y0+colH)break outer;ctx.fillText(ln,x0,y);y+=lh;}y+=14;}
   try{ctx.letterSpacing='0px';}catch(e){}
-  // 漸層：起點靠上、跨度長 → 到文章一半時約 50% 白；一路淡到接近底部，最底一小段純白保險
-  const ft=y0+165, wp=y0+colH-30;
+  // 漸層：起點由拉桿控制(fadeStart 越小遮越多)，一路淡到接近底部，最底一小段純白保險
+  const ft=y0+(fadeStart||165), wp=y0+colH-30;
   let fg=ctx.createLinearGradient(0,ft,0,wp);
   fg.addColorStop(0,'rgba(255,255,255,0)');fg.addColorStop(1,'rgba(255,255,255,1)');
   ctx.fillStyle=fg;ctx.fillRect(x0-6,ft,cw+12,wp-ft);
@@ -231,7 +231,7 @@ function pcCol(ctx,m,x0,x1,y0,colH,title){
 }
 function drawTicks(ctx,xa,xb,yc){ctx.strokeStyle='#9a9a9a';ctx.lineWidth=2;
   for(let x=xa;x<=xb;x+=7){ctx.beginPath();ctx.moveTo(x,yc-8);ctx.lineTo(x,yc+8);ctx.stroke();}}
-function drawPostcard(ctx,mL,mR,vtitle,titleL,titleR){
+function drawPostcard(ctx,mL,mR,vtitle,titleL,titleR,fadeStart){
   ctx.fillStyle='#fff';ctx.fillRect(0,0,PW,PH);
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
   // kicker：✦ 看我笑話 付費會員限定 ✦（字距 + 兩側細線）
@@ -257,8 +257,8 @@ function drawPostcard(ctx,mL,mR,vtitle,titleL,titleR){
   // 兩欄（往下延伸到接近底部 CTA，避免下方留白）
   const Y0=410,colH=580;
   ctx.strokeStyle='#e0e0e0';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(874,Y0+10);ctx.lineTo(874,Y0+colH-20);ctx.stroke();
-  if(mL)pcCol(ctx,mL,120,830,Y0,colH,titleL);
-  if(mR)pcCol(ctx,mR,918,1628,Y0,colH,titleR);
+  if(mL)pcCol(ctx,mL,120,830,Y0,colH,titleL,fadeStart);
+  if(mR)pcCol(ctx,mR,918,1628,Y0,colH,titleR,fadeStart);
   // 底部會員 CTA
   const bx=120,by=1006,bw=1508,bh=152;
   ctx.fillStyle='#EFEFEF';R(ctx,bx,by,bw,bh,24);ctx.fill();
@@ -275,10 +275,10 @@ function drawPostcard(ctx,mL,mR,vtitle,titleL,titleR){
   if(QR_DATA&&QR_IMG.complete&&QR_IMG.naturalWidth){const q=90;ctx.drawImage(QR_IMG,bx+bw-q-30,by+(bh-q)/2,q,q);}
   ctx.textAlign='left';ctx.textBaseline='alphabetic';
 }
-function renderPostcard(lName,rName,vtitle,titleL,titleR){
+function renderPostcard(lName,rName,vtitle,titleL,titleR,fadeStart){
   const cv=document.createElement('canvas');cv.width=PW;cv.height=PH;
   const mL=PREVIEW.find(m=>m.name===lName),mR=PREVIEW.find(m=>m.name===rName);
-  drawPostcard(cv.getContext('2d'),mL,mR,vtitle,titleL,titleR);return cv;
+  drawPostcard(cv.getContext('2d'),mL,mR,vtitle,titleL,titleR,fadeStart);return cv;
 }
 function openPostcard(){
   const ov=document.createElement('div');
@@ -311,16 +311,22 @@ function openPostcard(){
   const L=mkSel('左邊成員：',PREVIEW[0]&&PREVIEW[0].name),Rr=mkSel('右邊成員：',PREVIEW[1]&&PREVIEW[1].name);
   const titlL=mkInput('左標題：',META.artTitle),titlR=mkInput('右標題：',META.artTitle),vt=mkInput('限定作品片名：',VIDEO_TITLE);
   function row(){const r=document.createElement('div');r.style.cssText='display:flex;gap:16px;flex-wrap:wrap;';return r;}
+  // 白色漸層拉桿（值越小＝起點越高＝遮越多）
+  const fadeW=document.createElement('label');fadeW.style.cssText='display:flex;align-items:center;gap:10px;flex:1;min-width:320px;';
+  const fade=document.createElement('input');fade.type='range';fade.min='100';fade.max='380';fade.step='5';fade.value='165';fade.style.cssText='flex:1;';
+  const fadeHint=document.createElement('span');fadeHint.textContent='← 遮更多 ／ 遮更少 →';fadeHint.style.cssText='white-space:nowrap;color:#9a8a72;font-weight:400;font-size:13px;';
+  fadeW.appendChild(lbl('白色漸層：'));fadeW.appendChild(fade);fadeW.appendChild(fadeHint);
   const r1=row();r1.appendChild(L.w);r1.appendChild(Rr.w);
   const r2=row();r2.appendChild(titlL.w);r2.appendChild(titlR.w);
   const r3=row();r3.appendChild(vt.w);
-  ctrls.appendChild(r1);ctrls.appendChild(r2);ctrls.appendChild(r3);
+  const r4=row();r4.appendChild(fadeW);
+  ctrls.appendChild(r1);ctrls.appendChild(r2);ctrls.appendChild(r3);ctrls.appendChild(r4);
   const pvwrap=document.createElement('div');pvwrap.style.cssText='padding:16px;background:#f3ece4;overflow:auto;text-align:center;';
   const im=document.createElement('img');im.style.cssText='width:100%;max-width:880px;display:block;margin:0 auto;border:1px solid #e0d6c8;border-radius:6px;';
   pvwrap.appendChild(im);
-  function rerender(){im.src=renderPostcard(L.s.value,Rr.s.value,vt.i.value,titlL.i.value,titlR.i.value).toDataURL('image/jpeg',0.9);}
-  L.s.onchange=Rr.s.onchange=rerender;vt.i.oninput=rerender;titlL.i.oninput=rerender;titlR.i.oninput=rerender;
-  dl.onclick=()=>{const cv=renderPostcard(L.s.value,Rr.s.value,vt.i.value,titlL.i.value,titlR.i.value);const a=document.createElement('a');
+  function rerender(){im.src=renderPostcard(L.s.value,Rr.s.value,vt.i.value,titlL.i.value,titlR.i.value,+fade.value).toDataURL('image/jpeg',0.9);}
+  L.s.onchange=Rr.s.onchange=rerender;vt.i.oninput=rerender;titlL.i.oninput=rerender;titlR.i.oninput=rerender;fade.oninput=rerender;
+  dl.onclick=()=>{const cv=renderPostcard(L.s.value,Rr.s.value,vt.i.value,titlL.i.value,titlR.i.value,+fade.value);const a=document.createElement('a');
     a.href=cv.toDataURL('image/png');a.download='看笑明信片_'+META.monthFile+'.png';document.body.appendChild(a);a.click();a.remove();};
   const foot=document.createElement('div');foot.style.cssText='padding:9px 16px;text-align:right;border-top:1px solid #f0e0cc;';
   const cl=document.createElement('button');cl.textContent='關閉';cl.style.cssText='all:unset;cursor:pointer;font-weight:700;font-size:14px;color:#C8470A;padding:6px 14px;';
