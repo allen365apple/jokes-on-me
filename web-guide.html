@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>網頁製作須知｜看我笑話工具箱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+html { scrollbar-color: #ffd0a8 #fff8f2; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Noto Sans TC', -apple-system, sans-serif;
+  color: #2b2118;
+  line-height: 1.8;
+  background:
+    radial-gradient(1100px 600px at 85% -10%, #ffd9b0 0%, rgba(255,217,176,0) 60%),
+    radial-gradient(900px 550px at -10% 35%, #ffe9d6 0%, rgba(255,233,214,0) 55%),
+    radial-gradient(800px 500px at 70% 110%, #ffe3c4 0%, rgba(255,227,196,0) 55%),
+    linear-gradient(180deg, #ffffff 0%, #fff7f0 55%, #fff1e3 100%);
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 8vh 28px 64px; }
+.eyebrow { font-size: 15px; font-weight: 700; letter-spacing: 6px; color: #ff7a29; margin-bottom: 14px; }
+h1 {
+  margin: 0;
+  font-size: clamp(36px, 7vw, 60px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.15;
+  background: linear-gradient(115deg, #ff9500 5%, #ff5e3a 55%, #ff9d5c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sub { margin-top: 14px; font-size: 17px; color: #9a826e; }
+
+.download {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  margin-top: 5vh;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ffe2c9;
+  border-radius: 20px;
+  padding: 22px 26px;
+  box-shadow: 0 10px 30px rgba(255, 122, 41, 0.10);
+}
+.download .dl-text { flex: 1; min-width: 200px; }
+.download .dl-text b { font-size: 17px; }
+.download .dl-text p { margin: 4px 0 0; font-size: 14px; color: #9a826e; }
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ffb35c 0%, #ff6b35 100%);
+  padding: 12px 24px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.35);
+  transition: transform .2s ease;
+}
+.dl-btn:hover { transform: translateY(-2px); }
+.dl-btn svg { width: 18px; height: 18px; }
+
+.tldr {
+  margin-top: 5vh;
+  background: linear-gradient(135deg, #fff3e6 0%, #ffe9d6 100%);
+  border: 1px solid #ffd9b0;
+  border-radius: 22px;
+  padding: 28px 30px 26px;
+}
+.tldr h2 { margin: 0 0 6px; }
+.tldr ol { margin: 16px 0 0; padding-left: 22px; }
+.tldr li { margin-bottom: 14px; }
+.tldr li b { color: #d2541b; }
+
+h2 { font-size: clamp(22px, 4vw, 28px); font-weight: 900; margin: 6vh 0 0; letter-spacing: 1px; }
+.sec { margin-top: 18px; }
+.sec h3 { font-size: 18px; font-weight: 700; margin: 24px 0 6px; color: #5a4636; }
+.sec p { margin: 0 0 10px; color: #4a3a2c; }
+.sec ul { margin: 8px 0 0; padding-left: 22px; }
+.sec li { margin-bottom: 8px; color: #4a3a2c; }
+.sec li b { color: #d2541b; }
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: .9em;
+  background: rgba(255, 122, 41, 0.12);
+  color: #c0451a;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; margin-top: 18px; }
+.demo {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ffe2c9;
+  border-radius: 16px;
+  padding: 18px 20px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.demo:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(255, 110, 30, 0.16); }
+.demo b { font-size: 16px; }
+.demo p { margin: 6px 0 0; font-size: 13.5px; color: #9a826e; line-height: 1.7; }
+.demo .open { display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700; color: #ff6320; }
+
+.quote {
+  margin: 6vh 0 0;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 4px solid #ff7a29;
+  border-radius: 0 14px 14px 0;
+  padding: 20px 24px;
+  font-size: 17px;
+  color: #5a4636;
+}
+.back { display: inline-block; margin-top: 6vh; font-size: 15px; font-weight: 700; color: #ff6320; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+footer { margin-top: 8vh; font-size: 13px; letter-spacing: 2px; color: #c4ab92; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">看我笑話工具箱</div>
+  <h1>網頁製作須知</h1>
+  <div class="sub">做現場喜劇投影網頁要注意的事 —— 這頁是重點摘要，完整版請下載下方檔案。</div>
+
+  <div class="download">
+    <div class="dl-text">
+      <b>完整版（Markdown 檔）</b>
+      <p>含所有細節與實戰經驗，可下載收藏或丟給 AI 當作製作規範。</p>
+    </div>
+    <a class="dl-btn" href="web-guide.md" download="看我笑話網頁製作 Learning.md">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+      下載完整 MD
+    </a>
+  </div>
+
+  <div class="tldr">
+    <h2>最重要的三件事</h2>
+    <p style="margin:0;color:#9a826e;font-size:15px">做任何一個現場喜劇網頁，這三點都是硬性需求，不可省略：</p>
+    <ol>
+      <li><b>上下留白、可捲動</b><br>內容上下都留空白（上方約 <code>45vh</code>、下方至少 <code>100vh</code>），讓操作者用滾輪把重點喬到投影幕上最合適的高度。</li>
+      <li><b>全螢幕功能與快捷鍵</b><br>要有全螢幕按鈕，且所有操作都綁鍵盤快捷鍵（例如 F=全螢幕、空白鍵=下一個），因為現場常靠鍵盤盲操。</li>
+      <li><b>現場可調的參數控制台</b><br>把可能要微調的參數做成網頁上的控制台＋自動記住，現場拉一拉就好，不用每次回來改程式碼。</li>
+    </ol>
+  </div>
+
+  <h2>看看現成的範例</h2>
+  <div class="sec"><p>這些都是已經做好、正在用的網頁，打開來操作一遍最快：</p></div>
+  <div class="demos">
+    <a class="demo" href="index.html"><b>看我笑話工具箱</b><p>所有工具的首頁入口。</p><span class="open">前往 →</span></a>
+    <a class="demo" href="mahjong-draw.html"><b>看我摸牌</b><p>最完整的範例，三大重點全有：留白可捲動、F／空白鍵／Enter 快捷鍵、藏在小字裡的控制台。</p><span class="open">開啟 →</span></a>
+    <a class="demo" href="comment-lottery.html"><b>現場抽籤機</b><p>串接 Google 表單收觀眾留言、現場隨機抽出，含全螢幕與黑底深色捲軸。</p><span class="open">開啟 →</span></a>
+  </div>
+
+  <h2>為什麼要這樣做</h2>
+  <div class="sec">
+    <p>我們做的不是一般網站，而是<b>現場演出的投影道具</b>：在昏暗的場地用投影機打在布幕上、操作的人在側台用延伸螢幕常看不到滑鼠、後排觀眾視線會被擋、演出中沒時間 debug。所以原則是：<b>大、簡單、靠鍵盤、容錯、可現場微調</b>。</p>
+  </div>
+
+  <h2>細節重點</h2>
+
+  <div class="sec">
+    <h3>1. 畫面佈局與彈性</h3>
+    <ul>
+      <li>內容別塞滿，用 <code>vh</code> 留白；下方留白要夠大（至少 <code>100vh</code>），捲到底是乾淨的黑、捲到頂才是內容。</li>
+      <li>重點文字用 <code>vw</code>／<code>vh</code> 定大小（如 <code>min(8vw, 13vh)</code>），換投影機解析度時字會自動縮放、不爆版。</li>
+    </ul>
+
+    <h3>2. 全螢幕與快捷鍵</h3>
+    <ul>
+      <li>要有全螢幕<b>按鈕</b>（用 Fullscreen API，比 F11 穩）。全螢幕只能由使用者點擊／按鍵觸發，不能自動全螢幕。</li>
+      <li><b>iPhone 的 Safari 不支援</b>網頁全螢幕 → 偵測不到時要把按鈕自動藏起來。</li>
+      <li>每個按鈕都要有對應快捷鍵。按鈕是彩排用的，<b>快捷鍵才是正式演出主力</b>。</li>
+      <li>細節：用 <code>!e.repeat</code> 擋按住連發、空白鍵要 <code>preventDefault()</code> 擋捲動、控制台開啟時快捷鍵要暫停。</li>
+      <li>快捷鍵選<b>單一字母或大鍵</b>（空白／Enter／F），別用 Ctrl 組合（會被瀏覽器搶、跨系統行為不一）。</li>
+    </ul>
+
+    <h3>3. 視覺設計</h3>
+    <ul>
+      <li>背景<b>用黑色</b>：投影幕上黑＝看不見，畫面只剩要給觀眾看的大字。文字用亮色（白、象牙白、亮黃）。</li>
+      <li>其他顏色可以，但以<b>簡潔、不干擾</b>為原則；投影機偏暗偏黃，要用高彩度高對比的顏色。</li>
+      <li><b>控制台很重要</b>：把要微調的參數做成面板＋<code>localStorage</code> 自動記住；可藏在小字裡點開，觀眾看不到、你隨時叫得出來。</li>
+    </ul>
+
+    <h3>其他實戰經驗</h3>
+    <ul>
+      <li><b>單一 HTML 檔、能離線</b>：CSS／JS 都寫在裡面，雙擊就開；現場常沒網路，線上字體一定要設系統字體備援。</li>
+      <li><b>防呆</b>：自動排除類的邏輯要想「條件太嚴格會不會卡死」並寫退路。</li>
+      <li><b>手機也要測</b>：排版自動縮、觸控優化。</li>
+      <li><b>演出前清單</b>：用正式設備＋投影機測、接延伸螢幕、走到最後一排看字、閉眼按快捷鍵、測捲動、斷網測、確認控制台設定有記住。</li>
+      <li><b>發佈前檢查敏感資訊</b>：API 金鑰、客戶名稱、內部連結、員工真名都不要推上公開 repo。</li>
+    </ul>
+  </div>
+
+  <div class="quote">
+    一句話總結：<b>「暗場裡，一個看不到滑鼠的人，要能只靠鍵盤，把一行超大的字穩穩打在布幕上。」</b><br>
+    上下留白、黑底大字、全鍵盤操作、現場可調的控制台 —— 全都是為了這件事。
+  </div>
+
+  <a class="back" href="index.html">← 回到看我笑話工具箱</a>
+
+  <footer>看我笑話工作室・JOKES ON ME</footer>
+</div>
+</body>
+</html>
