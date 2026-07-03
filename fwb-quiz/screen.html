@@ -9,9 +9,25 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
-  .fullscreen-link{position:fixed; top:14px; right:20px; z-index:9; font-size:12px;
+  .fullscreen-link{position:fixed; top:14px; right:64px; z-index:9; font-size:12px;
     color:var(--muted); text-decoration:none; border:1px solid #5a534e; border-radius:99px; padding:4px 12px}
   .fullscreen-link:hover{color:var(--ink)}
+  /* 隱藏式控制台按鈕：刻意低調，觀眾不會注意到 */
+  .ctrl-btn{position:fixed; top:12px; right:20px; z-index:9; width:30px; height:30px;
+    border-radius:50%; background:transparent; border:1px solid #4a4540; color:#6d665f; font-size:14px}
+  .ctrl-btn:hover{color:var(--ink); border-color:var(--muted)}
+  .ctrl-overlay{position:fixed; inset:0; background:rgba(20,17,15,.78); z-index:50;
+    display:flex; align-items:center; justify-content:center}
+  .ctrl-panel{background:var(--panel2); border:1px solid #55504b; border-radius:16px;
+    padding:24px; width:min(500px,92vw); box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  .ctrl-panel h3{font-size:13px; letter-spacing:.2em; color:var(--muted); margin-bottom:14px}
+  .ctrl-panel .status{font-size:16px; font-weight:900; margin-bottom:16px}
+  .ctrl-panel .status b{color:var(--gold)}
+  .ctrl-panel .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
+  .ctrl-panel .hint{font-size:12px; color:var(--muted); line-height:1.8; border-top:1px solid #55504b; padding-top:12px}
+  .ctrl-panel .hint kbd{background:var(--bg2); border:1px solid #5a534e; border-radius:6px; padding:1px 8px; font-family:inherit; font-weight:800; color:var(--ink)}
+  .start-cta{margin-top:6px; display:flex; flex-direction:column; align-items:center; gap:8px}
+  .start-cta .keyhint{font-size:12px; color:var(--muted)}
 </style>
 </head>
 <body>
@@ -26,6 +42,32 @@
   </div>
 </div>
 <a href="#" class="fullscreen-link" id="fsLink">進入全螢幕</a>
+<button class="ctrl-btn hidden" id="ctrlBtn" title="控制台">⚙</button>
+<div class="ctrl-overlay hidden" id="ctrlOverlay">
+  <div class="ctrl-panel">
+    <h3>控制台（觀眾看不到這裡）</h3>
+    <div class="status" id="ovStatus">—</div>
+    <div class="row">
+      <div class="seg" id="ovSeg">
+        <button data-m="auto">同步：自動</button>
+        <button data-m="force_realtime">強制 Realtime</button>
+        <button data-m="force_polling">強制輪詢</button>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn-ghost" id="ovSkip">緊急略過本階段 ▸</button>
+      <button class="btn-ghost" id="ovReset">重置整場（清空玩家）</button>
+      <a class="btn-ghost" id="ovEditor" target="_blank" style="text-decoration:none">題目編輯（開新分頁）</a>
+    </div>
+    <div class="hint">
+      快捷鍵：<kbd>Enter</kbd> 開始遊戲／緊急略過（最終排行榜時＝重置再玩一次）・
+      <kbd>F</kbd> 切換全螢幕・<kbd>Esc</kbd> 關閉此面板
+    </div>
+    <div class="row" style="margin:14px 0 0; justify-content:flex-end">
+      <button class="btn-gold" id="ovClose">關閉</button>
+    </div>
+  </div>
+</div>
 <div class="conn-dot" id="connDot"></div>
 
 <script type="module">
@@ -33,9 +75,12 @@ import { CONFIG, rpc, sb, clock, createSync, normalizeState,
          SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js';
 
 const body = $('#body');
+// 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
+const KEY = new URLSearchParams(location.search).get('key') || '';
 const S = {
   session: null, question: null, result: null, rankings: null,
   lobby: null, renderedKey: '', lastJoin: '',
+  advancing: false, finalAt: 0,
 };
 let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
 
@@ -65,9 +110,93 @@ async function boot() {
     onSessionState(s);
     sync.start();
     watchPlayers(s.sessionId); // 大廳期間玩家加入即時推播
+    if (KEY) initController();
   } catch (e) {
     body.innerHTML = `<div class="qshow"><h2>連線失敗：${esc(e.message)}</h2></div>`;
   }
+}
+
+// ═══ 控制模式（大螢幕即駕駛）═══════════════════════════════
+function initController() {
+  $('#ctrlBtn').classList.remove('hidden');
+  $('#ovEditor').href = 'host.html?key=' + encodeURIComponent(KEY);
+  // 節奏驅動：階段時間到自動推進
+  setInterval(() => {
+    const s = S.session;
+    if (!s || S.advancing) return;
+    let target = null;
+    if (s.phase === 'question_show' || s.phase === 'question_result') target = s.phaseUntil;
+    if (s.phase === 'question_open') target = s.deadline;
+    if (target && clock.now() >= target + 80) advance();
+  }, 200);
+  // 螢幕保持喚醒
+  navigator.wakeLock?.request('screen').catch(() => {});
+  // 快捷鍵
+  document.addEventListener('keydown', e => {
+    if (e.target instanceof Element && e.target.matches('input,textarea,select')) return;
+    if (e.key === 'f' || e.key === 'F') { toggleFS(); return; }
+    if (e.key === 'Escape') { $('#ctrlOverlay').classList.add('hidden'); return; }
+    if (e.key !== 'Enter') return;
+    const s = S.session; if (!s) return;
+    if (s.phase === 'final_ranking') {
+      if (Date.now() - S.finalAt > 3000) resetGame(); // 剛進結算 3 秒內防誤觸
+    } else advance();
+  });
+  // ⚙ 控制台
+  $('#ctrlBtn').addEventListener('click', () => { $('#ctrlOverlay').classList.remove('hidden'); updateOverlay(); });
+  $('#ovClose').addEventListener('click', () => $('#ctrlOverlay').classList.add('hidden'));
+  $('#ovSkip').addEventListener('click', () => { advance(); $('#ctrlOverlay').classList.add('hidden'); });
+  $('#ovReset').addEventListener('click', () => {
+    if (confirm('確定重置？會清空所有玩家與作答紀錄，回到大廳。')) { resetGame(); $('#ctrlOverlay').classList.add('hidden'); }
+  });
+  $('#ovSeg').querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
+    try {
+      const st = normalizeState(await rpc('host_set_sync_mode',
+        { p_code: CONFIG.joinCode, p_secret: KEY, p_mode: b.dataset.m }));
+      onSessionState(st);
+    } catch (e) { alert(e.message); }
+  }));
+}
+async function advance() {
+  if (!KEY || S.advancing) return;
+  S.advancing = true;
+  try {
+    let st;
+    try {
+      st = await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY,
+        p_from_phase: S.session.phase, p_from_qindex: S.session.qindex });
+    } catch (e) {
+      // 資料庫尚未套用新版 host_advance 時退回舊簽名
+      if (/host_advance/.test(e.message)) st = await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY });
+      else throw e;
+    }
+    onSessionState(normalizeState(st));
+  } catch (e) { console.warn('advance 失敗', e.message); }
+  finally { S.advancing = false; }
+}
+async function resetGame() {
+  if (!KEY) return;
+  try {
+    const st = normalizeState(await rpc('host_reset', { p_code: CONFIG.joinCode, p_secret: KEY }));
+    S.question = null; S.result = null; S.rankings = null; S.renderedKey = ''; S.lastJoin = '';
+    onSessionState(st);
+  } catch (e) { alert('重置失敗：' + e.message); }
+}
+function updateOverlay() {
+  const s = S.session; if (!s) return;
+  const names = { lobby: '大廳', question_show: '讀題中', question_open: '作答中',
+                  question_result: '公布答案', final_ranking: '最終排行榜' };
+  $('#ovStatus').innerHTML =
+    `目前：<b>${names[s.phase] || s.phase}</b>` +
+    (['question_show','question_open','question_result'].includes(s.phase)
+      ? `・第 <b>${s.qindex + 1}</b> / ${s.questionCount ?? '–'} 題・已作答 <b>${s.answeredCount ?? 0}</b>` : '') +
+    `・全場 <b>${s.playerCount ?? '–'}</b> 人`;
+  document.querySelectorAll('#ovSeg button').forEach(b =>
+    b.classList.toggle('on', b.dataset.m === (s.syncMode || 'auto')));
+}
+function toggleFS() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen?.();
 }
 
 function watchPlayers(sessionId) {
@@ -79,7 +208,9 @@ function watchPlayers(sessionId) {
 }
 
 async function onSessionState(s) {
+  if (s.phase === 'final_ranking' && S.session?.phase !== 'final_ranking') S.finalAt = Date.now();
   S.session = s;
+  if (KEY && !$('#ctrlOverlay').classList.contains('hidden')) updateOverlay();
   if (['question_show', 'question_open', 'question_result'].includes(s.phase)) {
     if (!S.question || S.question.index !== s.qindex) {
       S.question = null; S.result = null;
@@ -128,6 +259,10 @@ function renderLobbyShell() {
       <div class="qr" id="qrBox"></div>
       <div class="joincode">或輸入代碼<b>${esc(CONFIG.joinCode)}</b></div>
       <div class="shorturl">allen365apple.github.io/jokes-on-me/fwb-quiz/</div>
+      ${KEY ? `<div class="start-cta">
+        <button class="btn-gold pulse" id="btnStartScreen">開始遊戲</button>
+        <span class="keyhint">或按 Enter 開始</span>
+      </div>` : ''}
     </div>
     <div class="lobby-right">
       <div class="lobbystats">
@@ -138,6 +273,7 @@ function renderLobbyShell() {
       <div class="tgrid" id="lbGrid"></div>
     </div></div>`;
   drawQR();
+  $('#btnStartScreen')?.addEventListener('click', () => advance());
   refreshLobby();
   lobbyTimer = setInterval(refreshLobby, 2000); // 輪詢保底，Realtime insert 另外即時觸發
 }

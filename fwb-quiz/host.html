@@ -87,8 +87,16 @@ async function advance() {
   if (S.advancing) return;
   S.advancing = true;
   try {
-    const st = normalizeState(await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY }));
-    S.session = st; render();
+    let st;
+    try {
+      // 聲明目前所在階段，若已被大螢幕（控制模式）推進過則伺服器不重複動作
+      st = await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY,
+        p_from_phase: S.session.phase, p_from_qindex: S.session.qindex });
+    } catch (e) {
+      if (/host_advance/.test(e.message)) st = await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY });
+      else throw e;
+    }
+    S.session = normalizeState(st); render();
   } catch (e) { console.warn('advance 失敗', e.message); }
   finally { S.advancing = false; }
 }
