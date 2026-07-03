@@ -10,3 +10,9 @@ member-only-content/*
 
 # 早期放在根目錄的舊預覽檔（已改放 member-only-content/），不再追蹤
 /member-only-content-preview*.html
+
+# fwb-quiz「績效考核」：含題目正解與主持人金鑰的檔案，禁止公開
+fwb-quiz/supabase-setup.sql
+fwb-quiz/supabase-functions.sql
+fwb-quiz/live-quiz-spec.md
+fwb-quiz/.claude/

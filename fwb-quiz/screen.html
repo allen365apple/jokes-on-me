@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>績效考核・大螢幕｜支薪好友《向上管理》</title>
+<link rel="stylesheet" href="shared.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<style>
+  body{overflow:hidden}
+  .fullscreen-link{position:fixed; top:14px; right:20px; z-index:9; font-size:12px;
+    color:var(--muted); text-decoration:none; border:1px solid #5a534e; border-radius:99px; padding:4px 12px}
+  .fullscreen-link:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="stage-head">
+    <span class="logo">支薪好友《向上管理》</span>
+    <span class="sub">績效考核</span>
+    <span class="qtag" id="qtag"></span>
+  </div>
+  <div class="stage-body" id="body">
+    <div class="qshow"><h2>連線中⋯</h2></div>
+  </div>
+</div>
+<a href="#" class="fullscreen-link" id="fsLink">進入全螢幕</a>
+<div class="conn-dot" id="connDot"></div>
+
+<script type="module">
+import { CONFIG, rpc, sb, clock, createSync, normalizeState,
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js';
+
+const body = $('#body');
+const S = {
+  session: null, question: null, result: null, rankings: null,
+  lobby: null, renderedKey: '', lastJoin: '',
+};
+let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
+
+// 觀眾加入網址（QR code 指向這裡）
+const joinUrl = new URL('index.html?code=' + encodeURIComponent(CONFIG.joinCode), location.href).href;
+
+// 全螢幕（iPhone Safari 不支援時自動隱藏，跟工具箱其他企劃同慣例）
+if (document.documentElement.requestFullscreen) {
+  $('#fsLink').addEventListener('click', e => { e.preventDefault(); document.documentElement.requestFullscreen(); });
+  document.addEventListener('fullscreenchange', () =>
+    $('#fsLink').style.display = document.fullscreenElement ? 'none' : '');
+} else { $('#fsLink').style.display = 'none'; }
+
+async function boot() {
+  try {
+    await clock.sync();
+    const s = normalizeState(await rpc('get_session_by_code', { p_code: CONFIG.joinCode }));
+    sync = createSync({
+      sessionId: s.sessionId,
+      onState: onSessionState,
+      onConn: c => {
+        const el = $('#connDot');
+        el.textContent = c.realtime ? '● realtime' : '● polling';
+        el.classList.toggle('degraded', c.degraded);
+      },
+    });
+    onSessionState(s);
+    sync.start();
+    watchPlayers(s.sessionId); // 大廳期間玩家加入即時推播
+  } catch (e) {
+    body.innerHTML = `<div class="qshow"><h2>連線失敗：${esc(e.message)}</h2></div>`;
+  }
+}
+
+function watchPlayers(sessionId) {
+  playersChannel = sb.channel('players-' + sessionId)
+    .on('postgres_changes',
+      { event: 'INSERT', schema: 'public', table: 'players', filter: 'session_id=eq.' + sessionId },
+      () => { if (S.session?.phase === 'lobby') refreshLobby(); })
+    .subscribe();
+}
+
+async function onSessionState(s) {
+  S.session = s;
+  if (['question_show', 'question_open', 'question_result'].includes(s.phase)) {
+    if (!S.question || S.question.index !== s.qindex) {
+      S.question = null; S.result = null;
+      try { S.question = await rpc('get_current_question', { p_session_id: s.sessionId }); }
+      catch (e) { console.warn(e.message); }
+    }
+  }
+  if (s.phase === 'question_result' && !S.result) {
+    try {
+      [S.result, S.rankings] = await Promise.all([
+        rpc('get_question_result', { p_session_id: s.sessionId }),
+        rpc('get_rankings', { p_session_id: s.sessionId }),
+      ]);
+    } catch (e) { console.warn(e.message); }
+  }
+  if (s.phase === 'final_ranking' && !S.rankings?.final) {
+    try { S.rankings = await rpc('get_rankings', { p_session_id: s.sessionId }); S.rankings.final = true; }
+    catch (e) { console.warn(e.message); }
+  }
+  render();
+}
+
+function render() {
+  const s = S.session; if (!s) return;
+  $('#qtag').textContent =
+    ['question_show','question_open','question_result'].includes(s.phase)
+      ? `第 ${s.qindex + 1} 題 / ${s.questionCount ?? '–'}` : '';
+  const key = [s.phase, s.qindex, !!S.question, !!S.result, !!S.rankings].join('|');
+  const changed = key !== S.renderedKey;
+  S.renderedKey = key;
+  if (changed) { clearInterval(uiTimer); clearInterval(lobbyTimer); }
+
+  if (s.phase === 'lobby') { if (changed) renderLobbyShell(); return; }
+  if (!changed) { if (s.phase === 'question_open') updateAnswered(); return; }
+  if (s.phase === 'question_show') return renderShow();
+  if (s.phase === 'question_open') return renderOpen();
+  if (s.phase === 'question_result') return renderResult();
+  if (s.phase === 'final_ranking') return renderFinal();
+}
+
+// ── 大廳 ────────────────────────────────────────────────────
+function renderLobbyShell() {
+  body.innerHTML = `<div class="lobby">
+    <div class="lobby-left">
+      <div class="scanhint">掃碼加入遊戲</div>
+      <div class="qr" id="qrBox"></div>
+      <div class="joincode">或輸入代碼<b>${esc(CONFIG.joinCode)}</b></div>
+      <div class="shorturl">allen365apple.github.io/jokes-on-me/fwb-quiz/</div>
+    </div>
+    <div class="lobby-right">
+      <div class="lobbystats">
+        <div class="bignum" id="lbTotal">0<small>人已加入</small></div>
+        <div class="readynum" id="lbReady">0<small>/ ${TABLE_IDS.length} 桌到齊</small></div>
+      </div>
+      <div class="ticker" id="lbTicker"></div>
+      <div class="tgrid" id="lbGrid"></div>
+    </div></div>`;
+  drawQR();
+  refreshLobby();
+  lobbyTimer = setInterval(refreshLobby, 2000); // 輪詢保底，Realtime insert 另外即時觸發
+}
+function drawQR() {
+  const qr = qrcode(0, 'M');
+  qr.addData(joinUrl);
+  qr.make();
+  $('#qrBox').innerHTML = qr.createImgTag(8, 8);
+}
+async function refreshLobby() {
+  try { S.lobby = await rpc('get_lobby_state', { p_session_id: S.session.sessionId }); }
+  catch (e) { return; }
+  const lb = S.lobby, byTable = {};
+  (lb.tables || []).forEach(t => byTable[t.table] = t);
+  const ready = TABLE_IDS.filter(t => (byTable[t]?.count || 0) >= lb.threshold).length;
+  if (!$('#lbGrid')) return;
+  $('#lbTotal').innerHTML = `${lb.total}<small>人已加入</small>`;
+  $('#lbReady').innerHTML = `${ready}<small>/ ${TABLE_IDS.length} 桌到齊</small>`;
+  $('#lbGrid').innerHTML = TABLE_IDS.map(t => {
+    const n = byTable[t]?.count || 0, ok = n >= lb.threshold;
+    return `<div class="tchip${ok ? ' ready' : ''}"><b>${t}</b><span>${ok ? '✓ ' : ''}${n} 人</span></div>`;
+  }).join('');
+  if (lb.latest) {
+    const tag = lb.latest.name + '|' + lb.latest.table;
+    if (tag !== S.lastJoin) {
+      S.lastJoin = tag;
+      $('#lbTicker').innerHTML = `<span>🎉 ${esc(lb.latest.name)}（${esc(lb.latest.table)} 桌）加入了！</span>`;
+    }
+  }
+}
+
+// ── 讀題 / 作答 ─────────────────────────────────────────────
+function renderShow() {
+  body.innerHTML = `<div class="qshow"><h2>${S.question ? esc(S.question.text) : '⋯'}</h2></div>`;
+}
+function renderOpen() {
+  const q = S.question, s = S.session;
+  if (!q) { body.innerHTML = `<div class="qshow"><h2>⋯</h2></div>`; return; }
+  const total = (q.time_limit_seconds || 15) * 1000;
+  body.innerHTML = `<div class="qopen">
+    <div class="qtop">
+      <div class="qtext">${esc(q.text)}</div>
+      <div class="countrow">
+        <div class="timerbig" id="stTimer">${q.time_limit_seconds}</div>
+        <div class="track"><div class="fill" id="stFill" style="width:100%"></div></div>
+        <div class="answered"><b id="stAns">${s.answeredCount ?? 0}</b> / <span id="stTotal">${s.playerCount ?? '–'}</span> 已作答</div>
+      </div>
+    </div>
+    <div class="opts">${q.options.map((o, i) =>
+      `<div class="opt ${LETTERS[i]}"><span class="shape">${SHAPES[i]}</span><span>${esc(o)}</span></div>`).join('')}
+    </div></div>`;
+  uiTimer = setInterval(() => {
+    const left = Math.max(0, (s.deadline || 0) - clock.now());
+    const sec = Math.ceil(left / 1000);
+    const tm = $('#stTimer'), f = $('#stFill');
+    if (tm) { tm.textContent = sec; tm.classList.toggle('hot', sec <= 5); }
+    if (f) f.style.width = (left / total * 100) + '%';
+  }, 100);
+}
+function updateAnswered() {
+  const s = S.session;
+  const a = $('#stAns'), t = $('#stTotal');
+  if (a && s.answeredCount != null) a.textContent = s.answeredCount;
+  if (t && s.playerCount != null) t.textContent = s.playerCount;
+}
+
+// ── 公布答案 ────────────────────────────────────────────────
+function renderResult() {
+  const q = S.question, r = S.result, s = S.session;
+  if (!q || !r) { body.innerHTML = `<div class="qshow"><h2>統計中⋯</h2></div>`; return; }
+  const counts = r.counts || [0, 0, 0, 0];
+  const max = Math.max(1, ...counts);
+  const top = (S.rankings?.individuals || []).slice(0, 5);
+  const isLast = s.qindex + 1 >= (s.questionCount || 0);
+  body.innerHTML = `<div class="resultgrid">
+    <div class="left">
+      <div class="qtext">${esc(q.text)}</div>
+      <div class="opts">${q.options.map((o, i) => {
+        const win = i === r.correct_index;
+        return `<div class="opt ${LETTERS[i]} ${win ? 'win' : 'dim'}">
+          <span class="shape">${SHAPES[i]}</span><span>${esc(o)}</span>
+          ${win ? `<span class="tick">✔</span>` : ''}
+          <span class="bar"><i style="width:${Math.round(counts[i] / max * 90)}px"></i><em>${counts[i]}</em></span></div>`;
+      }).join('')}</div>
+    </div>
+    <div class="top5"><h3>個人榜 TOP 5</h3><ol>${top.map((p, i) =>
+      `<li><span class="rk">${i + 1}</span>${esc(p.name)}<span class="pts">${p.correct} 題・${secs(p.total_ms)}s</span></li>`).join('')}
+    </ol></div></div>
+    <div class="nextin">
+      <div class="track"><div class="fill" id="resFill" style="width:100%"></div></div>
+      <span>${isLast ? `<b id="nextIn">7</b> 秒後公布最終排名 🏆` : `<b id="nextIn">7</b> 秒後進入下一題`}</span></div>`;
+  const total = 7000;
+  uiTimer = setInterval(() => {
+    const left = Math.max(0, (s.phaseUntil || 0) - clock.now());
+    const el = $('#nextIn'), f = $('#resFill');
+    if (el) el.textContent = Math.ceil(left / 1000);
+    if (f) f.style.width = Math.min(100, left / total * 100) + '%';
+  }, 100);
+}
+
+// ── 最終雙排行榜 ────────────────────────────────────────────
+function renderFinal() {
+  const ind = (S.rankings?.individuals || []).slice(0, 6);
+  const tbs = (S.rankings?.tables || []).slice(0, 6);
+  body.innerHTML = `<div class="finalsplit">
+    <div class="fcol">
+      <div class="final-title">🏆 個人績效 MVP</div>
+      <div class="rankhead"><span class="rh-spacer"></span><span class="rh-fill"></span>
+        <span class="col">答對題數</span><span class="col">使用秒數</span></div>
+      <div class="ranklist">${ind.map((p, i) => `
+        <div class="row${i === 0 ? ' first' : ''}" style="animation-delay:${(i * .12).toFixed(2)}s">
+          <span class="rk">${i + 1}</span><span class="who">${esc(p.name)}<small>${esc(p.table)} 桌</small></span>
+          <span class="col">${p.correct} 題</span><span class="col">${secs(p.total_ms)}s</span></div>`).join('')}</div>
+    </div>
+    <div class="fdivider"></div>
+    <div class="fcol">
+      <div class="final-title">🍻 團體績效 MVP</div>
+      <div class="rankhead"><span class="rh-spacer"></span><span class="rh-fill"></span>
+        <span class="col">平均答對題數</span><span class="col">平均秒數</span></div>
+      <div class="ranklist">${tbs.map((t, i) => `
+        <div class="row${i === 0 ? ' first' : ''}" style="animation-delay:${(i * .12).toFixed(2)}s">
+          <span class="rk">${i + 1}</span><span class="who">${esc(t.table)} 桌<small>${t.members} 人</small></span>
+          <span class="col">${t.avg_correct} 題</span><span class="col">${secs(t.avg_ms)}s</span></div>`).join('')}</div>
+    </div></div>`;
+}
+
+boot();
+</script>
+</body>
+</html>

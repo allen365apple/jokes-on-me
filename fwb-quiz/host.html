@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>績效考核・主持人｜支薪好友《向上管理》</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="host">
+  <h1><span class="logo">FWB.manzai</span>「績效考核」主持人控制台</h1>
+  <p class="subtitle">此頁是整場的節奏驅動者——遊戲進行中請全程保持開啟、螢幕不要鎖定。</p>
+  <div id="body"><div class="hpanel"><h2>連線中⋯</h2></div></div>
+</div>
+<div class="conn-dot" id="connDot"></div>
+
+<script type="module">
+import { CONFIG, rpc, clock, createSync, normalizeState,
+         TABLE_IDS, LETTERS, $, esc } from './shared.js';
+
+const KEY = new URLSearchParams(location.search).get('key') || '';
+const body = $('#body');
+const S = {
+  session: null, lobby: null, questions: null,
+  advancing: false, renderedKey: '', editorOpen: false, editorDraft: null,
+};
+let sync = null, lobbyTimer = null, tickTimer = null, wakeLock = null;
+
+const PHASE_NAME = {
+  lobby: '大廳開放中', question_show: '讀題中', question_open: '作答中',
+  question_result: '公布答案', final_ranking: '最終排行榜（遊戲結束）',
+};
+
+async function boot() {
+  if (!KEY) { body.innerHTML = `<div class="hpanel"><h2>缺少金鑰</h2><p style="font-size:13px">網址需帶 ?key=主持人金鑰</p></div>`; return; }
+  try {
+    await clock.sync();
+    // 用讀題目這支驗證金鑰（金鑰錯會直接丟錯誤）
+    S.questions = await rpc('host_get_questions', { p_code: CONFIG.joinCode, p_secret: KEY });
+    const s = normalizeState(await rpc('get_session_by_code', { p_code: CONFIG.joinCode }));
+    sync = createSync({
+      sessionId: s.sessionId,
+      onState: st => { S.session = st; render(); },
+      onConn: c => {
+        const el = $('#connDot');
+        el.textContent = c.realtime ? '● realtime' : '● polling';
+        el.classList.toggle('degraded', c.degraded);
+      },
+    });
+    S.session = s;
+    render();
+    sync.start();
+    startConductor();
+    keepAwake();
+    lobbyTimer = setInterval(refreshLobby, 2000);
+    refreshLobby();
+  } catch (e) {
+    body.innerHTML = `<div class="hpanel"><h2 style="color:var(--bad)">無法進入控制台</h2>
+      <p style="font-size:13px;margin-top:8px">${esc(e.message)}</p></div>`;
+  }
+}
+
+// 螢幕保持喚醒（支援的裝置上防止手機鎖屏中斷流程）
+async function keepAwake() {
+  try {
+    wakeLock = await navigator.wakeLock?.request('screen');
+    document.addEventListener('visibilitychange', async () => {
+      if (!document.hidden && wakeLock?.released) wakeLock = await navigator.wakeLock?.request('screen');
+    });
+  } catch (e) { /* 不支援就算了 */ }
+}
+
+// ── 節奏驅動者：時間到就呼叫 host_advance 推進全場 ───────────
+function startConductor() {
+  tickTimer = setInterval(async () => {
+    const s = S.session;
+    if (!s || S.advancing) return;
+    let target = null;
+    if (s.phase === 'question_show' || s.phase === 'question_result') target = s.phaseUntil;
+    if (s.phase === 'question_open') target = s.deadline;
+    if (target && clock.now() >= target + 80) await advance(); // +80ms 緩衝
+    updateCountdown();
+  }, 200);
+}
+async function advance() {
+  if (S.advancing) return;
+  S.advancing = true;
+  try {
+    const st = normalizeState(await rpc('host_advance', { p_code: CONFIG.joinCode, p_secret: KEY }));
+    S.session = st; render();
+  } catch (e) { console.warn('advance 失敗', e.message); }
+  finally { S.advancing = false; }
+}
+
+async function refreshLobby() {
+  if (!S.session) return;
+  try { S.lobby = await rpc('get_lobby_state', { p_session_id: S.session.sessionId }); renderLobbyBits(); }
+  catch (e) { /* 下次再試 */ }
+}
+
+// ── 畫面 ────────────────────────────────────────────────────
+function render() {
+  const s = S.session; if (!s) return;
+  const key = [s.phase, s.qindex, S.editorOpen].join('|');
+  if (key === S.renderedKey) { updateCountdown(); renderLobbyBits(); return; }
+  S.renderedKey = key;
+
+  const inLobby = s.phase === 'lobby';
+  const running = ['question_show','question_open','question_result'].includes(s.phase);
+  body.innerHTML = `
+    <div class="hpanel">
+      <h2>目前狀態</h2>
+      <div class="hstat">
+        <div class="item"><b id="hTotal">–</b><span>人已加入</span></div>
+        <div class="item"><b id="hReady">–</b><span>桌已到齊</span></div>
+        <div class="item"><b id="hAns">–</b><span>本題已作答</span></div>
+      </div>
+      <div class="hphase">${running ? `第 <b>${s.qindex + 1}</b> / ${s.questionCount ?? '–'} 題・` : ''}
+        <b>${PHASE_NAME[s.phase] || s.phase}</b>
+        <span id="hCountdown" style="color:var(--muted)"></span>
+        ${running ? '（自動推進，不需操作）' : ''}</div>
+      <div class="hrow">
+        ${inLobby ? `<button class="btn-gold pulse" id="btnStart">開始遊戲</button>` : ''}
+        ${running ? `<button class="btn-ghost" id="btnSkip">緊急略過本階段 ▸</button>` : ''}
+        <button class="btn-ghost" id="btnReset">重置整場（清空玩家）</button>
+      </div>
+    </div>
+
+    <div class="hpanel">
+      <h2>同步模式（出狀況時的保險）</h2>
+      <div class="hrow" style="margin-top:0">
+        <div class="seg" id="segSync">
+          <button data-m="auto">自動</button>
+          <button data-m="force_realtime">強制 Realtime</button>
+          <button data-m="force_polling">強制輪詢</button>
+        </div>
+        <span style="font-size:12px;color:var(--muted)">觀眾反映卡住時 → 按「強制輪詢」，5 秒內全場生效</span>
+      </div>
+    </div>
+
+    <div class="hpanel">
+      <h2>大廳監控</h2>
+      <div class="htables" id="hTables"></div>
+    </div>
+
+    <div class="hpanel">
+      <h2>題目設定 <button class="btn-ghost" id="btnEditor" style="margin-left:8px">${S.editorOpen ? '收合' : '展開編輯'}</button></h2>
+      <div id="editorBox">${S.editorOpen ? '' : `<p style="font-size:13px;color:var(--muted)">目前 ${S.questions?.length ?? '–'} 題。限大廳階段編輯，改完按「儲存」立即寫入資料庫。</p>`}</div>
+    </div>`;
+
+  $('#btnStart')?.addEventListener('click', () => advance());
+  $('#btnSkip')?.addEventListener('click', () => advance());
+  $('#btnReset')?.addEventListener('click', async () => {
+    if (!confirm('確定重置？會清空所有玩家與作答紀錄，回到大廳。')) return;
+    try {
+      const st = normalizeState(await rpc('host_reset', { p_code: CONFIG.joinCode, p_secret: KEY }));
+      S.session = st; S.renderedKey = ''; render(); refreshLobby();
+    } catch (e) { alert('重置失敗：' + e.message); }
+  });
+  $('#segSync').querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
+    try {
+      const st = normalizeState(await rpc('host_set_sync_mode', { p_code: CONFIG.joinCode, p_secret: KEY, p_mode: b.dataset.m }));
+      S.session = st; markSyncSeg();
+    } catch (e) { alert(e.message); }
+  }));
+  $('#btnEditor').addEventListener('click', async () => {
+    S.editorOpen = !S.editorOpen;
+    if (S.editorOpen) {
+      S.questions = await rpc('host_get_questions', { p_code: CONFIG.joinCode, p_secret: KEY });
+      S.editorDraft = JSON.parse(JSON.stringify(S.questions));
+    }
+    S.renderedKey = ''; render();
+  });
+  markSyncSeg();
+  renderLobbyBits();
+  if (S.editorOpen) renderEditor();
+  updateCountdown();
+}
+
+function markSyncSeg() {
+  const m = S.session?.syncMode || 'auto';
+  document.querySelectorAll('#segSync button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+}
+
+function updateCountdown() {
+  const s = S.session, el = $('#hCountdown');
+  if (!el || !s) return;
+  let target = null;
+  if (s.phase === 'question_show' || s.phase === 'question_result') target = s.phaseUntil;
+  if (s.phase === 'question_open') target = s.deadline;
+  el.textContent = target ? `・剩 ${Math.max(0, Math.ceil((target - clock.now()) / 1000))} 秒` : '';
+  const a = $('#hAns');
+  if (a && s.answeredCount != null) a.textContent = s.answeredCount;
+}
+
+function renderLobbyBits() {
+  const lb = S.lobby;
+  if (!lb || !$('#hTables')) return;
+  const byTable = {};
+  (lb.tables || []).forEach(t => byTable[t.table] = t);
+  const ready = TABLE_IDS.filter(t => (byTable[t]?.count || 0) >= lb.threshold).length;
+  $('#hTotal').textContent = lb.total;
+  $('#hReady').textContent = ready + ' / ' + TABLE_IDS.length;
+  $('#hTables').innerHTML = TABLE_IDS.map(t => {
+    const n = byTable[t]?.count || 0, ok = n >= lb.threshold;
+    return `<div class="tchip${ok ? ' ready' : ''}" title="${esc((byTable[t]?.names || []).join('、'))}">
+      <b>${t}</b><span>${n} 人</span></div>`;
+  }).join('');
+}
+
+// ── 題目編輯器 ──────────────────────────────────────────────
+function renderEditor() {
+  const box = $('#editorBox');
+  const lock = S.session.phase !== 'lobby' && S.session.phase !== 'final_ranking';
+  const qs = S.editorDraft;
+  box.innerHTML = (lock ? `<p style="font-size:13px;color:var(--bad);margin-bottom:10px">遊戲進行中無法儲存變更，請先重置或等結束。</p>` : '') +
+    qs.map((q, qi) => `
+    <div class="qe-row">
+      <div class="qe-head"><b>第 ${qi + 1} 題</b>
+        <label>作答秒數 <input type="number" min="5" max="60" value="${q.time_limit_seconds}" data-qi="${qi}" data-k="time"></label>
+        <button class="qe-del" data-del="${qi}">移除</button></div>
+      <input type="text" class="qe-text" value="${esc(q.text)}" data-qi="${qi}" data-k="text" placeholder="題目文字">
+      <div class="qe-opts">${q.options.map((o, oi) => `
+        <label class="qe-opt"><input type="radio" name="qc${qi}" ${q.correct_index === oi ? 'checked' : ''} data-qi="${qi}" data-correct="${oi}" title="設為正確答案">
+          <input type="text" value="${esc(o)}" data-qi="${qi}" data-oi="${oi}" placeholder="選項 ${LETTERS[oi]}"></label>`).join('')}</div>
+    </div>`).join('') + `
+    <div class="savebar">
+      <button class="btn-ghost" id="qeAdd">＋ 新增題目</button>
+      <button class="btn-gold" id="qeSave" ${lock ? 'disabled' : ''}>儲存全部題目</button>
+      <span class="msg" id="qeMsg"></span>
+    </div>`;
+
+  box.oninput = e => {
+    const t = e.target, qi = +t.dataset.qi;
+    if (Number.isNaN(qi)) return;
+    if (t.dataset.k === 'time') qs[qi].time_limit_seconds = Math.max(5, Math.min(60, +t.value || 15));
+    else if (t.dataset.k === 'text') qs[qi].text = t.value;
+    else if (t.dataset.oi !== undefined) qs[qi].options[+t.dataset.oi] = t.value;
+  };
+  box.onchange = e => {
+    const t = e.target;
+    if (t.dataset.correct !== undefined) qs[+t.dataset.qi].correct_index = +t.dataset.correct;
+  };
+  box.onclick = async e => {
+    if (e.target.id === 'qeAdd') {
+      qs.push({ text: '新題目', options: ['選項 A','選項 B','選項 C','選項 D'], correct_index: 0, time_limit_seconds: 15 });
+      renderEditor(); return;
+    }
+    if (e.target.dataset.del !== undefined) {
+      if (qs.length <= 1) return;
+      qs.splice(+e.target.dataset.del, 1);
+      renderEditor(); return;
+    }
+    if (e.target.id === 'qeSave') {
+      const msg = $('#qeMsg');
+      try {
+        const payload = qs.map(q => ({ qtext: q.text, opts: q.options, cidx: q.correct_index, tsec: q.time_limit_seconds }));
+        S.questions = await rpc('host_replace_questions',
+          { p_code: CONFIG.joinCode, p_secret: KEY, p_questions: payload });
+        S.editorDraft = JSON.parse(JSON.stringify(S.questions));
+        msg.textContent = '✓ 已儲存 ' + S.questions.length + ' 題';
+        msg.classList.remove('err');
+        sync.refetch(); // 更新 question_count
+      } catch (err) {
+        msg.textContent = '儲存失敗：' + err.message;
+        msg.classList.add('err');
+      }
+    }
+  };
+}
+
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>績效考核｜支薪好友《向上管理》</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="app">
+  <div class="app-head">
+    <span class="logo">FWB.manzai</span>
+    <span class="sub">支薪好友《向上管理》・績效考核</span>
+  </div>
+  <div class="app-body" id="body"><div class="bigmsg"><h2>連線中⋯</h2></div></div>
+</div>
+<div class="conn-dot" id="connDot"></div>
+
+<script type="module">
+import { CONFIG, rpc, clock, createSync, findMyRank, normalizeState,
+         TABLE_IDS, SHAPES, LETTERS, FAST_SEC, FAST_QUIPS, SLOW_QUIPS,
+         $, esc, secs } from './shared.js';
+
+const body = $('#body');
+const state = {
+  session: null,        // 同步引擎給的最新狀態
+  player: null,         // {id, name, table}
+  question: null,       // 目前題目（無正解）
+  answers: {},          // qindex -> {choice, is_correct, elapsed_ms}
+  streak: 0,
+  rankings: null,       // 公布/結算階段抓的排行榜
+  lockedQuip: null, lockedQuipQ: -1,
+  renderedKey: '',      // 防止同畫面重複重繪
+};
+let sync = null, uiTimer = null, lobbyTimer = null;
+
+// ── 身份保存 ────────────────────────────────────────────────
+const storeKey = sid => 'fwbquiz:' + sid + ':player';
+function loadPlayer(sid) {
+  try { return JSON.parse(localStorage.getItem(storeKey(sid))); } catch { return null; }
+}
+function savePlayer(sid, p) { localStorage.setItem(storeKey(sid), JSON.stringify(p)); }
+
+// ── 開機 ────────────────────────────────────────────────────
+async function boot() {
+  try {
+    await clock.sync();
+    const s = normalizeState(await rpc('get_session_by_code', { p_code: CONFIG.joinCode }));
+    state.player = loadPlayer(s.sessionId);
+    if (state.player) await restoreAnswers();
+    sync = createSync({
+      sessionId: s.sessionId,
+      onState: onSessionState,
+      onConn: c => {
+        const el = $('#connDot');
+        el.textContent = c.realtime ? '● realtime' : '● polling';
+        el.classList.toggle('degraded', c.degraded);
+      },
+    });
+    onSessionState(s);
+    sync.start();
+  } catch (e) {
+    body.innerHTML = `<div class="bigmsg"><h2>連線失敗</h2><p>${esc(e.message)}<br>請確認網路後重新整理</p></div>`;
+  }
+}
+
+// 重新整理後把已作答紀錄與連對狀態抓回來
+async function restoreAnswers() {
+  try {
+    const rows = await rpc('get_my_answers', { p_player_id: state.player.id });
+    state.answers = {}; state.streak = 0;
+    let expect = 0;
+    for (const r of rows) {
+      state.answers[r.qindex] = r;
+      if (r.qindex !== expect || !r.is_correct) state.streak = 0; else state.streak++;
+      if (r.qindex === expect) expect++; else { expect = r.qindex + 1; state.streak = r.is_correct ? 1 : 0; }
+    }
+  } catch (e) { console.warn('restore 失敗', e.message); }
+}
+
+// ── 狀態進場（Realtime 或輪詢都走這裡）──────────────────────
+async function onSessionState(s) {
+  state.session = s;
+  // 換題/換階段時抓需要的資料
+  if (['question_show', 'question_open', 'question_result'].includes(s.phase)) {
+    if (!state.question || state.question.index !== s.qindex) {
+      state.question = null;
+      try { state.question = await rpc('get_current_question', { p_session_id: s.sessionId }); }
+      catch (e) { console.warn(e.message); }
+    }
+  }
+  if (s.phase === 'question_result' || s.phase === 'final_ranking') {
+    try { state.rankings = await rpc('get_rankings', { p_session_id: s.sessionId }); }
+    catch (e) { console.warn(e.message); }
+  }
+  render();
+}
+
+// ── 畫面 ────────────────────────────────────────────────────
+function render() {
+  const s = state.session;
+  if (!s) return;
+  const answered = state.answers[s.qindex];
+  const key = [s.phase, s.qindex, !!state.player, !!answered, !!state.question, !!state.rankings].join('|');
+  if (key === state.renderedKey && s.phase !== 'lobby') return; // lobby 要更新隊友名單
+  state.renderedKey = key;
+  clearInterval(uiTimer); clearInterval(lobbyTimer);
+
+  if (!state.player) return renderJoin();
+  if (s.phase === 'lobby') return renderWaiting();
+  if (s.phase === 'question_show') return renderReady();
+  if (s.phase === 'question_open') return answered ? renderLocked() : renderAnswer();
+  if (s.phase === 'question_result') return renderResult();
+  if (s.phase === 'final_ranking') return renderFinal();
+}
+
+function renderJoin() {
+  const s = state.session;
+  const late = s.phase !== 'lobby';
+  body.innerHTML = `<div class="join">
+    <h2>加入「績效考核」</h2>
+    <p>${late ? '遊戲已開始，加入後從下一題開始計分' : '輸入名稱、選桌號，同桌就是你的隊友'}</p>
+    <div class="field"><label>你的名稱（8 字內）</label>
+      <input id="joinName" maxlength="8" placeholder="例：柏文的粉絲" autocomplete="off"></div>
+    <div class="field"><label>桌號（依票券上的桌次）</label>
+      <select id="joinTable">${TABLE_IDS.map(t =>
+        `<option value="${t}">${t} 桌${t === 'B30' ? '（包廂區）' : ''}</option>`).join('')}</select></div>
+    <button class="btn-gold pulse" id="btnJoin" style="width:100%">加入遊戲</button>
+    <div class="err" id="joinErr"></div></div>`;
+  $('#btnJoin').addEventListener('click', async () => {
+    const name = $('#joinName').value.trim();
+    if (!name) { $('#joinName').focus(); return; }
+    $('#btnJoin').disabled = true;
+    try {
+      const table = $('#joinTable').value;
+      const pid = await rpc('join_session', { p_join_code: CONFIG.joinCode, p_name: name, p_table: table });
+      state.player = { id: pid, name, table };
+      savePlayer(state.session.sessionId, state.player);
+      state.renderedKey = '';
+      render();
+    } catch (e) {
+      $('#joinErr').textContent = e.message;
+      $('#btnJoin').disabled = false;
+    }
+  });
+}
+
+function renderWaiting() {
+  const refresh = async () => {
+    let mates = [];
+    try {
+      const lobby = await rpc('get_lobby_state', { p_session_id: state.session.sessionId });
+      const mine = (lobby.tables || []).find(t => t.table === state.player.table);
+      mates = mine ? mine.names : [];
+      $('#waitTotal') && ($('#waitTotal').textContent = lobby.total);
+      $('#mateBox') && ($('#mateBox').innerHTML =
+        `<h3>同桌隊友（${mates.length} 人）</h3>` +
+        mates.map(n => `<span class="m${n === state.player.name ? ' me' : ''}">${esc(n)}</span>`).join(''));
+    } catch (e) { /* 下次再試 */ }
+  };
+  body.innerHTML = `<div class="waiting">
+    <div class="check">✓</div><h2>已加入！等待開始</h2>
+    <p>你在 ${esc(state.player.table)} 桌・目前全場 <span id="waitTotal">—</span> 人</p>
+    <div class="mates" id="mateBox"><h3>同桌隊友</h3></div></div>`;
+  refresh();
+  lobbyTimer = setInterval(refresh, 3000);
+}
+
+function renderReady() {
+  const s = state.session, q = state.question;
+  body.innerHTML = `<div class="ready">
+    <div class="qnum">第 ${s.qindex + 1} 題 / ${s.questionCount ?? '–'}</div>
+    ${q ? `<h2 class="ready-q">${esc(q.text)}</h2>` : `<h2>準備作答</h2>`}
+    <p>先讀題，馬上開放作答</p><div class="dots"><i></i><i></i><i></i></div></div>`;
+}
+
+function renderAnswer() {
+  const s = state.session, q = state.question;
+  if (!q) { body.innerHTML = `<div class="bigmsg"><h2>載入題目中⋯</h2></div>`; return; }
+  const total = (q.time_limit_seconds || 15) * 1000;
+  body.innerHTML = `<div class="answerbox">
+    <div class="ptrack"><div class="fill" id="phFill" style="width:100%"></div></div>
+    <div class="prow"><span>第 ${s.qindex + 1} 題</span><span class="sec" id="phSec">${q.time_limit_seconds} 秒</span></div>
+    <div class="pq">${esc(q.text)}</div>
+    <div class="pbtns">${q.options.map((o, i) =>
+      `<button class="pbtn ${LETTERS[i]}" data-i="${i}"><span class="shape">${SHAPES[i]}</span>${esc(o)}</button>`).join('')}
+    </div></div>`;
+  body.querySelectorAll('.pbtn').forEach(b => b.addEventListener('click', () => submitChoice(+b.dataset.i)));
+  uiTimer = setInterval(() => {
+    const left = Math.max(0, (s.deadline || 0) - clock.now());
+    const sec = Math.ceil(left / 1000);
+    const f = $('#phFill'), t = $('#phSec');
+    if (f) { f.style.width = (left / total * 100) + '%'; f.classList.toggle('hot', sec <= 5); }
+    if (t) { t.textContent = sec + ' 秒'; t.classList.toggle('hot', sec <= 5); }
+    if (left <= 0) { clearInterval(uiTimer); renderTimeUp(); }
+  }, 100);
+}
+
+async function submitChoice(choice) {
+  const s = state.session, q = state.question;
+  clearInterval(uiTimer);
+  // 樂觀先鎖畫面（Kahoot 式：第一次點擊即送出）
+  state.answers[s.qindex] = { choice, pending: true };
+  renderLocked();
+  try {
+    const r = await rpc('submit_answer', { p_player_id: state.player.id, p_question_id: q.id, p_choice: choice });
+    state.answers[s.qindex] = { choice, is_correct: r.is_correct, elapsed_ms: r.elapsed_ms };
+    state.streak = r.is_correct ? state.streak + 1 : 0;
+    if (state.session.phase === 'question_result') { state.renderedKey = ''; render(); }
+  } catch (e) {
+    if (/超過作答時間/.test(e.message)) { delete state.answers[s.qindex]; renderTimeUp(); }
+    else if (/已經作答/.test(e.message)) { /* 重複點擊，維持鎖定 */ }
+    else {
+      delete state.answers[s.qindex];
+      state.renderedKey = '';
+      render(); // 網路失敗 → 放回作答畫面再試
+    }
+  }
+}
+
+function renderLocked() {
+  const s = state.session;
+  if (state.lockedQuipQ !== s.qindex) {
+    const a = state.answers[s.qindex];
+    const fast = a && a.elapsed_ms !== undefined ? a.elapsed_ms / 1000 < FAST_SEC
+               : (s.deadline - clock.now()) > ((state.question?.time_limit_seconds || 15) - FAST_SEC) * 1000;
+    const pool = fast ? FAST_QUIPS : SLOW_QUIPS;
+    state.lockedQuip = pool[Math.floor(Math.random() * pool.length)];
+    state.lockedQuipQ = s.qindex;
+  }
+  const qp = state.lockedQuip;
+  body.innerHTML = `<div class="locked"><div class="zap">${qp.e}</div>
+    <h2>已作答！</h2><p>${esc(qp.t)}<br>等待全場結果⋯</p></div>`;
+}
+
+function renderTimeUp() {
+  body.innerHTML = `<div class="locked"><div class="zap">⏰</div>
+    <h2>時間到</h2><p>本題未作答<br>等待全場結果⋯</p></div>`;
+}
+
+function renderResult() {
+  const s = state.session;
+  const a = state.answers[s.qindex];
+  const ind = state.rankings?.individuals || [];
+  const { idx, me, prev } = findMyRank(ind, state.player.id);
+  let chase = '';
+  if (idx === 0) chase = '你就是榜首，撐住！';
+  else if (prev && me) {
+    chase = prev.correct > me.correct
+      ? `距離前一名還差 ${prev.correct - me.correct} 題`
+      : `與前一名同題數，只差 ${secs(me.total_ms - prev.total_ms)} 秒`;
+  }
+  const ok = a && a.is_correct;
+  body.innerHTML = `<div class="pres">
+    ${a && !a.pending
+      ? `<div class="verdict ${ok ? 'ok' : 'bad'}">${ok ? '答對了！' : '答錯了'}</div>
+         <div class="pts">${secs(a.elapsed_ms)}<small> 秒作答</small></div>
+         ${ok && state.streak >= 2 ? `<div class="streak">🔥 連對 ${state.streak} 題！</div>` : ''}`
+      : `<div class="verdict bad">時間到，未作答</div>`}
+    ${me ? `<div class="rankline">目前 <b>第 ${idx + 1} 名</b>・答對 ${me.correct} 題・用時 ${secs(me.total_ms)} 秒
+      <small>${chase}</small></div>` : ''}</div>`;
+}
+
+function renderFinal() {
+  const ind = state.rankings?.individuals || [];
+  const tbs = state.rankings?.tables || [];
+  const { idx, me } = findMyRank(ind, state.player.id);
+  const tIdx = tbs.findIndex(t => t.table === state.player.table);
+  const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🎖️';
+  body.innerHTML = `<div class="pfinal">
+    <div class="medal">${medal}</div>
+    <h2>${esc(state.player.name)}，你的最終成績</h2>
+    <div class="rank">第 ${idx + 1} 名<small> / ${ind.length} 人</small></div>
+    <div class="cards">
+      <div class="card"><div class="k">答對題數</div><div class="v">${me ? me.correct : 0}/${state.session.questionCount ?? '–'}</div></div>
+      <div class="card"><div class="k">總用時</div><div class="v">${me ? secs(me.total_ms) : 0}s</div></div>
+      <div class="card"><div class="k">桌次排名</div><div class="v">第 ${tIdx + 1} 名</div></div>
+    </div></div>`;
+}
+
+boot();
+</script>
+</body>
+</html>
