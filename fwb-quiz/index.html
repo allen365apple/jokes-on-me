@@ -18,7 +18,7 @@
 <div class="conn-dot" id="connDot"></div>
 
 <script type="module">
-import { CONFIG, rpc, clock, createSync, findMyRank, normalizeState,
+import { CONFIG, sb, rpc, clock, createSync, findMyRank, normalizeState,
          TABLE_IDS, SHAPES, LETTERS, FAST_SEC, FAST_QUIPS, SLOW_QUIPS,
          $, esc, secs } from './shared.js';
 
@@ -41,13 +41,32 @@ function loadPlayer(sid) {
   try { return JSON.parse(localStorage.getItem(storeKey(sid))); } catch { return null; }
 }
 function savePlayer(sid, p) { localStorage.setItem(storeKey(sid), JSON.stringify(p)); }
+function clearPlayer() {
+  localStorage.removeItem(storeKey(state.session.sessionId));
+  state.player = null; state.answers = {}; state.streak = 0;
+  state.renderedKey = ''; render();
+}
+// 開頁時跟資料庫核對身份：玩家被清掉（如主持人重置）就回到加入畫面
+async function validatePlayer(sid) {
+  if (!state.player) return;
+  try {
+    const { data, error } = await sb.from('players')
+      .select('id,name,table_number').eq('id', state.player.id).maybeSingle();
+    if (error) return; // 網路問題先不動，交給後續流程
+    if (!data) { localStorage.removeItem(storeKey(sid)); state.player = null; return; }
+    state.player = { id: data.id, name: data.name, table: data.table_number };
+    savePlayer(sid, state.player);
+  } catch (e) { /* 查不到再說 */ }
+}
 
 // ── 開機 ────────────────────────────────────────────────────
 async function boot() {
   try {
     await clock.sync();
     const s = normalizeState(await rpc('get_session_by_code', { p_code: CONFIG.joinCode }));
+    state.session = s; // clearPlayer 等會用到
     state.player = loadPlayer(s.sessionId);
+    await validatePlayer(s.sessionId);
     if (state.player) await restoreAnswers();
     sync = createSync({
       sessionId: s.sessionId,
@@ -118,14 +137,16 @@ function render() {
 function renderJoin() {
   const s = state.session;
   const late = s.phase !== 'lobby';
+  const lastName = localStorage.getItem('fwbquiz:lastname') || '';
+  const lastTable = localStorage.getItem('fwbquiz:lasttable') || TABLE_IDS[0];
   body.innerHTML = `<div class="join">
     <h2>加入「績效考核」</h2>
     <p>${late ? '遊戲已開始，加入後從下一題開始計分' : '輸入名稱、選桌號，同桌就是你的隊友'}</p>
     <div class="field"><label>你的名稱（8 字內）</label>
-      <input id="joinName" maxlength="8" placeholder="例：柏文的粉絲" autocomplete="off"></div>
+      <input id="joinName" maxlength="8" placeholder="例：柏文的粉絲" autocomplete="off" value="${esc(lastName)}"></div>
     <div class="field"><label>桌號（依票券上的桌次）</label>
       <select id="joinTable">${TABLE_IDS.map(t =>
-        `<option value="${t}">${t} 桌${t === 'B30' ? '（包廂區）' : ''}</option>`).join('')}</select></div>
+        `<option value="${t}"${t === lastTable ? ' selected' : ''}>${t} 桌${t === 'B30' ? '（包廂區）' : ''}</option>`).join('')}</select></div>
     <button class="btn-gold pulse" id="btnJoin" style="width:100%">加入遊戲</button>
     <div class="err" id="joinErr"></div></div>`;
   $('#btnJoin').addEventListener('click', async () => {
@@ -137,6 +158,8 @@ function renderJoin() {
       const pid = await rpc('join_session', { p_join_code: CONFIG.joinCode, p_name: name, p_table: table });
       state.player = { id: pid, name, table };
       savePlayer(state.session.sessionId, state.player);
+      localStorage.setItem('fwbquiz:lastname', name);
+      localStorage.setItem('fwbquiz:lasttable', table);
       state.renderedKey = '';
       render();
     } catch (e) {
@@ -148,11 +171,13 @@ function renderJoin() {
 
 function renderWaiting() {
   const refresh = async () => {
-    let mates = [];
     try {
+      // 順便確認自己還在名單上（主持人重置過就會消失 → 回到加入畫面）
+      const { data } = await sb.from('players').select('id').eq('id', state.player.id).maybeSingle();
+      if (!data) { clearPlayer(); return; }
       const lobby = await rpc('get_lobby_state', { p_session_id: state.session.sessionId });
       const mine = (lobby.tables || []).find(t => t.table === state.player.table);
-      mates = mine ? mine.names : [];
+      const mates = mine ? mine.names : [];
       $('#waitTotal') && ($('#waitTotal').textContent = lobby.total);
       $('#mateBox') && ($('#mateBox').innerHTML =
         `<h3>同桌隊友（${mates.length} 人）</h3>` +
@@ -160,9 +185,17 @@ function renderWaiting() {
     } catch (e) { /* 下次再試 */ }
   };
   body.innerHTML = `<div class="waiting">
-    <div class="check">✓</div><h2>已加入！等待開始</h2>
-    <p>你在 ${esc(state.player.table)} 桌・目前全場 <span id="waitTotal">—</span> 人</p>
-    <div class="mates" id="mateBox"><h3>同桌隊友</h3></div></div>`;
+    <div class="check">✓</div><h2>嗨，${esc(state.player.name)}！</h2>
+    <p>已加入 ${esc(state.player.table)} 桌・等待開始・目前全場 <span id="waitTotal">—</span> 人</p>
+    <div class="mates" id="mateBox"><h3>同桌隊友</h3></div>
+    <button class="btn-ghost" id="btnRejoin" style="margin-top:16px">✎ 改名字／換桌號</button></div>`;
+  $('#btnRejoin').addEventListener('click', async () => {
+    $('#btnRejoin').disabled = true;
+    try { await rpc('leave_session', { p_player_id: state.player.id }); }
+    catch (e) { /* 舊資料庫沒有此函式也照樣讓使用者重填 */ }
+    clearInterval(lobbyTimer);
+    clearPlayer();
+  });
   refresh();
   lobbyTimer = setInterval(refresh, 3000);
 }
@@ -211,6 +244,7 @@ async function submitChoice(choice) {
   } catch (e) {
     if (/超過作答時間/.test(e.message)) { delete state.answers[s.qindex]; renderTimeUp(); }
     else if (/已經作答/.test(e.message)) { /* 重複點擊，維持鎖定 */ }
+    else if (/玩家不存在/.test(e.message)) { clearPlayer(); } // 身份失效（被重置）→ 重新加入
     else {
       delete state.answers[s.qindex];
       state.renderedKey = '';
@@ -266,6 +300,10 @@ function renderFinal() {
   const ind = state.rankings?.individuals || [];
   const tbs = state.rankings?.tables || [];
   const { idx, me } = findMyRank(ind, state.player.id);
+  if (!me) {
+    body.innerHTML = `<div class="bigmsg"><h2>遊戲結束</h2><p>感謝參與！抬頭看大螢幕的最終排行榜 🏆</p></div>`;
+    return;
+  }
   const tIdx = tbs.findIndex(t => t.table === state.player.table);
   const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '🎖️';
   body.innerHTML = `<div class="pfinal">
