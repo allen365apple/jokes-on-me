@@ -56,7 +56,7 @@
     <div class="row">
       <button class="btn-ghost" id="ovSkip">緊急略過本階段 ▸</button>
       <button class="btn-ghost" id="ovReset">重置整場（清空玩家）</button>
-      <a class="btn-ghost" id="ovEditor" target="_blank" style="text-decoration:none">題目編輯（開新分頁）</a>
+      <a class="btn-ghost" id="ovEditor" target="_blank" style="text-decoration:none">開啟後台（開新分頁）</a>
     </div>
     <div class="hint">
       快捷鍵：<kbd>Enter</kbd> 開始遊戲／緊急略過（最終排行榜時＝重置再玩一次）・
@@ -269,8 +269,7 @@ function renderLobbyShell() {
     <div class="lobby-left">
       <div class="scanhint">掃碼加入遊戲</div>
       <div class="qr" id="qrBox"></div>
-      <div class="joincode">或輸入代碼<b>${esc(CONFIG.joinCode)}</b></div>
-      <div class="shorturl">allen365apple.github.io/jokes-on-me/fwb-quiz/</div>
+      <div class="shorturl">掃不到？直接開<br>allen365apple.github.io/jokes-on-me/fwb-quiz/</div>
       ${KEY ? `<div class="start-cta">
         <button class="btn-gold pulse" id="btnStartScreen">開始遊戲</button>
         <span class="keyhint">或按 Enter 開始</span>
