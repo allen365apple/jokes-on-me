@@ -227,6 +227,8 @@ function renderEditor() {
     <div class="qe-row">
       <div class="qe-head"><b>第 ${qi + 1} 題</b>
         <label>作答秒數 <input type="number" min="5" max="60" value="${q.time_limit_seconds}" data-qi="${qi}" data-k="time"></label>
+        <button class="qe-move" data-up="${qi}" ${qi === 0 ? 'disabled' : ''} title="往上移">↑</button>
+        <button class="qe-move" data-down="${qi}" ${qi === qs.length - 1 ? 'disabled' : ''} title="往下移">↓</button>
         <button class="qe-del" data-del="${qi}">移除</button></div>
       <input type="text" class="qe-text" value="${esc(q.text)}" data-qi="${qi}" data-k="text" placeholder="題目文字">
       <div class="qe-opts">${q.options.map((o, oi) => `
@@ -255,6 +257,16 @@ function renderEditor() {
       qs.push({ text: '新題目', options: ['選項 A','選項 B','選項 C','選項 D'], correct_index: 0, time_limit_seconds: 15 });
       renderEditor(); return;
     }
+    if (e.target.dataset.up !== undefined) {
+      const i = +e.target.dataset.up;
+      if (i > 0) { [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]]; renderEditor(); }
+      return;
+    }
+    if (e.target.dataset.down !== undefined) {
+      const i = +e.target.dataset.down;
+      if (i < qs.length - 1) { [qs[i], qs[i + 1]] = [qs[i + 1], qs[i]]; renderEditor(); }
+      return;
+    }
     if (e.target.dataset.del !== undefined) {
       if (qs.length <= 1) return;
       qs.splice(+e.target.dataset.del, 1);
@@ -267,9 +279,11 @@ function renderEditor() {
         S.questions = await rpc('host_replace_questions',
           { p_code: CONFIG.joinCode, p_secret: KEY, p_questions: payload });
         S.editorDraft = JSON.parse(JSON.stringify(S.questions));
-        msg.textContent = '✓ 已儲存 ' + S.questions.length + ' 題';
-        msg.classList.remove('err');
+        renderEditor(); // 重新綁定到新草稿，避免後續操作作用在舊資料上
+        $('#qeMsg').textContent = '✓ 已儲存 ' + S.questions.length + ' 題';
+        $('#qeMsg').classList.remove('err');
         sync.refetch(); // 更新 question_count
+        return;
       } catch (err) {
         msg.textContent = '儲存失敗：' + err.message;
         msg.classList.add('err');

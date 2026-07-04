@@ -9,13 +9,13 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
-  .fullscreen-link{position:fixed; top:14px; right:64px; z-index:9; font-size:12px;
-    color:var(--muted); text-decoration:none; border:1px solid #5a534e; border-radius:99px; padding:4px 12px}
-  .fullscreen-link:hover{color:var(--ink)}
-  /* 隱藏式控制台按鈕：刻意低調，觀眾不會注意到 */
-  .ctrl-btn{position:fixed; top:12px; right:20px; z-index:9; width:30px; height:30px;
-    border-radius:50%; background:transparent; border:1px solid #4a4540; color:#6d665f; font-size:14px}
-  .ctrl-btn:hover{color:var(--ink); border-color:var(--muted)}
+  /* 右上角控制列：跟「第幾題」同一排，低調不搶戲、不重疊 */
+  .topctrl{margin-left:18px; display:flex; gap:8px; align-items:center; flex-shrink:0}
+  .tc-btn{background:transparent; border:1px solid #4a4540; color:#8d867e;
+    border-radius:99px; padding:4px 12px; font-size:12px; font-weight:700; white-space:nowrap}
+  .tc-btn:hover{color:var(--ink); border-color:var(--muted)}
+  .tc-btn kbd{font-family:inherit; font-size:10px; background:#3a3531; border:1px solid #4a4540;
+    border-radius:5px; padding:0 5px; margin-left:4px; color:#a89f95}
   .ctrl-overlay{position:fixed; inset:0; background:rgba(20,17,15,.78); z-index:50;
     display:flex; align-items:center; justify-content:center}
   .ctrl-panel{background:var(--panel2); border:1px solid #55504b; border-radius:16px;
@@ -36,13 +36,12 @@
     <span class="logo">支薪好友《向上管理》</span>
     <span class="sub">績效考核</span>
     <span class="qtag" id="qtag"></span>
+    <div class="topctrl" id="topCtrl"></div>
   </div>
   <div class="stage-body" id="body">
     <div class="qshow"><h2>連線中⋯</h2></div>
   </div>
 </div>
-<a href="#" class="fullscreen-link" id="fsLink">進入全螢幕</a>
-<button class="ctrl-btn hidden" id="ctrlBtn" title="控制台">⚙</button>
 <div class="ctrl-overlay hidden" id="ctrlOverlay">
   <div class="ctrl-panel">
     <h3>控制台（觀眾看不到這裡）</h3>
@@ -87,12 +86,14 @@ let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
 // 觀眾加入網址（QR code 指向這裡）
 const joinUrl = new URL('index.html?code=' + encodeURIComponent(CONFIG.joinCode), location.href).href;
 
-// 全螢幕（iPhone Safari 不支援時自動隱藏，跟工具箱其他企劃同慣例）
-if (document.documentElement.requestFullscreen) {
-  $('#fsLink').addEventListener('click', e => { e.preventDefault(); document.documentElement.requestFullscreen(); });
-  document.addEventListener('fullscreenchange', () =>
-    $('#fsLink').style.display = document.fullscreenElement ? 'none' : '');
-} else { $('#fsLink').style.display = 'none'; }
+// 快捷鍵（開頁即註冊）：F=全螢幕；有控制金鑰時 Enter=開始/略過/重玩、Esc=關控制台
+document.addEventListener('keydown', e => {
+  if (e.target instanceof Element && e.target.matches('input,textarea,select')) return;
+  if (e.key === 'f' || e.key === 'F') { toggleFS(); return; }
+  if (!KEY) return;
+  if (e.key === 'Escape') { $('#ctrlOverlay').classList.add('hidden'); return; }
+  if (e.key === 'Enter') enterAction();
+});
 
 async function boot() {
   try {
@@ -118,7 +119,6 @@ async function boot() {
 
 // ═══ 控制模式（大螢幕即駕駛）═══════════════════════════════
 function initController() {
-  $('#ctrlBtn').classList.remove('hidden');
   $('#ovEditor').href = 'host.html?key=' + encodeURIComponent(KEY);
   // 節奏驅動：階段時間到自動推進
   setInterval(() => {
@@ -131,19 +131,7 @@ function initController() {
   }, 200);
   // 螢幕保持喚醒
   navigator.wakeLock?.request('screen').catch(() => {});
-  // 快捷鍵
-  document.addEventListener('keydown', e => {
-    if (e.target instanceof Element && e.target.matches('input,textarea,select')) return;
-    if (e.key === 'f' || e.key === 'F') { toggleFS(); return; }
-    if (e.key === 'Escape') { $('#ctrlOverlay').classList.add('hidden'); return; }
-    if (e.key !== 'Enter') return;
-    const s = S.session; if (!s) return;
-    if (s.phase === 'final_ranking') {
-      if (Date.now() - S.finalAt > 3000) resetGame(); // 剛進結算 3 秒內防誤觸
-    } else advance();
-  });
-  // ⚙ 控制台
-  $('#ctrlBtn').addEventListener('click', () => { $('#ctrlOverlay').classList.remove('hidden'); updateOverlay(); });
+  // ⚙ 控制台（快捷鍵已在開頁時全域註冊）
   $('#ovClose').addEventListener('click', () => $('#ctrlOverlay').classList.add('hidden'));
   $('#ovSkip').addEventListener('click', () => { advance(); $('#ctrlOverlay').classList.add('hidden'); });
   $('#ovReset').addEventListener('click', () => {
@@ -156,6 +144,30 @@ function initController() {
       onSessionState(st);
     } catch (e) { alert(e.message); }
   }));
+}
+// Enter 或控制列按鈕的動作：大廳=開始、遊戲中=略過、結算=重置再玩
+function enterAction() {
+  const s = S.session; if (!s || !KEY) return;
+  if (s.phase === 'final_ranking') {
+    if (Date.now() - S.finalAt > 3000) resetGame(); // 剛進結算 3 秒內防誤觸
+  } else advance();
+}
+// 右上角控制列：依階段換字，全螢幕鍵永遠在
+function renderTopCtrl() {
+  const el = $('#topCtrl'); if (!el) return;
+  const s = S.session;
+  let h = '';
+  if (KEY && s) {
+    const label = s.phase === 'lobby' ? '開始遊戲'
+                : s.phase === 'final_ranking' ? '重置再玩一次' : '略過本階段';
+    h += `<button class="tc-btn" id="tcNext">${label}<kbd>Enter</kbd></button>`;
+    h += `<button class="tc-btn" id="tcPanel">⚙ 控制台</button>`;
+  }
+  if (document.documentElement.requestFullscreen) h += `<button class="tc-btn" id="tcFS">全螢幕<kbd>F</kbd></button>`;
+  el.innerHTML = h;
+  $('#tcNext')?.addEventListener('click', enterAction);
+  $('#tcPanel')?.addEventListener('click', () => { $('#ctrlOverlay').classList.remove('hidden'); updateOverlay(); });
+  $('#tcFS')?.addEventListener('click', toggleFS);
 }
 async function advance() {
   if (!KEY || S.advancing) return;
@@ -241,7 +253,7 @@ function render() {
   const key = [s.phase, s.qindex, !!S.question, !!S.result, !!S.rankings].join('|');
   const changed = key !== S.renderedKey;
   S.renderedKey = key;
-  if (changed) { clearInterval(uiTimer); clearInterval(lobbyTimer); }
+  if (changed) { clearInterval(uiTimer); clearInterval(lobbyTimer); renderTopCtrl(); }
 
   if (s.phase === 'lobby') { if (changed) renderLobbyShell(); return; }
   if (!changed) { if (s.phase === 'question_open') updateAnswered(); return; }

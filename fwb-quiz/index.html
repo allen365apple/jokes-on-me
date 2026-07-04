@@ -122,7 +122,8 @@ function render() {
   if (!s) return;
   const answered = state.answers[s.qindex];
   const key = [s.phase, s.qindex, !!state.player, !!answered, !!state.question, !!state.rankings].join('|');
-  if (key === state.renderedKey && s.phase !== 'lobby') return; // lobby 要更新隊友名單
+  // 同畫面不重繪——尤其大廳的輸入框，重繪會打斷使用者打字（隊友名單由等待室自己的計時器更新）
+  if (key === state.renderedKey) return;
   state.renderedKey = key;
   clearInterval(uiTimer); clearInterval(lobbyTimer);
 
