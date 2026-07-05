@@ -9,7 +9,10 @@
 </head>
 <body>
 <div class="host">
-  <h1><span class="logo">FWB.manzai</span>「績效考核」主持人控制台</h1>
+  <div class="host-head">
+    <h1><span class="logo">FWB.manzai</span>「績效考核」主持人控制台</h1>
+    <a class="btn-ghost" id="lnkScreen" target="_blank" style="margin-left:auto; text-decoration:none; white-space:nowrap">🖥 開啟大螢幕 ↗</a>
+  </div>
   <p class="subtitle">此頁是整場的節奏驅動者——遊戲進行中請全程保持開啟、螢幕不要鎖定。</p>
   <div id="body"><div class="hpanel"><h2>連線中⋯</h2></div></div>
 </div>
@@ -21,6 +24,8 @@ import { CONFIG, rpc, clock, createSync, normalizeState,
 
 const KEY = new URLSearchParams(location.search).get('key') || '';
 const body = $('#body');
+// 右上角：一鍵開大螢幕（帶控制金鑰）
+$('#lnkScreen').href = 'screen.html' + (KEY ? '?key=' + encodeURIComponent(KEY) : '');
 const S = {
   session: null, lobby: null, questions: null,
   advancing: false, renderedKey: '', editorOpen: false, editorDraft: null,
@@ -116,18 +121,15 @@ function render() {
 
   const inLobby = s.phase === 'lobby';
   const running = ['question_show','question_open','question_result'].includes(s.phase);
+  const qText = running ? (S.questions?.[s.qindex]?.text || '') : '';
   body.innerHTML = `
     <div class="hpanel">
-      <h2>目前狀態</h2>
-      <div class="hstat">
-        <div class="item"><b id="hTotal">–</b><span>人已加入</span></div>
-        <div class="item"><b id="hReady">–</b><span>桌已到齊</span></div>
-        <div class="item"><b id="hAns">–</b><span>本題已作答</span></div>
-      </div>
-      <div class="hphase">${running ? `第 <b>${s.qindex + 1}</b> / ${s.questionCount ?? '–'} 題・` : ''}
-        <b>${PHASE_NAME[s.phase] || s.phase}</b>
-        <span id="hCountdown" style="color:var(--muted)"></span>
-        ${running ? '（自動推進，不需操作）' : ''}</div>
+      <h2><i>1</i>遊戲狀態</h2>
+      <div class="hphase">${
+        inLobby ? `🟡 <b>等待中</b>——觀眾陸續掃碼加入，人到齊按「開始遊戲」`
+        : running ? `🟢 <b>進行中</b>・第 <b>${s.qindex + 1}</b> / ${s.questionCount ?? '–'} 題・${PHASE_NAME[s.phase]}<span id="hCountdown" style="color:var(--gold)"></span>（自動推進，不需操作）`
+        : `🏁 <b>遊戲結束</b>——大螢幕正在顯示最終排行榜`}</div>
+      ${running ? `<div class="hq">「${esc(qText)}」</div>` : ''}
       <div class="hrow">
         ${inLobby ? `<button class="btn-gold pulse" id="btnStart">開始遊戲</button>` : ''}
         ${running ? `<button class="btn-ghost" id="btnSkip">緊急略過本階段 ▸</button>` : ''}
@@ -136,25 +138,40 @@ function render() {
     </div>
 
     <div class="hpanel">
-      <h2>同步模式（出狀況時的保險）</h2>
-      <div class="hrow" style="margin-top:0">
-        <div class="seg" id="segSync">
-          <button data-m="auto">自動</button>
-          <button data-m="force_realtime">強制 Realtime</button>
-          <button data-m="force_polling">強制輪詢</button>
-        </div>
-        <span style="font-size:12px;color:var(--muted)">觀眾反映卡住時 → 按「強制輪詢」，5 秒內全場生效</span>
+      <h2><i>2</i>觀眾狀態</h2>
+      <div class="hcards">
+        <div class="hcard"><b id="hTotal">–</b><span>人已加入</span></div>
+        <div class="hcard"><b id="hReady">–</b><span>桌已到齊</span></div>
+        ${running ? `<div class="hcard"><b id="hAns">–</b><span>本題已作答</span></div>` : ''}
       </div>
     </div>
 
     <div class="hpanel">
-      <h2>大廳監控</h2>
+      <h2><i>3</i>大廳監控<span class="h2note">滑鼠移到桌上可看成員名單</span></h2>
       <div class="htables" id="hTables"></div>
     </div>
 
     <div class="hpanel">
-      <h2>題目設定 <button class="btn-ghost" id="btnEditor" style="margin-left:8px">${S.editorOpen ? '收合' : '展開編輯'}</button></h2>
-      <div id="editorBox">${S.editorOpen ? '' : `<p style="font-size:13px;color:var(--muted)">目前 ${S.questions?.length ?? '–'} 題。限大廳階段編輯，改完按「儲存」立即寫入資料庫。</p>`}</div>
+      <h2><i>4</i>題目設定 <button class="btn-ghost" id="btnEditor">${S.editorOpen ? '收合' : '展開編輯'}</button></h2>
+      <div id="editorBox">${S.editorOpen ? '' : `<p class="hnote">目前 ${S.questions?.length ?? '–'} 題。可改文字、選項、正解、每題秒數；拖曳 ⠿ 或按 ↑↓ 調整順序。限大廳階段儲存。</p>`}</div>
+    </div>
+
+    <div class="hpanel">
+      <h2><i>5</i>同步模式<span class="h2note">技術保險，平常不用動</span></h2>
+      <div class="hrow" style="margin-top:0">
+        <div class="seg" id="segSync">
+          <button data-m="auto">自動（建議）</button>
+          <button data-m="force_realtime">強制即時推播</button>
+          <button data-m="force_polling">強制輪詢</button>
+        </div>
+      </div>
+      <p class="hnote" style="margin-top:12px">
+        觀眾手機更新畫面有兩條路：<b>即時推播</b>（最快，但我們用的免費方案全場同時連線上限約 200，人多或現場網路差時可能斷線）、
+        <b>輪詢</b>（手機每 1.5 秒主動查一次，慢半拍但最穩）。<br>
+        平常放「<b>自動</b>」就好——預設走即時推播，哪支手機連不上會自己改用輪詢，完全不用管。
+        只有當<b>很多觀眾同時反映畫面卡住不動</b>時，才按「<b>強制輪詢</b>」讓全場改走穩定路線（約 5 秒內生效）。
+        「強制即時推播」只有測試時才用得到。
+      </p>
     </div>`;
 
   $('#btnStart')?.addEventListener('click', () => advance());
@@ -224,8 +241,8 @@ function renderEditor() {
   const qs = S.editorDraft;
   box.innerHTML = (lock ? `<p style="font-size:13px;color:var(--bad);margin-bottom:10px">遊戲進行中無法儲存變更，請先重置或等結束。</p>` : '') +
     qs.map((q, qi) => `
-    <div class="qe-row">
-      <div class="qe-head"><b>第 ${qi + 1} 題</b>
+    <div class="qe-row" data-row="${qi}">
+      <div class="qe-head"><span class="qe-drag" title="按住拖曳調整順序">⠿</span><b>第 ${qi + 1} 題</b>
         <label>作答秒數 <input type="number" min="5" max="60" value="${q.time_limit_seconds}" data-qi="${qi}" data-k="time"></label>
         <button class="qe-move" data-up="${qi}" ${qi === 0 ? 'disabled' : ''} title="往上移">↑</button>
         <button class="qe-move" data-down="${qi}" ${qi === qs.length - 1 ? 'disabled' : ''} title="往下移">↓</button>
@@ -240,6 +257,39 @@ function renderEditor() {
       <button class="btn-gold" id="qeSave" ${lock ? 'disabled' : ''}>儲存全部題目</button>
       <span class="msg" id="qeMsg"></span>
     </div>`;
+
+  // 拖曳排序：從 ⠿ 把手拖起，放到目標題目上即插入該位置（觸控裝置請用 ↑↓）
+  let dragIdx = null;
+  box.querySelectorAll('.qe-row').forEach(row => {
+    const handle = row.querySelector('.qe-drag');
+    handle.addEventListener('mousedown', () => { row.draggable = true; });
+    handle.addEventListener('mouseup', () => { row.draggable = false; });
+    row.addEventListener('dragstart', e => {
+      dragIdx = +row.dataset.row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      try { e.dataTransfer.setData('text/plain', String(dragIdx)); } catch (_) {}
+    });
+    row.addEventListener('dragend', () => {
+      row.draggable = false; row.classList.remove('dragging'); dragIdx = null;
+      box.querySelectorAll('.qe-row').forEach(r => r.classList.remove('dropover'));
+    });
+    row.addEventListener('dragover', e => {
+      if (dragIdx === null) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      if (+row.dataset.row !== dragIdx) row.classList.add('dropover');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('dropover'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      const to = +row.dataset.row;
+      if (dragIdx === null || to === dragIdx) return;
+      const [moved] = qs.splice(dragIdx, 1);
+      qs.splice(to, 0, moved);
+      dragIdx = null;
+      renderEditor();
+    });
+  });
 
   box.oninput = e => {
     const t = e.target, qi = +t.dataset.qi;

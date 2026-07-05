@@ -234,16 +234,27 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 
 /* ── 主持人 ── */
 .host{max-width:860px; margin:0 auto; padding:18px 20px 60px}
+.host-head{display:flex; align-items:center; gap:12px; margin-bottom:4px}
 .host h1{font-size:20px; font-weight:900; letter-spacing:.04em; margin-bottom:4px}
+.host-head h1{margin-bottom:0}
 .host h1 .logo{color:var(--gold); font-size:14px; letter-spacing:.12em; margin-right:8px}
 .host .subtitle{font-size:12px; color:var(--muted); margin-bottom:16px}
-.hpanel{background:var(--panel2); border:1px solid #55504b; border-radius:var(--radius); padding:16px; margin-bottom:16px}
-.hpanel h2{font-size:12px; letter-spacing:.2em; color:var(--muted); font-weight:800; margin-bottom:12px}
-.hstat{display:flex; gap:24px; flex-wrap:wrap; align-items:baseline}
-.hstat .item b{display:block; font-size:34px; font-weight:900; color:var(--gold); font-variant-numeric:tabular-nums; line-height:1.1}
-.hstat .item span{font-size:12px; color:var(--muted); font-weight:700}
-.hphase{font-size:17px; font-weight:900; margin:10px 0}
+.hpanel{background:var(--panel2); border:1px solid #55504b; border-radius:var(--radius); padding:18px; margin-bottom:18px}
+.hpanel h2{display:flex; align-items:center; gap:10px; font-size:14px; letter-spacing:.12em; color:var(--gold);
+  font-weight:900; margin-bottom:14px; border-bottom:1px solid #55504b; padding-bottom:12px}
+.hpanel h2 i{font-style:normal; width:22px; height:22px; border-radius:50%; background:var(--gold); color:#2E2A28;
+  display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0}
+.h2note{font-size:11px; color:var(--muted); font-weight:700; letter-spacing:0; margin-left:auto}
+.hphase{font-size:16px; font-weight:700; line-height:1.7; margin:2px 0}
 .hphase b{color:var(--gold)}
+.hq{font-size:15px; font-weight:800; background:var(--panel); border-left:3px solid var(--gold);
+  border-radius:8px; padding:10px 14px; margin-top:10px; line-height:1.6}
+.hcards{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px}
+.hcard{background:var(--panel); border-radius:12px; padding:16px 10px; text-align:center}
+.hcard b{display:block; font-size:38px; font-weight:900; color:var(--gold); font-variant-numeric:tabular-nums; line-height:1.1}
+.hcard span{font-size:12px; color:var(--muted); font-weight:700}
+.hnote{font-size:13px; color:var(--muted); line-height:1.9}
+.hnote b{color:var(--ink)}
 .hrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px}
 .seg{display:flex; border:1px solid #5a534e; border-radius:10px; overflow:hidden}
 .seg button{background:transparent; color:var(--muted); padding:8px 14px; font-size:13px; border-radius:0}
@@ -257,6 +268,10 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .qe-head label{color:var(--muted); font-size:12px; font-weight:700; display:flex; align-items:center; gap:6px}
 .qe-head input[type=number]{width:64px; background:var(--bg2); border:1px solid #5a534e; color:var(--ink);
   border-radius:8px; padding:6px 8px; font:inherit; font-weight:800}
+.qe-drag{cursor:grab; color:var(--muted); font-size:16px; padding:0 6px 0 0; user-select:none; flex-shrink:0}
+.qe-drag:active{cursor:grabbing}
+.qe-row.dragging{opacity:.45}
+.qe-row.dropover{outline:2px dashed var(--gold); outline-offset:2px}
 .qe-move{background:transparent; border:1px solid #5a534e; color:var(--muted);
   border-radius:8px; padding:5px 10px; font-size:12px}
 .qe-move:hover{color:var(--gold); border-color:var(--gold)}
