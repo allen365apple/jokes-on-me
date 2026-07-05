@@ -80,6 +80,7 @@ const S = {
   session: null, question: null, result: null, rankings: null,
   lobby: null, renderedKey: '', lastJoin: '',
   advancing: false, finalAt: 0,
+  review: { active: false, idx: 0, data: null },
 };
 let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
 
@@ -91,6 +92,12 @@ document.addEventListener('keydown', e => {
   if (e.target instanceof Element && e.target.matches('input,textarea,select')) return;
   if (e.key === 'f' || e.key === 'F') { toggleFS(); return; }
   if (!KEY) return;
+  if (S.review.active) {   // 回顧模式：← → 翻題、Esc 回排行榜
+    if (e.key === 'ArrowLeft') reviewNav(-1);
+    else if (e.key === 'ArrowRight' || e.key === 'Enter') reviewNav(1);
+    else if (e.key === 'Escape') exitReview();
+    return;
+  }
   if (e.key === 'Escape') { $('#ctrlOverlay').classList.add('hidden'); return; }
   if (e.key === 'Enter') enterAction();
 });
@@ -147,7 +154,7 @@ function initController() {
 }
 // Enter 或控制列按鈕的動作：大廳=開始、遊戲中=略過、結算=重置再玩
 function enterAction() {
-  const s = S.session; if (!s || !KEY) return;
+  const s = S.session; if (!s || !KEY || S.review.active) return;
   if (s.phase === 'final_ranking') {
     if (Date.now() - S.finalAt > 3000) resetGame(); // 剛進結算 3 秒內防誤觸
   } else advance();
@@ -221,6 +228,7 @@ function watchPlayers(sessionId) {
 
 async function onSessionState(s) {
   if (s.phase === 'final_ranking' && S.session?.phase !== 'final_ranking') S.finalAt = Date.now();
+  if (s.phase !== 'final_ranking' && S.review.active) S.review = { active: false, idx: 0, data: null }; // 離開結算就退出回顧
   S.session = s;
   if (KEY && !$('#ctrlOverlay').classList.contains('hidden')) updateOverlay();
   if (['question_show', 'question_open', 'question_result'].includes(s.phase)) {
@@ -260,7 +268,7 @@ function render() {
   if (s.phase === 'question_show') return renderShow();
   if (s.phase === 'question_open') return renderOpen();
   if (s.phase === 'question_result') return renderResult();
-  if (s.phase === 'final_ranking') return renderFinal();
+  if (s.phase === 'final_ranking') return S.review.active ? renderReview() : renderFinal();
 }
 
 // ── 大廳 ────────────────────────────────────────────────────
@@ -408,7 +416,60 @@ function renderFinal() {
         <div class="row${i === 0 ? ' first' : ''}" style="animation-delay:${(i * .12).toFixed(2)}s">
           <span class="rk">${i + 1}</span><span class="who">${esc(t.table)} 桌<small>${t.members} 人</small></span>
           <span class="col">${t.avg_correct} 題</span><span class="col">${secs(t.avg_ms)}s</span></div>`).join('')}</div>
-    </div></div>`;
+    </div></div>
+    ${KEY ? `<div class="review-cta"><button class="btn-gold" id="btnReview">🔍 回顧本次作答結果</button></div>` : ''}`;
+  $('#btnReview')?.addEventListener('click', enterReview);
+}
+
+// ── 回顧模式：逐題檢視正解、分布、最速答對 ──────────────────
+async function enterReview() {
+  try {
+    const data = await rpc('get_review', { p_session_id: S.session.sessionId });
+    if (!data || !data.length) { alert('目前沒有可回顧的作答資料'); return; }
+    S.review = { active: true, idx: 0, data };
+    renderReview();
+  } catch (e) {
+    alert('無法載入回顧資料：' + e.message + '\n（若剛新增功能，請先在 Supabase 執行 get_review 那段 SQL）');
+  }
+}
+function exitReview() { S.review.active = false; renderFinal(); }
+function reviewNav(d) {
+  const n = S.review.data.length;
+  const i = Math.max(0, Math.min(n - 1, S.review.idx + d));
+  if (i !== S.review.idx) { S.review.idx = i; renderReview(); }
+}
+function renderReview() {
+  const d = S.review.data, i = S.review.idx, q = d[i];
+  const counts = q.counts || [0, 0, 0, 0];
+  const max = Math.max(1, ...counts);
+  const top = q.top || [];
+  body.innerHTML = `
+    <div class="review-head">🔍 回顧・第 ${q.index + 1} 題（共 ${d.length} 題）</div>
+    <div class="resultgrid">
+      <div class="left">
+        <div class="qtext">${esc(q.text)}</div>
+        <div class="opts">${q.options.map((o, k) => {
+          const win = k === q.correct_index;
+          return `<div class="opt ${LETTERS[k]} ${win ? 'win' : 'dim'}">
+            <span class="shape">${SHAPES[k]}</span><span>${esc(o)}</span>
+            ${win ? `<span class="tick">✔</span>` : ''}
+            <span class="bar"><i style="width:${Math.round(counts[k] / max * 90)}px"></i><em>${counts[k]}</em></span></div>`;
+        }).join('')}</div>
+      </div>
+      <div class="top5"><h3>本題最速答對（${q.correct_count}/${q.answered} 人答對）</h3>
+        <ol>${top.length ? top.map((p, k) =>
+          `<li><span class="rk">${k + 1}</span>${esc(p.name)}<span class="pts">${esc(p.table)} 桌・${secs(p.elapsed_ms)}s</span></li>`).join('')
+          : `<li style="border:none; color:var(--muted)">本題無人答對 😲</li>`}</ol></div>
+    </div>
+    <div class="review-nav">
+      <button class="btn-ghost" id="rvPrev" ${i === 0 ? 'disabled' : ''}>← 上一題</button>
+      <span class="rv-idx">${i + 1} / ${d.length}</span>
+      <button class="btn-ghost" id="rvNext" ${i === d.length - 1 ? 'disabled' : ''}>下一題 →</button>
+      <button class="btn-gold" id="rvBack">回到總排行榜</button>
+    </div>`;
+  $('#rvPrev').onclick = () => reviewNav(-1);
+  $('#rvNext').onclick = () => reviewNav(1);
+  $('#rvBack').onclick = exitReview;
 }
 
 boot();

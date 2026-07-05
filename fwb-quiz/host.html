@@ -58,12 +58,23 @@ async function boot() {
     sync.start();
     startConductor();
     keepAwake();
+    initHostKeys();
     lobbyTimer = setInterval(refreshLobby, 2000);
     refreshLobby();
   } catch (e) {
     body.innerHTML = `<div class="hpanel"><h2 style="color:var(--bad)">無法進入控制台</h2>
       <p style="font-size:13px;margin-top:8px">${esc(e.message)}</p></div>`;
   }
+}
+
+// 快捷鍵：Enter = 開始遊戲（大廳）／緊急略過（遊戲中）。在輸入框或按鈕上不觸發。
+function initHostKeys() {
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    if (e.target instanceof Element && e.target.matches('input,textarea,select,button,a')) return;
+    const s = S.session; if (!s) return;
+    if (s.phase === 'lobby' || ['question_show','question_open','question_result'].includes(s.phase)) advance();
+  });
 }
 
 // 螢幕保持喚醒（支援的裝置上防止手機鎖屏中斷流程）
@@ -131,8 +142,8 @@ function render() {
         : `🏁 <b>遊戲結束</b>——大螢幕正在顯示最終排行榜`}</div>
       ${running ? `<div class="hq">「${esc(qText)}」</div>` : ''}
       <div class="hrow">
-        ${inLobby ? `<button class="btn-gold pulse" id="btnStart">開始遊戲</button>` : ''}
-        ${running ? `<button class="btn-ghost" id="btnSkip">緊急略過本階段 ▸</button>` : ''}
+        ${inLobby ? `<button class="btn-gold pulse" id="btnStart">開始遊戲（Enter）</button>` : ''}
+        ${running ? `<button class="btn-ghost" id="btnSkip">緊急略過本階段 ▸（Enter）</button>` : ''}
         <button class="btn-ghost" id="btnReset">重置整場（清空玩家）</button>
       </div>
     </div>
