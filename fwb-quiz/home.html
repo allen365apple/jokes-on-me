@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>支薪好友現場問答系統首頁</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  body{min-height:100dvh; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 90% at 50% -10%, #46403B 0%, var(--bg) 60%); padding:32px 20px}
+  .hub{width:min(460px,100%)}
+  .hub .logo{font-weight:900; font-size:14px; color:var(--gold); letter-spacing:.14em; text-align:center}
+  .hub h1{font-size:clamp(21px,5vw,26px); font-weight:900; text-align:center; margin:8px 0 6px; letter-spacing:.03em}
+  .hub .sub{font-size:13px; color:var(--muted); text-align:center; margin-bottom:26px}
+  .card{display:block; background:var(--panel2); border:1px solid #55504b; border-radius:16px;
+    padding:18px 20px; margin-bottom:14px; text-decoration:none; color:var(--ink);
+    transition:transform .15s, border-color .15s; position:relative}
+  a.card:hover{transform:translateY(-2px); border-color:var(--gold)}
+  .card .name{font-size:18px; font-weight:900; display:flex; align-items:center; gap:10px}
+  .card .name .arrow{margin-left:auto; color:var(--gold); font-size:20px}
+  .card .desc{font-size:13px; color:var(--muted); margin-top:6px; line-height:1.6}
+  .card.primary{background:linear-gradient(135deg, rgba(244,180,0,.16), var(--panel2)); border-color:var(--gold)}
+  .staff{margin-top:26px}
+  .staff-label{font-size:11px; letter-spacing:.25em; color:var(--muted); font-weight:800; margin-bottom:10px;
+    display:flex; align-items:center; gap:10px}
+  .staff-label::after{content:""; flex:1; height:1px; background:#55504b}
+  .keyrow{display:flex; gap:8px; margin-bottom:14px}
+  .keyrow input{flex:1; background:var(--panel); border:1px solid #5a534e; color:var(--ink);
+    border-radius:10px; padding:11px 14px; font:inherit; font-size:14px; font-weight:700}
+  .keyrow input:focus{outline:2px solid var(--gold); border-color:var(--gold)}
+  .card.disabled{opacity:.45; pointer-events:none}
+  .keyhint{font-size:12px; color:var(--muted); margin-top:-6px; margin-bottom:14px; line-height:1.6}
+  .foot{text-align:center; font-size:11px; color:#6d665f; margin-top:24px; letter-spacing:.05em}
+</style>
+</head>
+<body>
+<div class="hub">
+  <div class="logo">FWB.manzai</div>
+  <h1>支薪好友現場問答系統首頁</h1>
+  <p class="sub">喜劇專場《向上管理》・串場互動遊戲「績效考核」</p>
+
+  <a class="card primary" href="index.html">
+    <div class="name">🙋 觀眾加入 <span class="arrow">→</span></div>
+    <div class="desc">輸入名字、選桌號開始玩（觀眾掃大螢幕 QR code 也是到這裡）</div>
+  </a>
+
+  <div class="staff">
+    <div class="staff-label">工作人員專區</div>
+    <div class="keyrow"><input id="keyInput" type="password" placeholder="輸入主持人金鑰，解鎖下面兩個入口" autocomplete="off"></div>
+    <p class="keyhint" id="keyHint">金鑰只會存在這台裝置上，輸入一次就記住。</p>
+
+    <a class="card disabled" id="cardScreen" href="screen.html">
+      <div class="name">🖥 大螢幕（投影＋控制）<span class="arrow">→</span></div>
+      <div class="desc">演出當天投影用。按 F 全螢幕、Enter 開始／略過，右上角 ⚙ 控制台</div>
+    </a>
+
+    <a class="card disabled" id="cardHost" href="host.html">
+      <div class="name">🛠 主持人後台 <span class="arrow">→</span></div>
+      <div class="desc">看遊戲狀態、改題目與秒數、拖曳調整題目順序</div>
+    </a>
+  </div>
+
+  <div class="foot">看我笑話工作室 × 支薪好友（FWB.manzai）</div>
+</div>
+
+<script>
+  // 金鑰記在本機，之後開這頁自動帶入；連結自動附上 ?key=
+  const input = document.getElementById('keyInput');
+  const hint = document.getElementById('keyHint');
+  const cards = [
+    { el: document.getElementById('cardScreen'), page: 'screen.html' },
+    { el: document.getElementById('cardHost'),   page: 'host.html' },
+  ];
+  function apply() {
+    const k = input.value.trim();
+    for (const c of cards) {
+      c.el.classList.toggle('disabled', !k);
+      c.el.href = k ? c.page + '?key=' + encodeURIComponent(k) : c.page;
+    }
+    hint.textContent = k ? '✓ 已解鎖，金鑰已記住（只存在這台裝置上）'
+                         : '金鑰只會存在這台裝置上，輸入一次就記住。';
+    if (k) localStorage.setItem('fwbquiz:hostkey', k);
+  }
+  input.value = localStorage.getItem('fwbquiz:hostkey') || '';
+  input.addEventListener('input', apply);
+  apply();
+</script>
+</body>
+</html>
