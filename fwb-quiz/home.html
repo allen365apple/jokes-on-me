@@ -29,6 +29,7 @@
   .keyrow input{flex:1; background:var(--panel); border:1px solid #5a534e; color:var(--ink);
     border-radius:10px; padding:11px 14px; font:inherit; font-size:14px; font-weight:700}
   .keyrow input:focus{outline:2px solid var(--gold); border-color:var(--gold)}
+  .keyrow input.err{border-color:var(--bad)}
   .card.disabled{opacity:.45; pointer-events:none}
   .keyhint{font-size:12px; color:var(--muted); margin-top:-6px; margin-bottom:14px; line-height:1.6}
   .foot{text-align:center; font-size:11px; color:#6d665f; margin-top:24px; letter-spacing:.05em}
@@ -47,8 +48,8 @@
 
   <div class="staff">
     <div class="staff-label">工作人員專區</div>
-    <div class="keyrow"><input id="keyInput" type="password" placeholder="輸入主持人金鑰，解鎖下面兩個入口" autocomplete="off"></div>
-    <p class="keyhint" id="keyHint">金鑰只會存在這台裝置上，輸入一次就記住。</p>
+    <div class="keyrow"><input id="keyInput" type="password" placeholder="輸入工作人員密碼，解鎖下面兩個入口" autocomplete="off"></div>
+    <p class="keyhint" id="keyHint">輸入工作人員密碼，解鎖下面兩個入口。</p>
 
     <a class="card disabled" id="cardScreen" href="screen.html">
       <div class="name">🖥 大螢幕（投影＋控制）<span class="arrow">→</span></div>
@@ -65,7 +66,12 @@
 </div>
 
 <script>
-  // 金鑰記在本機，之後開這頁自動帶入；連結自動附上 ?key=
+  // 前台密碼（給工作人員記的）跟後端真正的主持人金鑰分開：
+  // 密碼對了才會用真金鑰組出連結，工作人員完全不用知道真金鑰是什麼。
+  const STAFF_PASSWORD = 'joke0321';
+  const HOST_KEY = 'fwb-host-x7k2m9';
+  const STORE_KEY = 'fwbquiz:staffpw';
+
   const input = document.getElementById('keyInput');
   const hint = document.getElementById('keyHint');
   const cards = [
@@ -73,16 +79,19 @@
     { el: document.getElementById('cardHost'),   page: 'host.html' },
   ];
   function apply() {
-    const k = input.value.trim();
+    const pw = input.value.trim();
+    const ok = pw === STAFF_PASSWORD;
     for (const c of cards) {
-      c.el.classList.toggle('disabled', !k);
-      c.el.href = k ? c.page + '?key=' + encodeURIComponent(k) : c.page;
+      c.el.classList.toggle('disabled', !ok);
+      c.el.href = ok ? c.page + '?key=' + encodeURIComponent(HOST_KEY) : c.page;
     }
-    hint.textContent = k ? '✓ 已解鎖，金鑰已記住（只存在這台裝置上）'
-                         : '金鑰只會存在這台裝置上，輸入一次就記住。';
-    if (k) localStorage.setItem('fwbquiz:hostkey', k);
+    input.classList.toggle('err', !!pw && !ok);
+    hint.textContent = !pw ? '輸入工作人員密碼，解鎖下面兩個入口。'
+                     : ok  ? '✓ 密碼正確，已解鎖（這台裝置會記住）'
+                           : '✗ 密碼不對，請再確認一次';
+    if (ok) localStorage.setItem(STORE_KEY, pw);
   }
-  input.value = localStorage.getItem('fwbquiz:hostkey') || '';
+  input.value = localStorage.getItem(STORE_KEY) || '';
   input.addEventListener('input', apply);
   apply();
 </script>
