@@ -456,7 +456,7 @@ function renderReview() {
             <span class="bar"><i style="width:${Math.round(counts[k] / max * 90)}px"></i><em>${counts[k]}</em></span></div>`;
         }).join('')}</div>
       </div>
-      <div class="top5"><h3>本題最速答對（${q.correct_count}/${q.answered} 人答對）</h3>
+      <div class="top5"><h3>排行榜　<span style="color:var(--muted);font-weight:700;letter-spacing:0">${q.correct_count}/${q.answered} 人答對</span></h3>
         <ol>${top.length ? top.map((p, k) =>
           `<li><span class="rk">${k + 1}</span>${esc(p.name)}<span class="pts">${esc(p.table)} 桌・${secs(p.elapsed_ms)}s</span></li>`).join('')
           : `<li style="border:none; color:var(--muted)">本題無人答對 😲</li>`}</ol></div>
