@@ -5,12 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>績效考核・主持人｜支薪好友《向上管理》</title>
-<link rel="stylesheet" href="shared.css">
+<link rel="icon" href="logo.jpg">
+<link rel="apple-touch-icon" href="logo.jpg">
+<link rel="stylesheet" href="shared.css?v=20260706a">
 </head>
 <body>
 <div class="host">
   <div class="host-head">
-    <h1><img class="logo-img" src="logo.jpg" alt="FWB.manzai" style="margin-right:8px" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo',textContent:'FWB.manzai'}))">「績效考核」主持人控制台</h1>
+    <h1><img class="logo-img" src="logo.jpg" alt="FWB.manzai" style="margin-right:8px" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo',textContent:'FWB.manzai'}))">支薪好友現場問答系統．主持人控制台</h1>
     <a class="btn-ghost" id="lnkScreen" target="_blank" style="margin-left:auto; text-decoration:none; white-space:nowrap">🖥 開啟大螢幕 ↗</a>
   </div>
   <p class="subtitle">此頁是整場的節奏驅動者——遊戲進行中請全程保持開啟、螢幕不要鎖定。</p>
@@ -20,7 +22,7 @@
 
 <script type="module">
 import { CONFIG, rpc, clock, createSync, normalizeState,
-         TABLE_IDS, LETTERS, $, esc } from './shared.js';
+         TABLE_IDS, LETTERS, $, esc } from './shared.js?v=20260706a';
 
 const KEY = new URLSearchParams(location.search).get('key') || '';
 const body = $('#body');
@@ -146,6 +148,14 @@ function render() {
         ${running ? `<button class="btn-ghost" id="btnSkip">緊急略過本階段 ▸（Enter）</button>` : ''}
         <button class="btn-ghost" id="btnReset">重置整場（清空玩家）</button>
       </div>
+      <div class="hsub">
+        <label>大螢幕左上角文字</label>
+        <div class="hsub-row">
+          <input id="subInput" maxlength="40" value="${esc(s.subtitle || '支薪好友專場互動之《績效考核》')}">
+          <button class="btn-ghost" id="subSave">更新</button>
+          <span class="savebar msg" id="subMsg"></span>
+        </div>
+      </div>
     </div>
 
     <div class="hpanel">
@@ -193,6 +203,20 @@ function render() {
       const st = normalizeState(await rpc('host_reset', { p_code: CONFIG.joinCode, p_secret: KEY }));
       S.session = st; S.renderedKey = ''; render(); refreshLobby();
     } catch (e) { alert('重置失敗：' + e.message); }
+  });
+  $('#subSave')?.addEventListener('click', async () => {
+    const msg = $('#subMsg');
+    try {
+      const st = normalizeState(await rpc('host_set_subtitle',
+        { p_code: CONFIG.joinCode, p_secret: KEY, p_text: $('#subInput').value }));
+      S.session.subtitle = st.subtitle;
+      msg.textContent = '✓ 已更新，大螢幕即時生效';
+      msg.classList.remove('err');
+    } catch (e) {
+      msg.textContent = /host_set_subtitle/.test(e.message)
+        ? '請先在 Supabase 執行 host_set_subtitle 那段 SQL' : ('更新失敗：' + e.message);
+      msg.classList.add('err');
+    }
   });
   $('#segSync').querySelectorAll('button').forEach(b => b.addEventListener('click', async () => {
     try {

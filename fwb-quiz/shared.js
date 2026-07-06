@@ -80,6 +80,7 @@ export function normalizeState(x) {
     phaseUntil: ts(x.phase_until),
     syncMode: x.sync_mode,
     answeredCount: x.answered_count,
+    subtitle: x.screen_subtitle,
     playerCount: x.player_count,     // 只有 RPC 有
     questionCount: x.question_count, // 只有 RPC 有
   };

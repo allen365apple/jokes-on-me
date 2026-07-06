@@ -267,6 +267,14 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .hcard span{font-size:12px; color:var(--muted); font-weight:700}
 .hnote{font-size:13px; color:var(--muted); line-height:1.9}
 .hnote b{color:var(--ink)}
+.hsub{margin-top:14px; border-top:1px solid #55504b; padding-top:12px}
+.hsub label{display:block; font-size:11px; letter-spacing:.15em; color:var(--muted); font-weight:800; margin-bottom:8px}
+.hsub-row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+.hsub-row input{flex:1; min-width:180px; background:var(--bg2); border:1px solid #5a534e; color:var(--ink);
+  border-radius:8px; padding:9px 12px; font:inherit; font-weight:700}
+.hsub-row input:focus{outline:2px solid var(--gold); border-color:var(--gold)}
+.hsub-row .msg{font-size:13px; font-weight:700; color:var(--ok)}
+.hsub-row .msg.err{color:var(--bad)}
 .hrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px}
 .seg{display:flex; border:1px solid #5a534e; border-radius:10px; overflow:hidden}
 .seg button{background:transparent; color:var(--muted); padding:8px 14px; font-size:13px; border-radius:0}

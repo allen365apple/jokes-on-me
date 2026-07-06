@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>績效考核・大螢幕｜支薪好友《向上管理》</title>
-<link rel="stylesheet" href="shared.css">
+<link rel="icon" href="logo.jpg">
+<link rel="apple-touch-icon" href="logo.jpg">
+<link rel="stylesheet" href="shared.css?v=20260706a">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
@@ -34,7 +36,7 @@
 <div class="stage">
   <div class="stage-head">
     <img class="logo-img" src="logo.jpg" alt="FWB.manzai" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'logo',textContent:'FWB.manzai'}))">
-    <span class="sub">《向上管理》・績效考核</span>
+    <span class="sub" id="stageSub">支薪好友專場互動之《績效考核》</span>
     <span class="qtag" id="qtag"></span>
     <div class="topctrl" id="topCtrl"></div>
   </div>
@@ -71,7 +73,7 @@
 
 <script type="module">
 import { CONFIG, rpc, sb, clock, createSync, normalizeState,
-         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js';
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260706a';
 
 const body = $('#body');
 // 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
@@ -227,6 +229,7 @@ function watchPlayers(sessionId) {
 }
 
 async function onSessionState(s) {
+  if (s.subtitle) { const el = $('#stageSub'); if (el) el.textContent = s.subtitle; } // 主持人可改的大螢幕副標
   if (s.phase === 'final_ranking' && S.session?.phase !== 'final_ranking') S.finalAt = Date.now();
   if (s.phase !== 'final_ranking' && S.review.active) S.review = { active: false, idx: 0, data: null }; // 離開結算就退出回顧
   S.session = s;
