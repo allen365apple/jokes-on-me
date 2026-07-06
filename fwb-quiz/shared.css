@@ -15,6 +15,10 @@
 html,body{background:var(--bg); color:var(--ink)}
 button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weight:800}
 
+/* 站標 logo 圖片（各頁通用；圖片缺失時 alt 文字自動遞補） */
+.logo-img{display:inline-block; vertical-align:middle; height:30px; width:auto; border-radius:7px}
+.logo-img.hero{display:block; margin:0 auto 12px; height:88px; border-radius:18px}
+
 /* 捲軸（演出網頁慣例：深色） */
 ::-webkit-scrollbar{width:8px; height:8px}
 ::-webkit-scrollbar-thumb{background:#57514c; border-radius:99px}
