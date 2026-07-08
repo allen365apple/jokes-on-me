@@ -24,7 +24,7 @@ body {
 .wrap {
   max-width: 880px;
   margin: 0 auto;
-  padding: 9vh 28px 56px;
+  padding: 8vh 28px 56px;
 }
 .eyebrow {
   font-size: 15px;
@@ -53,8 +53,8 @@ h1 {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 7vh;
-  font-size: 19px;
+  margin-top: 5.5vh;
+  font-size: 17px;
   font-weight: 900;
   letter-spacing: 4px;
   color: #c0451a;
@@ -68,9 +68,9 @@ h1 {
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 26px;
-  margin-top: 26px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
 }
 .card {
   display: block;
@@ -78,52 +78,42 @@ h1 {
   color: inherit;
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid #ffe2c9;
-  border-radius: 26px;
-  padding: 34px 32px 30px;
-  box-shadow: 0 10px 34px rgba(255, 122, 41, 0.10);
-  transition: transform .25s ease, box-shadow .25s ease;
+  border-radius: 18px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 6px 20px rgba(255, 122, 41, 0.08);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 46px rgba(255, 110, 30, 0.20);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(255, 110, 30, 0.18);
 }
-.icon {
-  width: 62px;
-  height: 62px;
-  border-radius: 19px;
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .5px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #ffb35c 0%, #ff6b35 100%);
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.35);
+  gap: 8px;
+  line-height: 1.35;
 }
-.icon svg { width: 32px; height: 32px; }
-.card h2 {
-  margin: 22px 0 10px;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
+.card h2 .emj { font-size: 21px; line-height: 1; flex: 0 0 auto; }
 .card p {
   margin: 0;
-  font-size: 15.5px;
-  line-height: 1.8;
+  font-size: 13px;
+  line-height: 1.65;
   color: #8d7763;
 }
 .go {
   display: inline-block;
-  margin-top: 22px;
-  font-size: 15px;
+  margin-top: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #ff6320;
 }
-.go span {
-  display: inline-block;
-  transition: transform .25s ease;
-}
-.card:hover .go span { transform: translateX(6px); }
-.icon .emj { font-size: 30px; line-height: 1; }
-.edit-link { margin-top: 7vh; }
+.go span { display: inline-block; transition: transform .2s ease; }
+.card:hover .go span { transform: translateX(5px); }
+.edit-link { margin-top: 6vh; }
 .edit-link a {
   font-size: 14px;
   font-weight: 700;
@@ -131,6 +121,7 @@ h1 {
   text-decoration: none;
   border-bottom: 1px dashed #e0bb97;
   padding-bottom: 2px;
+  cursor: pointer;
 }
 .edit-link a:hover { color: #ff6320; border-color: #ff6320; }
 footer {
@@ -139,6 +130,79 @@ footer {
   letter-spacing: 2px;
   color: #c4ab92;
 }
+
+#editor-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 33, 24, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+#editor {
+  background: #fffdfa;
+  border-radius: 20px;
+  max-width: 540px;
+  width: 100%;
+  max-height: 86vh;
+  overflow-y: auto;
+  padding: 26px 28px 22px;
+  box-shadow: 0 24px 60px rgba(43, 33, 24, 0.3);
+}
+#editor h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; }
+#editor .ehint { font-size: 13px; color: #9a826e; margin-bottom: 16px; }
+.tool-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 2px;
+  border-bottom: 1px solid #ffe9d6;
+  font-size: 14.5px;
+}
+.tool-row .tr-name { flex: 1; font-weight: 700; }
+.tool-row .tr-cat { color: #c98a5a; font-size: 12px; flex: 0 0 auto; }
+.ebtn {
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 9px;
+  border: 1.5px solid #ffcfa3;
+  background: #fff;
+  color: #ff6320;
+  cursor: pointer;
+}
+.ebtn:hover { border-color: #ff6320; }
+.ebtn.primary {
+  background: linear-gradient(135deg, #ffb35c 0%, #ff6b35 100%);
+  border: none;
+  color: #fff;
+  padding: 8px 22px;
+  font-size: 14.5px;
+}
+.ebtn.primary:hover { filter: brightness(1.05); }
+.ebtn.danger { color: #c0392b; border-color: #f2c4bd; }
+.ebtn.danger:hover { border-color: #c0392b; }
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 13px; font-weight: 700; color: #8d7763; margin-bottom: 4px; }
+.field input[type=text], .field textarea {
+  width: 100%;
+  border: 1px solid #ffd9b0;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14.5px;
+  background: #fff;
+  color: inherit;
+}
+.field textarea { resize: vertical; }
+.field .chk { font-size: 14.5px; color: #4a3a2c; display: flex; align-items: center; gap: 8px; }
+.ebtns { display: flex; gap: 10px; margin-top: 18px; align-items: center; }
+.ebtns .spacer { flex: 1; }
+#editor-msg { font-size: 13px; color: #c0451a; min-height: 18px; margin-top: 12px; line-height: 1.6; }
+#editor-msg a { color: #ff6320; }
 </style>
 </head>
 <body>
@@ -151,137 +215,91 @@ footer {
   <div class="section-title">團隊內部工具</div>
   <div class="cards">
     <a class="card" href="member-only-content/member-only-content-preview-2026-06.html" rel="nofollow">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3.5" y="3.5" width="17" height="13" rx="2.6"/>
-          <circle cx="8.5" cy="8.5" r="1.6"/>
-          <path d="M4 14l4.5-4 3.5 3 3-2.5L20 14"/>
-          <path d="M12 17.5V22m0 0l-2.4-2.4M12 22l2.4-2.4"/>
-        </svg>
-      </div>
-      <h2>走心分享預覽</h2>
-      <p>當月會員電子報預覽圖下載＋全文閱讀。每位成員一張 IG 預覽圖可下載，往下看完整走心分享內容。</p>
+      <h2><span class="emj">💌</span>走心分享預覽</h2>
+      <p>當月會員電子報預覽圖下載＋全文閱讀。每位成員一張 IG 預覽圖可下載。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
-
     <a class="card" href="https://jessechen-humanoid.github.io/jokesonme/" target="_blank" rel="noopener">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="8.5"/>
-          <path d="M12 7.5v9"/>
-          <path d="M14.5 9.5c0-1-1.1-1.7-2.5-1.7s-2.5.7-2.5 1.7 1 1.5 2.5 1.7 2.5.7 2.5 1.7-1.1 1.7-2.5 1.7-2.5-.7-2.5-1.7"/>
-        </svg>
-      </div>
-      <h2>收支記錄</h2>
-      <p>看我笑話的收支記帳工具。記錄每場演出與團務的收入、支出明細，帳目一目瞭然。</p>
+      <h2><span class="emj">💰</span>收支記錄</h2>
+      <p>看我笑話的收支記帳工具。記錄每場演出與團務的收入、支出明細。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
-
     <a class="card" href="https://jessechen-humanoid.github.io/jokesonme-post/" target="_blank" rel="noopener">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3.5" y="6" width="14" height="14" rx="2.6"/>
-          <path d="M4 16.5l4-3.5 3 2.5 2.5-2 4 3.5"/>
-          <path d="M18.5 2.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/>
-        </svg>
-      </div>
-      <h2>社群素材產生器</h2>
-      <p>社群貼文素材產生器。快速做出看我笑話風格的貼文圖片素材，發文不用再等設計。</p>
+      <h2><span class="emj">🎨</span>社群素材產生器</h2>
+      <p>快速做出看我笑話風格的貼文圖片素材，發文不用再等設計。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
-
     <a class="card" href="web-guide.html">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 3.5h9l5 5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/>
-          <path d="M13.5 3.5V9h5"/>
-          <line x1="8" y1="13" x2="15" y2="13"/>
-          <line x1="8" y1="16.5" x2="13" y2="16.5"/>
-        </svg>
-      </div>
-      <h2>網頁製作須知</h2>
-      <p>做現場喜劇投影網頁的重點摘要：上下留白、全螢幕快捷鍵、現場可調控制台。可下載完整版規範。</p>
-      <div class="go">開啟須知 <span>→</span></div>
+      <h2><span class="emj">📋</span>網頁製作須知</h2>
+      <p>做現場喜劇投影網頁的重點摘要，可下載完整版規範。</p>
+      <div class="go">開啟工具 <span>→</span></div>
     </a>
   </div>
 
   <div class="section-title">現場演出工具</div>
   <div class="cards">
     <a class="card" href="mahjong-draw.html">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round">
-          <rect x="5" y="2.5" width="14" height="19" rx="3.2"/>
-          <circle cx="12" cy="12" r="3.4"/>
-          <circle cx="12" cy="12" r="0.8" fill="#ffffff"/>
-        </svg>
-      </div>
-      <h2>看我摸牌</h2>
-      <p>即興劇麻將抽牌機。空白鍵一按抽出一張臺灣麻將，顯示牌面與唸法，演員要把它放進臺詞裡。</p>
+      <h2><span class="emj">🀄</span>看我摸牌</h2>
+      <p>即興劇麻將抽牌機。空白鍵抽一張臺灣麻將，顯示牌面與唸法。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
-
     <a class="card" href="comment-lottery.html">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-6.5L6 20v-4H7a3 3 0 0 1-3-3z"/>
-          <line x1="8.5" y1="8.5" x2="15.5" y2="8.5"/>
-          <line x1="8.5" y1="12" x2="13" y2="12"/>
-        </svg>
-      </div>
-      <h2>現場抽籤機</h2>
-      <p>觀眾留言抽籤機。觀眾掃 QR Code 填寫表單，現場隨機抽出笑ㄟ留言，同回合不重複。</p>
+      <h2><span class="emj">🎫</span>現場抽籤機</h2>
+      <p>觀眾掃 QR Code 填表單，現場隨機抽出笑ㄟ留言，同回合不重複。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
-
     <a class="card" href="fwb-quiz/home.html">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="8.5"/>
-          <path d="M9.5 9.3a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1 1-1.1 1.8v.4"/>
-          <path d="M12 16.8h.01"/>
-        </svg>
-      </div>
-      <h2>現場問答系統 by 支薪好友</h2>
-      <p>專場用的即時問答系統：主控台出題、大螢幕顯示與逐題回顧，還有觀眾排行榜。</p>
+      <h2><span class="emj">❓</span>現場問答系統 by 支薪好友</h2>
+      <p>專場即時問答：主控台出題、大螢幕顯示與逐題回顧、觀眾排行榜。</p>
       <div class="go">開啟工具 <span>→</span></div>
     </a>
   </div>
   </div>
 
   <div class="edit-link">
-    <a href="https://docs.google.com/spreadsheets/d/1iMUP4kyXIEpfQmT3gYavksO6hJsp1jFnmIUaeeYdxoY/edit" target="_blank" rel="noopener">＋ 新增或修改工具（編輯 Google 試算表）</a>
+    <a id="open-editor">＋ 新增或修改工具</a>
   </div>
 
   <footer>看我笑話工作室・JOKES ON ME</footer>
 </div>
 
+<div id="editor-overlay">
+  <div id="editor"></div>
+</div>
+
 <script>
-/* ===== 工具清單改由 Google 試算表管理 =====
-   表格網址見下方 SHEET_ID，欄位：分類、名稱、描述、網址、圖示（emoji）、開新分頁（是/否）。
-   讀取成功會蓋掉上面寫死的卡片；讀不到（沒網路、權限沒開）就維持內建清單。 */
+/* ===== 工具清單由 Google 試算表管理 =====
+   讀取：公開的 gviz JSON。寫入：透過 Apps Script 寫入通道（EXEC_URL）。
+   欄位：分類、名稱、描述、網址、圖示（emoji）、開新分頁（是/否）。 */
 const SHEET_ID = '1iMUP4kyXIEpfQmT3gYavksO6hJsp1jFnmIUaeeYdxoY';
+const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit';
+/* Apps Script 部署後把網址填到這裡（https://script.google.com/macros/s/....../exec） */
+const EXEC_URL = '';
+
+let sheetRows = null; /* [{ idx, cells: [分類,名稱,描述,網址,圖示,開新分頁] }] */
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
 
-function renderFromRows(rows) {
-  const data = rows.filter(r => r[0] && r[1] && r[3]);
-  if (!data.length) return;
+function renderCards() {
+  if (!sheetRows || !sheetRows.length) return;
   const groups = [], map = {};
-  data.forEach(r => {
-    const g = r[0].trim();
+  sheetRows.forEach(r => {
+    const g = (r.cells[0] || '').trim();
+    if (!g || !r.cells[1] || !r.cells[3]) return;
     if (!map[g]) { map[g] = []; groups.push(g); }
     map[g].push(r);
   });
   let html = '';
   groups.forEach(g => {
     html += `<div class="section-title">${esc(g)}</div><div class="cards">`;
-    map[g].forEach(([, name, desc, url, icon, nt]) => {
+    map[g].forEach(r => {
+      const [, name, desc, url, icon, nt] = r.cells;
       const target = (nt || '').trim() === '是' ? ' target="_blank" rel="noopener"' : '';
       html += `<a class="card" href="${esc(url.trim())}"${target}>` +
-        `<div class="icon"><span class="emj">${esc((icon || '').trim() || '🔧')}</span></div>` +
-        `<h2>${esc(name)}</h2><p>${esc(desc || '')}</p>` +
+        `<h2><span class="emj">${esc((icon || '').trim() || '🔧')}</span>${esc(name)}</h2>` +
+        `<p>${esc(desc || '')}</p>` +
         `<div class="go">開啟工具 <span>→</span></div></a>`;
     });
     html += '</div>';
@@ -289,14 +307,109 @@ function renderFromRows(rows) {
   document.getElementById('tool-area').innerHTML = html;
 }
 
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`)
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-  .then(txt => {
-    const j = JSON.parse(txt.substring(txt.indexOf('(') + 1, txt.lastIndexOf(')')));
-    const rows = (j.table.rows || []).map(row => (row.c || []).map(c => c && c.v != null ? String(c.v) : ''));
-    renderFromRows(rows);
+function loadTools() {
+  return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&t=${Date.now()}`)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(txt => {
+      const j = JSON.parse(txt.substring(txt.indexOf('(') + 1, txt.lastIndexOf(')')));
+      sheetRows = (j.table.rows || []).map((row, i) => ({
+        idx: i + 1,
+        cells: (row.c || []).map(c => c && c.v != null ? String(c.v) : '')
+      }));
+      renderCards();
+    });
+}
+loadTools().catch(() => { /* 讀不到就用內建清單 */ });
+
+/* ===== 彈出視窗編輯器 ===== */
+const overlay = document.getElementById('editor-overlay');
+const editor = document.getElementById('editor');
+
+function openEditor() {
+  overlay.style.display = 'flex';
+  (sheetRows ? Promise.resolve() : loadTools()).then(showList).catch(showList);
+}
+function closeEditor() { overlay.style.display = 'none'; }
+overlay.addEventListener('click', e => { if (e.target === overlay) closeEditor(); });
+document.getElementById('open-editor').addEventListener('click', openEditor);
+
+function showList() {
+  let rowsHtml = '';
+  (sheetRows || []).forEach(r => {
+    if (!r.cells[1]) return;
+    rowsHtml += `<div class="tool-row">` +
+      `<span>${esc((r.cells[4] || '🔧').trim() || '🔧')}</span>` +
+      `<span class="tr-name">${esc(r.cells[1])}</span>` +
+      `<span class="tr-cat">${esc(r.cells[0] || '')}</span>` +
+      `<button class="ebtn" onclick="showForm(${r.idx})">編輯</button></div>`;
+  });
+  if (!rowsHtml) rowsHtml = '<div class="ehint">（還讀不到工具清單，請確認網路或試算表權限）</div>';
+  editor.innerHTML = `<h3>管理工具</h3>` +
+    `<div class="ehint">修改會直接寫進共用的 Google 試算表，大家重新整理都看得到。</div>` +
+    rowsHtml +
+    `<div class="ebtns"><button class="ebtn primary" onclick="showForm(null)">＋ 新增工具</button>` +
+    `<span class="spacer"></span><button class="ebtn" onclick="closeEditor()">關閉</button></div>` +
+    `<div id="editor-msg"><a href="${SHEET_EDIT_URL}" target="_blank" rel="noopener">或直接開試算表編輯 →</a></div>`;
+}
+
+function showForm(idx) {
+  const row = idx ? sheetRows.find(r => r.idx === idx) : null;
+  const c = row ? row.cells : ['', '', '', '', '', '否'];
+  const cats = [...new Set((sheetRows || []).map(r => (r.cells[0] || '').trim()).filter(Boolean))];
+  editor.innerHTML = `<h3>${row ? '編輯工具' : '新增工具'}</h3>` +
+    `<div class="ehint">填完按儲存，會寫進共用試算表。</div>` +
+    `<div class="field"><label>分類（可輸入新分類，會自動長出新區塊）</label>` +
+    `<input type="text" id="f-cat" list="cat-list" value="${esc(c[0])}" placeholder="例如：團隊內部工具">` +
+    `<datalist id="cat-list">${cats.map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>` +
+    `<div class="field"><label>名稱</label><input type="text" id="f-name" value="${esc(c[1])}" placeholder="工具名稱"></div>` +
+    `<div class="field"><label>描述</label><textarea id="f-desc" rows="2" placeholder="一兩句話說明這個工具">${esc(c[2])}</textarea></div>` +
+    `<div class="field"><label>網址</label><input type="text" id="f-url" value="${esc(c[3])}" placeholder="https://... 或同站的檔名"></div>` +
+    `<div class="field"><label>圖示（貼一個 emoji）</label><input type="text" id="f-icon" value="${esc(c[4])}" placeholder="例如 🀄"></div>` +
+    `<div class="field"><label class="chk"><input type="checkbox" id="f-nt"${(c[5] || '').trim() === '是' ? ' checked' : ''}> 用新分頁開啟（外部網站建議勾選）</label></div>` +
+    `<div class="field"><label>工作人員密碼</label><input type="text" id="f-pass" value="${esc(localStorage.getItem('toolbox-pass') || '')}" placeholder="防止路人亂改用的"></div>` +
+    `<div class="ebtns">` +
+    (row ? `<button class="ebtn danger" onclick="saveTool('delete', ${idx})">刪除</button>` : '') +
+    `<span class="spacer"></span>` +
+    `<button class="ebtn" onclick="showList()">返回</button>` +
+    `<button class="ebtn primary" onclick="saveTool('${row ? 'update' : 'add'}', ${idx || 0})">儲存</button></div>` +
+    `<div id="editor-msg"></div>`;
+}
+
+function saveTool(action, idx) {
+  const msg = document.getElementById('editor-msg');
+  if (!EXEC_URL) {
+    msg.innerHTML = '寫入通道還沒設定好（管理員要先部署 Apps Script）。' +
+      `先用這裡改：<a href="${SHEET_EDIT_URL}" target="_blank" rel="noopener">開啟試算表 →</a>`;
+    return;
+  }
+  const row = {
+    分類: document.getElementById('f-cat').value.trim(),
+    名稱: document.getElementById('f-name').value.trim(),
+    描述: document.getElementById('f-desc').value.trim(),
+    網址: document.getElementById('f-url').value.trim(),
+    圖示: document.getElementById('f-icon').value.trim(),
+    開新分頁: document.getElementById('f-nt').checked ? '是' : '否'
+  };
+  const pass = document.getElementById('f-pass').value.trim();
+  if (action !== 'delete' && (!row.分類 || !row.名稱 || !row.網址)) {
+    msg.textContent = '分類、名稱、網址是必填的。';
+    return;
+  }
+  if (action === 'delete' && !confirm('確定要刪除這個工具？')) return;
+  localStorage.setItem('toolbox-pass', pass);
+  msg.textContent = '儲存中…';
+  fetch(EXEC_URL, {
+    method: 'POST',
+    body: JSON.stringify({ action, rowIndex: idx, row, password: pass })
   })
-  .catch(() => { /* 讀不到就用內建清單，不出錯 */ });
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) { msg.textContent = res.error || '儲存失敗，請再試一次。'; return; }
+      msg.textContent = '已儲存！更新畫面中…';
+      return loadTools().then(showList);
+    })
+    .catch(() => { msg.textContent = '連線失敗，請確認網路後再試。'; });
+}
 </script>
 </body>
 </html>
