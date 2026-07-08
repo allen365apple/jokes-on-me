@@ -16,7 +16,7 @@ function doPost(e) {
     }
     const sh = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     const row = body.row || {};
-    const values = [row['分類'], row['名稱'], row['描述'], row['網址'], row['圖示'], row['開新分頁']];
+    const values = [row['分類'], row['名稱'], row['描述'], row['網址'], row['圖示'], row['開新分頁'], row['額外說明'] || ''];
 
     if (body.action === 'verify') {
       out.ok = true;
@@ -26,7 +26,7 @@ function doPost(e) {
     } else if (body.action === 'update') {
       const r = parseInt(body.rowIndex, 10); // 資料列（不含標題列），第 1 筆 = 試算表第 2 列
       if (!(r >= 1)) throw new Error('rowIndex 不正確');
-      sh.getRange(r + 1, 1, 1, 6).setValues([values]);
+      sh.getRange(r + 1, 1, 1, 7).setValues([values]);
       out.ok = true;
     } else if (body.action === 'delete') {
       const r = parseInt(body.rowIndex, 10);

@@ -208,6 +208,28 @@ footer {
 .ebtns .spacer { flex: 1; }
 #editor-msg { font-size: 13px; color: #c0451a; min-height: 18px; margin-top: 12px; line-height: 1.6; }
 #editor-msg a { color: #ff6320; }
+
+#note-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 33, 24, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
+}
+#note-box {
+  background: #fffdfa;
+  border-radius: 20px;
+  max-width: 460px;
+  width: 100%;
+  padding: 26px 28px 22px;
+  box-shadow: 0 24px 60px rgba(43, 33, 24, 0.3);
+}
+#note-box h3 { margin: 0 0 12px; font-size: 20px; font-weight: 900; }
+#note-text { font-size: 15px; line-height: 1.85; color: #4a3a2c; }
+a.ebtn { text-decoration: none; display: inline-block; }
 </style>
 </head>
 <body>
@@ -251,6 +273,14 @@ footer {
       <p>專場即時問答：主控台出題、大螢幕顯示與逐題回顧、觀眾排行榜。</p>
     </a>
   </div>
+
+  <div class="section-title">其他</div>
+  <div class="cards">
+    <a class="card" href="https://calendar.google.com/calendar/embed?src=b74923a589b7be6546e3dc7be18121230e2f5cf67cd76d88482ca535dbd3dd9d%40group.calendar.google.com&amp;ctz=Asia%2FTaipei" target="_blank" rel="noopener" data-name="看笑演出行事曆（公開）" data-note="這是觀眾也可以訂閱的公開日曆。訂閱方式：點開網址後，點選最下面一排的「新增至 Google 日曆」（電腦版）或是右下角的「＋」（手機版），就可以加入到自己的 Google 訂閱日曆中">
+      <h2><span class="emj">📅</span>看笑演出行事曆（公開）</h2>
+      <p>觀眾也可以訂閱的公開日曆。</p>
+    </a>
+  </div>
   </div>
 
   <div class="edit-link">
@@ -262,6 +292,18 @@ footer {
 
 <div id="editor-overlay">
   <div id="editor"></div>
+</div>
+
+<div id="note-overlay">
+  <div id="note-box">
+    <h3 id="note-title"></h3>
+    <div id="note-text"></div>
+    <div class="ebtns">
+      <span class="spacer"></span>
+      <button class="ebtn" id="note-cancel">取消</button>
+      <a class="ebtn primary" id="note-go" href="#">前往網頁</a>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -294,8 +336,10 @@ function renderCards() {
     html += `<div class="section-title">${esc(g)}</div><div class="cards">`;
     map[g].forEach(r => {
       const [, name, desc, url, icon, nt] = r.cells;
+      const note = (r.cells[6] || '').trim();
       const target = (nt || '').trim() === '是' ? ' target="_blank" rel="noopener"' : '';
-      html += `<a class="card" href="${esc(url.trim())}"${target}>` +
+      const noteAttr = note ? ` data-name="${esc(name)}" data-note="${esc(note)}"` : '';
+      html += `<a class="card" href="${esc(url.trim())}"${target}${noteAttr}>` +
         `<h2><span class="emj">${esc((icon || '').trim() || '🔧')}</span>${esc(name)}</h2>` +
         `<p>${esc(desc || '')}</p></a>`;
     });
@@ -318,6 +362,29 @@ function loadTools() {
 }
 loadTools().catch(() => { /* 讀不到就用內建清單 */ });
 
+/* ===== 額外說明視窗：卡片有填「額外說明」時，先跳出說明確認再前往 ===== */
+const noteOverlay = document.getElementById('note-overlay');
+document.getElementById('tool-area').addEventListener('click', e => {
+  const card = e.target.closest('a.card[data-note]');
+  if (!card) return;
+  e.preventDefault();
+  document.getElementById('note-title').textContent = card.dataset.name || '說明';
+  document.getElementById('note-text').innerHTML = esc(card.dataset.note).replace(/\n/g, '<br>');
+  const go = document.getElementById('note-go');
+  go.href = card.getAttribute('href');
+  if (card.getAttribute('target') === '_blank') {
+    go.setAttribute('target', '_blank');
+    go.setAttribute('rel', 'noopener');
+  } else {
+    go.removeAttribute('target');
+    go.removeAttribute('rel');
+  }
+  noteOverlay.style.display = 'flex';
+});
+document.getElementById('note-cancel').addEventListener('click', () => { noteOverlay.style.display = 'none'; });
+document.getElementById('note-go').addEventListener('click', () => { noteOverlay.style.display = 'none'; });
+noteOverlay.addEventListener('click', e => { if (e.target === noteOverlay) noteOverlay.style.display = 'none'; });
+
 /* ===== 寫入通道 ===== */
 function postExec(payload) {
   return fetch(EXEC_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
@@ -328,7 +395,7 @@ function verifyPass(p) {
     .then(res => res.ok === true || (res.error && res.error !== '密碼錯誤'));
 }
 function rowObj(c) {
-  return { 分類: c[0], 名稱: c[1], 描述: c[2], 網址: c[3], 圖示: c[4], 開新分頁: (c[5] || '否') };
+  return { 分類: c[0], 名稱: c[1], 描述: c[2], 網址: c[3], 圖示: c[4], 開新分頁: (c[5] || '否'), 額外說明: (c[6] || '') };
 }
 
 /* ===== 彈出視窗編輯器 ===== */
@@ -500,6 +567,8 @@ function showForm(idx) {
     `<div class="field"><label>網址</label><input type="text" id="f-url" value="${esc(c[3])}" placeholder="https://... 或同站的檔名"></div>` +
     `<div class="field"><label>圖示（貼一個 emoji）</label><input type="text" id="f-icon" value="${esc(c[4])}" placeholder="例如 🀄"></div>` +
     `<div class="field"><label class="chk"><input type="checkbox" id="f-nt"${(c[5] || '').trim() === '是' ? ' checked' : ''}> 用新分頁開啟（外部網站建議勾選）</label></div>` +
+    `<div class="field"><label>額外說明（選填：有填的話，點卡片會先跳出這段說明，確認後才前往）</label>` +
+    `<textarea id="f-note" rows="3" placeholder="留空＝點卡片直接前往">${esc(c[6] || '')}</textarea></div>` +
     `<div class="ebtns">` +
     (row ? `<button class="ebtn danger" onclick="saveTool('delete', ${idx})">刪除</button>` : '') +
     `<span class="spacer"></span>` +
@@ -523,7 +592,8 @@ function saveTool(action, idx) {
     描述: document.getElementById('f-desc').value.trim(),
     網址: document.getElementById('f-url').value.trim(),
     圖示: document.getElementById('f-icon').value.trim(),
-    開新分頁: document.getElementById('f-nt').checked ? '是' : '否'
+    開新分頁: document.getElementById('f-nt').checked ? '是' : '否',
+    額外說明: document.getElementById('f-note').value.trim()
   };
   if (action !== 'delete' && (!row.分類 || !row.名稱 || !row.網址)) {
     msg.textContent = '分類、名稱、網址是必填的。';
