@@ -18,7 +18,9 @@ function doPost(e) {
     const row = body.row || {};
     const values = [row['分類'], row['名稱'], row['描述'], row['網址'], row['圖示'], row['開新分頁']];
 
-    if (body.action === 'add') {
+    if (body.action === 'verify') {
+      out.ok = true;
+    } else if (body.action === 'add') {
       sh.appendRow(values);
       out.ok = true;
     } else if (body.action === 'update') {

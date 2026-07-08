@@ -44,11 +44,6 @@ h1 {
   background-clip: text;
   color: transparent;
 }
-.sub {
-  margin-top: 16px;
-  font-size: 17px;
-  color: #9a826e;
-}
 .section-title {
   display: flex;
   align-items: center;
@@ -79,7 +74,7 @@ h1 {
   background: rgba(255, 255, 255, 0.78);
   border: 1px solid #ffe2c9;
   border-radius: 18px;
-  padding: 18px 20px 16px;
+  padding: 18px 20px;
   box-shadow: 0 6px 20px rgba(255, 122, 41, 0.08);
   transition: transform .2s ease, box-shadow .2s ease;
 }
@@ -104,15 +99,6 @@ h1 {
   line-height: 1.65;
   color: #8d7763;
 }
-.go {
-  display: inline-block;
-  margin-top: 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #ff6320;
-}
-.go span { display: inline-block; transition: transform .2s ease; }
-.card:hover .go span { transform: translateX(5px); }
 .edit-link { margin-top: 6vh; }
 .edit-link a {
   font-size: 14px;
@@ -152,17 +138,34 @@ footer {
   box-shadow: 0 24px 60px rgba(43, 33, 24, 0.3);
 }
 #editor h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; }
-#editor .ehint { font-size: 13px; color: #9a826e; margin-bottom: 16px; }
+#editor .ehint { font-size: 13px; color: #9a826e; margin-bottom: 16px; line-height: 1.7; }
 .tool-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 2px;
+  gap: 9px;
+  padding: 8px 4px;
   border-bottom: 1px solid #ffe9d6;
   font-size: 14.5px;
+  background: #fffdfa;
 }
-.tool-row .tr-name { flex: 1; font-weight: 700; }
+.tool-row.dragging { opacity: .45; }
+.drag-h { cursor: grab; color: #d9b894; font-size: 15px; user-select: none; flex: 0 0 auto; }
+.tool-row .tr-name { flex: 1; font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tool-row .tr-cat { color: #c98a5a; font-size: 12px; flex: 0 0 auto; }
+.mini {
+  font-family: inherit;
+  border: 1px solid #ffd9b0;
+  background: #fff;
+  color: #c98a5a;
+  border-radius: 7px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+.mini:hover { border-color: #ff6320; color: #ff6320; }
 .ebtn {
   font-family: inherit;
   font-size: 13.5px;
@@ -173,6 +176,7 @@ footer {
   background: #fff;
   color: #ff6320;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 .ebtn:hover { border-color: #ff6320; }
 .ebtn.primary {
@@ -187,7 +191,7 @@ footer {
 .ebtn.danger:hover { border-color: #c0392b; }
 .field { margin-bottom: 12px; }
 .field label { display: block; font-size: 13px; font-weight: 700; color: #8d7763; margin-bottom: 4px; }
-.field input[type=text], .field textarea {
+.field input[type=text], .field input[type=password], .field textarea {
   width: 100%;
   border: 1px solid #ffd9b0;
   border-radius: 10px;
@@ -209,7 +213,6 @@ footer {
 <div class="wrap">
   <div class="eyebrow">看我笑話工作室</div>
   <h1>看我笑話工具箱</h1>
-  <div class="sub">看我笑話的各種工具首頁</div>
 
   <div id="tool-area">
   <div class="section-title">團隊內部工具</div>
@@ -217,22 +220,18 @@ footer {
     <a class="card" href="member-only-content/member-only-content-preview-2026-06.html" rel="nofollow">
       <h2><span class="emj">💌</span>走心分享預覽</h2>
       <p>當月會員電子報預覽圖下載＋全文閱讀。每位成員一張 IG 預覽圖可下載。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
     <a class="card" href="https://jessechen-humanoid.github.io/jokesonme/" target="_blank" rel="noopener">
       <h2><span class="emj">💰</span>收支記錄</h2>
       <p>看我笑話的收支記帳工具。記錄每場演出與團務的收入、支出明細。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
     <a class="card" href="https://jessechen-humanoid.github.io/jokesonme-post/" target="_blank" rel="noopener">
       <h2><span class="emj">🎨</span>社群素材產生器</h2>
       <p>快速做出看我笑話風格的貼文圖片素材，發文不用再等設計。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
     <a class="card" href="web-guide.html">
       <h2><span class="emj">📋</span>網頁製作須知</h2>
       <p>做現場喜劇投影網頁的重點摘要，可下載完整版規範。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
   </div>
 
@@ -241,17 +240,14 @@ footer {
     <a class="card" href="mahjong-draw.html">
       <h2><span class="emj">🀄</span>看我摸牌</h2>
       <p>即興劇麻將抽牌機。空白鍵抽一張臺灣麻將，顯示牌面與唸法。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
     <a class="card" href="comment-lottery.html">
       <h2><span class="emj">🎫</span>現場抽籤機</h2>
       <p>觀眾掃 QR Code 填表單，現場隨機抽出笑ㄟ留言，同回合不重複。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
     <a class="card" href="fwb-quiz/home.html">
       <h2><span class="emj">❓</span>現場問答系統 by 支薪好友</h2>
       <p>專場即時問答：主控台出題、大螢幕顯示與逐題回顧、觀眾排行榜。</p>
-      <div class="go">開啟工具 <span>→</span></div>
     </a>
   </div>
   </div>
@@ -273,10 +269,11 @@ footer {
    欄位：分類、名稱、描述、網址、圖示（emoji）、開新分頁（是/否）。 */
 const SHEET_ID = '1iMUP4kyXIEpfQmT3gYavksO6hJsp1jFnmIUaeeYdxoY';
 const SHEET_EDIT_URL = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/edit';
-/* Apps Script 部署後把網址填到這裡（https://script.google.com/macros/s/....../exec） */
-const EXEC_URL = '';
+const EXEC_URL = 'https://script.google.com/macros/s/AKfycbzJciSksr8QXZ45_ZwggLIlxtB2l7KsZKgqaBv7AllNYH6aPdemCL2dQSCKSJRxpRmP/exec';
+const PASS_KEY = 'toolbox-pass';
 
 let sheetRows = null; /* [{ idx, cells: [分類,名稱,描述,網址,圖示,開新分頁] }] */
+let authed = false;
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -299,8 +296,7 @@ function renderCards() {
       const target = (nt || '').trim() === '是' ? ' target="_blank" rel="noopener"' : '';
       html += `<a class="card" href="${esc(url.trim())}"${target}>` +
         `<h2><span class="emj">${esc((icon || '').trim() || '🔧')}</span>${esc(name)}</h2>` +
-        `<p>${esc(desc || '')}</p>` +
-        `<div class="go">開啟工具 <span>→</span></div></a>`;
+        `<p>${esc(desc || '')}</p></a>`;
     });
     html += '</div>';
   });
@@ -321,35 +317,167 @@ function loadTools() {
 }
 loadTools().catch(() => { /* 讀不到就用內建清單 */ });
 
+/* ===== 寫入通道 ===== */
+function postExec(payload) {
+  return fetch(EXEC_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+}
+/* 密碼對 → 舊版通道會回「未知的動作」、新版回 ok:true，兩種都算通過；只有「密碼錯誤」算失敗 */
+function verifyPass(p) {
+  return postExec({ action: 'verify', password: p })
+    .then(res => res.ok === true || (res.error && res.error !== '密碼錯誤'));
+}
+function rowObj(c) {
+  return { 分類: c[0], 名稱: c[1], 描述: c[2], 網址: c[3], 圖示: c[4], 開新分頁: (c[5] || '否') };
+}
+
 /* ===== 彈出視窗編輯器 ===== */
 const overlay = document.getElementById('editor-overlay');
 const editor = document.getElementById('editor');
+let origIds = [];
 
 function openEditor() {
   overlay.style.display = 'flex';
-  (sheetRows ? Promise.resolve() : loadTools()).then(showList).catch(showList);
+  const ready = sheetRows ? Promise.resolve() : loadTools();
+  ready.catch(() => {}).then(() => {
+    if (authed) return showList();
+    const saved = localStorage.getItem(PASS_KEY);
+    if (saved) {
+      editor.innerHTML = '<h3>管理工具</h3><div class="ehint">驗證密碼中…</div>';
+      verifyPass(saved)
+        .then(ok => { if (ok) { authed = true; showList(); } else showGate('請重新輸入密碼。'); })
+        .catch(() => showGate('連線失敗，請再試一次。'));
+    } else {
+      showGate();
+    }
+  });
 }
 function closeEditor() { overlay.style.display = 'none'; }
 overlay.addEventListener('click', e => { if (e.target === overlay) closeEditor(); });
 document.getElementById('open-editor').addEventListener('click', openEditor);
 
+function showGate(msg) {
+  editor.innerHTML = `<h3>管理工具</h3>` +
+    `<div class="ehint">請輸入工作人員密碼，才能新增或修改工具。</div>` +
+    `<div class="field"><input type="password" id="g-pass" placeholder="工作人員密碼"></div>` +
+    `<div class="ebtns"><span class="spacer"></span>` +
+    `<button class="ebtn" onclick="closeEditor()">關閉</button>` +
+    `<button class="ebtn primary" id="g-go">進入</button></div>` +
+    `<div id="editor-msg">${msg ? esc(msg) : ''}</div>`;
+  const inp = document.getElementById('g-pass');
+  inp.focus();
+  const go = () => {
+    const p = inp.value.trim();
+    const m = document.getElementById('editor-msg');
+    if (!p) { m.textContent = '請輸入密碼。'; return; }
+    m.textContent = '驗證中…';
+    verifyPass(p)
+      .then(ok => {
+        if (ok) { localStorage.setItem(PASS_KEY, p); authed = true; showList(); }
+        else m.textContent = '密碼錯誤，再試一次。';
+      })
+      .catch(() => { m.textContent = '連線失敗，請確認網路後再試。'; });
+  };
+  document.getElementById('g-go').addEventListener('click', go);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+}
+
 function showList() {
+  const rows = (sheetRows || []).filter(r => r.cells[1]);
+  origIds = rows.map(r => r.idx);
   let rowsHtml = '';
-  (sheetRows || []).forEach(r => {
-    if (!r.cells[1]) return;
-    rowsHtml += `<div class="tool-row">` +
+  rows.forEach(r => {
+    rowsHtml += `<div class="tool-row" draggable="true" data-idx="${r.idx}">` +
+      `<span class="drag-h">⠿</span>` +
       `<span>${esc((r.cells[4] || '🔧').trim() || '🔧')}</span>` +
       `<span class="tr-name">${esc(r.cells[1])}</span>` +
       `<span class="tr-cat">${esc(r.cells[0] || '')}</span>` +
-      `<button class="ebtn" onclick="showForm(${r.idx})">編輯</button></div>`;
+      `<button class="mini" data-mv="-1" title="往上移">↑</button>` +
+      `<button class="mini" data-mv="1" title="往下移">↓</button>` +
+      `<button class="ebtn" data-edit>編輯</button></div>`;
   });
   if (!rowsHtml) rowsHtml = '<div class="ehint">（還讀不到工具清單，請確認網路或試算表權限）</div>';
   editor.innerHTML = `<h3>管理工具</h3>` +
-    `<div class="ehint">修改會直接寫進共用的 Google 試算表，大家重新整理都看得到。</div>` +
-    rowsHtml +
-    `<div class="ebtns"><button class="ebtn primary" onclick="showForm(null)">＋ 新增工具</button>` +
-    `<span class="spacer"></span><button class="ebtn" onclick="closeEditor()">關閉</button></div>` +
+    `<div class="ehint">按住 ⠿ 拖曳（或用 ↑↓）調整出現順序，改完記得按「儲存順序」。</div>` +
+    `<div id="tool-list">${rowsHtml}</div>` +
+    `<div class="ebtns">` +
+    `<button class="ebtn primary" onclick="showForm(null)">＋ 新增工具</button>` +
+    `<button class="ebtn primary" id="save-order" style="display:none" onclick="saveOrder()">儲存順序</button>` +
+    `<span class="spacer"></span>` +
+    `<button class="ebtn" onclick="closeEditor()">關閉</button></div>` +
     `<div id="editor-msg"><a href="${SHEET_EDIT_URL}" target="_blank" rel="noopener">或直接開試算表編輯 →</a></div>`;
+
+  const list = document.getElementById('tool-list');
+  let dragEl = null;
+  list.addEventListener('dragstart', e => {
+    dragEl = e.target.closest('.tool-row');
+    if (dragEl) dragEl.classList.add('dragging');
+  });
+  list.addEventListener('dragend', () => {
+    if (dragEl) dragEl.classList.remove('dragging');
+    dragEl = null;
+    syncOrder();
+  });
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragEl) return;
+    const after = [...list.querySelectorAll('.tool-row:not(.dragging)')].reduce((best, el) => {
+      const box = el.getBoundingClientRect();
+      const off = e.clientY - box.top - box.height / 2;
+      return (off < 0 && (!best || off > best.off)) ? { off, el } : best;
+    }, null);
+    if (after) list.insertBefore(dragEl, after.el);
+    else list.appendChild(dragEl);
+  });
+  list.addEventListener('click', e => {
+    const row = e.target.closest('.tool-row');
+    if (!row) return;
+    if (e.target.dataset.mv) {
+      const dir = +e.target.dataset.mv;
+      const sib = dir < 0 ? row.previousElementSibling : row.nextElementSibling;
+      if (sib && sib.classList.contains('tool-row')) {
+        dir < 0 ? list.insertBefore(row, sib) : list.insertBefore(sib, row);
+        syncOrder();
+      }
+    } else if (e.target.hasAttribute('data-edit')) {
+      showForm(+row.dataset.idx);
+    }
+  });
+}
+
+function syncOrder() {
+  const cur = [...document.querySelectorAll('#tool-list .tool-row')].map(el => +el.dataset.idx);
+  const dirty = cur.length === origIds.length && cur.some((v, i) => v !== origIds[i]);
+  const btn = document.getElementById('save-order');
+  if (btn) btn.style.display = dirty ? '' : 'none';
+}
+
+function saveOrder() {
+  const msg = document.getElementById('editor-msg');
+  const pass = localStorage.getItem(PASS_KEY) || '';
+  const cur = [...document.querySelectorAll('#tool-list .tool-row')].map(el => +el.dataset.idx);
+  const jobs = [];
+  cur.forEach((srcIdx, i) => {
+    const targetRow = i + 1;
+    if (srcIdx !== targetRow) {
+      const src = sheetRows.find(r => r.idx === srcIdx);
+      jobs.push({ targetRow, cells: src.cells });
+    }
+  });
+  if (!jobs.length) { syncOrder(); return; }
+  (async () => {
+    for (let k = 0; k < jobs.length; k++) {
+      msg.textContent = `儲存順序中…（${k + 1}/${jobs.length}）`;
+      const res = await postExec({ action: 'update', rowIndex: jobs[k].targetRow, row: rowObj(jobs[k].cells), password: pass });
+      if (!res.ok) throw new Error(res.error || '儲存失敗');
+    }
+  })()
+    .then(() => { msg.textContent = '順序已儲存！更新畫面中…'; return loadTools(); })
+    .then(showList)
+    .catch(err => {
+      const m = String(err && err.message ? err.message : err);
+      if (m === '密碼錯誤') { authed = false; showGate('密碼可能已更換，請重新輸入。'); }
+      else msg.textContent = m + '（可再按一次「儲存順序」重試）';
+    });
 }
 
 function showForm(idx) {
@@ -357,7 +485,7 @@ function showForm(idx) {
   const c = row ? row.cells : ['', '', '', '', '', '否'];
   const cats = [...new Set((sheetRows || []).map(r => (r.cells[0] || '').trim()).filter(Boolean))];
   editor.innerHTML = `<h3>${row ? '編輯工具' : '新增工具'}</h3>` +
-    `<div class="ehint">填完按儲存，會寫進共用試算表。</div>` +
+    `<div class="ehint">填完按儲存，會寫進共用試算表，大家重新整理都看得到。</div>` +
     `<div class="field"><label>分類（可輸入新分類，會自動長出新區塊）</label>` +
     `<input type="text" id="f-cat" list="cat-list" value="${esc(c[0])}" placeholder="例如：團隊內部工具">` +
     `<datalist id="cat-list">${cats.map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>` +
@@ -366,7 +494,6 @@ function showForm(idx) {
     `<div class="field"><label>網址</label><input type="text" id="f-url" value="${esc(c[3])}" placeholder="https://... 或同站的檔名"></div>` +
     `<div class="field"><label>圖示（貼一個 emoji）</label><input type="text" id="f-icon" value="${esc(c[4])}" placeholder="例如 🀄"></div>` +
     `<div class="field"><label class="chk"><input type="checkbox" id="f-nt"${(c[5] || '').trim() === '是' ? ' checked' : ''}> 用新分頁開啟（外部網站建議勾選）</label></div>` +
-    `<div class="field"><label>工作人員密碼</label><input type="text" id="f-pass" value="${esc(localStorage.getItem('toolbox-pass') || '')}" placeholder="防止路人亂改用的"></div>` +
     `<div class="ebtns">` +
     (row ? `<button class="ebtn danger" onclick="saveTool('delete', ${idx})">刪除</button>` : '') +
     `<span class="spacer"></span>` +
@@ -377,11 +504,7 @@ function showForm(idx) {
 
 function saveTool(action, idx) {
   const msg = document.getElementById('editor-msg');
-  if (!EXEC_URL) {
-    msg.innerHTML = '寫入通道還沒設定好（管理員要先部署 Apps Script）。' +
-      `先用這裡改：<a href="${SHEET_EDIT_URL}" target="_blank" rel="noopener">開啟試算表 →</a>`;
-    return;
-  }
+  const pass = localStorage.getItem(PASS_KEY) || '';
   const row = {
     分類: document.getElementById('f-cat').value.trim(),
     名稱: document.getElementById('f-name').value.trim(),
@@ -390,21 +513,19 @@ function saveTool(action, idx) {
     圖示: document.getElementById('f-icon').value.trim(),
     開新分頁: document.getElementById('f-nt').checked ? '是' : '否'
   };
-  const pass = document.getElementById('f-pass').value.trim();
   if (action !== 'delete' && (!row.分類 || !row.名稱 || !row.網址)) {
     msg.textContent = '分類、名稱、網址是必填的。';
     return;
   }
   if (action === 'delete' && !confirm('確定要刪除這個工具？')) return;
-  localStorage.setItem('toolbox-pass', pass);
   msg.textContent = '儲存中…';
-  fetch(EXEC_URL, {
-    method: 'POST',
-    body: JSON.stringify({ action, rowIndex: idx, row, password: pass })
-  })
-    .then(r => r.json())
+  postExec({ action, rowIndex: idx, row, password: pass })
     .then(res => {
-      if (!res.ok) { msg.textContent = res.error || '儲存失敗，請再試一次。'; return; }
+      if (!res.ok) {
+        if (res.error === '密碼錯誤') { authed = false; showGate('密碼可能已更換，請重新輸入。'); return; }
+        msg.textContent = res.error || '儲存失敗，請再試一次。';
+        return;
+      }
       msg.textContent = '已儲存！更新畫面中…';
       return loadTools().then(showList);
     })
