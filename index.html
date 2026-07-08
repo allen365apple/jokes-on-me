@@ -122,8 +122,19 @@ h1 {
   transition: transform .25s ease;
 }
 .card:hover .go span { transform: translateX(6px); }
+.icon .emj { font-size: 30px; line-height: 1; }
+.edit-link { margin-top: 7vh; }
+.edit-link a {
+  font-size: 14px;
+  font-weight: 700;
+  color: #c98a5a;
+  text-decoration: none;
+  border-bottom: 1px dashed #e0bb97;
+  padding-bottom: 2px;
+}
+.edit-link a:hover { color: #ff6320; border-color: #ff6320; }
 footer {
-  margin-top: 11vh;
+  margin-top: 5vh;
   font-size: 13px;
   letter-spacing: 2px;
   color: #c4ab92;
@@ -136,6 +147,7 @@ footer {
   <h1>看我笑話工具箱</h1>
   <div class="sub">看我笑話的各種工具首頁</div>
 
+  <div id="tool-area">
   <div class="section-title">團隊內部工具</div>
   <div class="cards">
     <a class="card" href="member-only-content/member-only-content-preview-2026-06.html" rel="nofollow">
@@ -234,8 +246,57 @@ footer {
       <div class="go">開啟工具 <span>→</span></div>
     </a>
   </div>
+  </div>
+
+  <div class="edit-link">
+    <a href="https://docs.google.com/spreadsheets/d/1iMUP4kyXIEpfQmT3gYavksO6hJsp1jFnmIUaeeYdxoY/edit" target="_blank" rel="noopener">＋ 新增或修改工具（編輯 Google 試算表）</a>
+  </div>
 
   <footer>看我笑話工作室・JOKES ON ME</footer>
 </div>
+
+<script>
+/* ===== 工具清單改由 Google 試算表管理 =====
+   表格網址見下方 SHEET_ID，欄位：分類、名稱、描述、網址、圖示（emoji）、開新分頁（是/否）。
+   讀取成功會蓋掉上面寫死的卡片；讀不到（沒網路、權限沒開）就維持內建清單。 */
+const SHEET_ID = '1iMUP4kyXIEpfQmT3gYavksO6hJsp1jFnmIUaeeYdxoY';
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+
+function renderFromRows(rows) {
+  const data = rows.filter(r => r[0] && r[1] && r[3]);
+  if (!data.length) return;
+  const groups = [], map = {};
+  data.forEach(r => {
+    const g = r[0].trim();
+    if (!map[g]) { map[g] = []; groups.push(g); }
+    map[g].push(r);
+  });
+  let html = '';
+  groups.forEach(g => {
+    html += `<div class="section-title">${esc(g)}</div><div class="cards">`;
+    map[g].forEach(([, name, desc, url, icon, nt]) => {
+      const target = (nt || '').trim() === '是' ? ' target="_blank" rel="noopener"' : '';
+      html += `<a class="card" href="${esc(url.trim())}"${target}>` +
+        `<div class="icon"><span class="emj">${esc((icon || '').trim() || '🔧')}</span></div>` +
+        `<h2>${esc(name)}</h2><p>${esc(desc || '')}</p>` +
+        `<div class="go">開啟工具 <span>→</span></div></a>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('tool-area').innerHTML = html;
+}
+
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1`)
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+  .then(txt => {
+    const j = JSON.parse(txt.substring(txt.indexOf('(') + 1, txt.lastIndexOf(')')));
+    const rows = (j.table.rows || []).map(row => (row.c || []).map(c => c && c.v != null ? String(c.v) : ''));
+    renderFromRows(rows);
+  })
+  .catch(() => { /* 讀不到就用內建清單，不出錯 */ });
+</script>
 </body>
 </html>
