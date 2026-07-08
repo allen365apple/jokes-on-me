@@ -49,11 +49,28 @@ h1 {
   font-size: 17px;
   color: #9a826e;
 }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 7vh;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #c0451a;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  background: linear-gradient(90deg, #ffd9b0, rgba(255,217,176,0));
+  border-radius: 1px;
+}
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 26px;
-  margin-top: 7vh;
+  margin-top: 26px;
 }
 .card {
   display: block;
@@ -117,8 +134,66 @@ footer {
 <div class="wrap">
   <div class="eyebrow">看我笑話工作室</div>
   <h1>看我笑話工具箱</h1>
-  <div class="sub">現場演出用的網頁工具，陸續增加中。</div>
+  <div class="sub">看我笑話的各種工具首頁</div>
 
+  <div class="section-title">團隊內部工具</div>
+  <div class="cards">
+    <a class="card" href="member-only-content/member-only-content-preview-2026-06.html" rel="nofollow">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="3.5" width="17" height="13" rx="2.6"/>
+          <circle cx="8.5" cy="8.5" r="1.6"/>
+          <path d="M4 14l4.5-4 3.5 3 3-2.5L20 14"/>
+          <path d="M12 17.5V22m0 0l-2.4-2.4M12 22l2.4-2.4"/>
+        </svg>
+      </div>
+      <h2>走心分享預覽</h2>
+      <p>當月會員電子報預覽圖下載＋全文閱讀。每位成員一張 IG 預覽圖可下載，往下看完整走心分享內容。</p>
+      <div class="go">開啟工具 <span>→</span></div>
+    </a>
+
+    <a class="card" href="https://jessechen-humanoid.github.io/jokesonme/" target="_blank" rel="noopener">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M12 7.5v9"/>
+          <path d="M14.5 9.5c0-1-1.1-1.7-2.5-1.7s-2.5.7-2.5 1.7 1 1.5 2.5 1.7 2.5.7 2.5 1.7-1.1 1.7-2.5 1.7-2.5-.7-2.5-1.7"/>
+        </svg>
+      </div>
+      <h2>收支記錄</h2>
+      <p>看我笑話的收支記帳工具。記錄每場演出與團務的收入、支出明細，帳目一目瞭然。</p>
+      <div class="go">開啟工具 <span>→</span></div>
+    </a>
+
+    <a class="card" href="https://jessechen-humanoid.github.io/jokesonme-post/" target="_blank" rel="noopener">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3.5" y="6" width="14" height="14" rx="2.6"/>
+          <path d="M4 16.5l4-3.5 3 2.5 2.5-2 4 3.5"/>
+          <path d="M18.5 2.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/>
+        </svg>
+      </div>
+      <h2>社群素材產生器</h2>
+      <p>社群貼文素材產生器。快速做出看我笑話風格的貼文圖片素材，發文不用再等設計。</p>
+      <div class="go">開啟工具 <span>→</span></div>
+    </a>
+
+    <a class="card" href="web-guide.html">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 3.5h9l5 5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/>
+          <path d="M13.5 3.5V9h5"/>
+          <line x1="8" y1="13" x2="15" y2="13"/>
+          <line x1="8" y1="16.5" x2="13" y2="16.5"/>
+        </svg>
+      </div>
+      <h2>網頁製作須知</h2>
+      <p>做現場喜劇投影網頁的重點摘要：上下留白、全螢幕快捷鍵、現場可調控制台。可下載完整版規範。</p>
+      <div class="go">開啟須知 <span>→</span></div>
+    </a>
+  </div>
+
+  <div class="section-title">現場演出工具</div>
   <div class="cards">
     <a class="card" href="mahjong-draw.html">
       <div class="icon">
@@ -146,31 +221,17 @@ footer {
       <div class="go">開啟工具 <span>→</span></div>
     </a>
 
-    <a class="card" href="member-only-content/member-only-content-preview-2026-06.html" rel="nofollow">
+    <a class="card" href="fwb-quiz/home.html">
       <div class="icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3.5" y="3.5" width="17" height="13" rx="2.6"/>
-          <circle cx="8.5" cy="8.5" r="1.6"/>
-          <path d="M4 14l4.5-4 3.5 3 3-2.5L20 14"/>
-          <path d="M12 17.5V22m0 0l-2.4-2.4M12 22l2.4-2.4"/>
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M9.5 9.3a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1 1-1.1 1.8v.4"/>
+          <path d="M12 16.8h.01"/>
         </svg>
       </div>
-      <h2>走心分享預覽</h2>
-      <p>當月會員電子報預覽圖下載＋全文閱讀。每位成員一張 IG 預覽圖可下載，往下看完整走心分享內容。</p>
+      <h2>現場問答系統 by 支薪好友</h2>
+      <p>專場用的即時問答系統：主控台出題、大螢幕顯示與逐題回顧，還有觀眾排行榜。</p>
       <div class="go">開啟工具 <span>→</span></div>
-    </a>
-    <a class="card" href="web-guide.html">
-      <div class="icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 3.5h9l5 5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/>
-          <path d="M13.5 3.5V9h5"/>
-          <line x1="8" y1="13" x2="15" y2="13"/>
-          <line x1="8" y1="16.5" x2="13" y2="16.5"/>
-        </svg>
-      </div>
-      <h2>網頁製作須知</h2>
-      <p>做現場喜劇投影網頁的重點摘要：上下留白、全螢幕快捷鍵、現場可調控制台。可下載完整版規範。</p>
-      <div class="go">開啟須知 <span>→</span></div>
     </a>
   </div>
 
