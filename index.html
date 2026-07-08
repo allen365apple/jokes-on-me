@@ -95,9 +95,9 @@ h1 {
 .card h2 .emj { font-size: 21px; line-height: 1; flex: 0 0 auto; }
 .card p {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.65;
-  color: #8d7763;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #b6a08a;
 }
 .edit-link { margin-top: 6vh; }
 .edit-link a {
@@ -191,6 +191,7 @@ footer {
 .ebtn.danger:hover { border-color: #c0392b; }
 .field { margin-bottom: 12px; }
 .field label { display: block; font-size: 13px; font-weight: 700; color: #8d7763; margin-bottom: 4px; }
+.field select,
 .field input[type=text], .field input[type=password], .field textarea {
   width: 100%;
   border: 1px solid #ffd9b0;
@@ -484,11 +485,16 @@ function showForm(idx) {
   const row = idx ? sheetRows.find(r => r.idx === idx) : null;
   const c = row ? row.cells : ['', '', '', '', '', '否'];
   const cats = [...new Set((sheetRows || []).map(r => (r.cells[0] || '').trim()).filter(Boolean))];
+  const curCat = (c[0] || '').trim();
+  if (curCat && !cats.includes(curCat)) cats.unshift(curCat);
+  const catOpts = cats.map(x =>
+    `<option value="${esc(x)}"${x === curCat ? ' selected' : ''}>${esc(x)}</option>`).join('') +
+    `<option value="__new__"${!cats.length ? ' selected' : ''}>＋ 輸入新分類…</option>`;
   editor.innerHTML = `<h3>${row ? '編輯工具' : '新增工具'}</h3>` +
     `<div class="ehint">填完按儲存，會寫進共用試算表，大家重新整理都看得到。</div>` +
-    `<div class="field"><label>分類（可輸入新分類，會自動長出新區塊）</label>` +
-    `<input type="text" id="f-cat" list="cat-list" value="${esc(c[0])}" placeholder="例如：團隊內部工具">` +
-    `<datalist id="cat-list">${cats.map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>` +
+    `<div class="field"><label>分類</label>` +
+    `<select id="f-cat-sel">${catOpts}</select>` +
+    `<input type="text" id="f-cat-new" placeholder="輸入新分類名稱（會自動長出新區塊）" style="display:none;margin-top:8px"></div>` +
     `<div class="field"><label>名稱</label><input type="text" id="f-name" value="${esc(c[1])}" placeholder="工具名稱"></div>` +
     `<div class="field"><label>描述</label><textarea id="f-desc" rows="2" placeholder="一兩句話說明這個工具">${esc(c[2])}</textarea></div>` +
     `<div class="field"><label>網址</label><input type="text" id="f-url" value="${esc(c[3])}" placeholder="https://... 或同站的檔名"></div>` +
@@ -500,13 +506,19 @@ function showForm(idx) {
     `<button class="ebtn" onclick="showList()">返回</button>` +
     `<button class="ebtn primary" onclick="saveTool('${row ? 'update' : 'add'}', ${idx || 0})">儲存</button></div>` +
     `<div id="editor-msg"></div>`;
+  const catSel = document.getElementById('f-cat-sel');
+  const catNew = document.getElementById('f-cat-new');
+  const syncCatInput = () => { catNew.style.display = catSel.value === '__new__' ? '' : 'none'; };
+  catSel.addEventListener('change', syncCatInput);
+  syncCatInput();
 }
 
 function saveTool(action, idx) {
   const msg = document.getElementById('editor-msg');
   const pass = localStorage.getItem(PASS_KEY) || '';
+  const catSel = document.getElementById('f-cat-sel');
   const row = {
-    分類: document.getElementById('f-cat').value.trim(),
+    分類: catSel.value === '__new__' ? document.getElementById('f-cat-new').value.trim() : catSel.value,
     名稱: document.getElementById('f-name').value.trim(),
     描述: document.getElementById('f-desc').value.trim(),
     網址: document.getElementById('f-url').value.trim(),
