@@ -99,6 +99,7 @@ h1 {
   line-height: 1.6;
   color: #b6a08a;
 }
+.card p .upd { color: #ff6320; font-weight: 700; }
 .edit-link { margin-top: 6vh; }
 .edit-link a {
   font-size: 14px;
@@ -346,6 +347,7 @@ function renderCards() {
     html += '</div>';
   });
   document.getElementById('tool-area').innerHTML = html;
+  markLatestIssue();
 }
 
 function loadTools() {
@@ -361,6 +363,35 @@ function loadTools() {
     });
 }
 loadTools().catch(() => { /* 讀不到就用內建清單 */ });
+
+/* ===== 走心分享：自動偵測最新一期，卡片說明尾端加「X 月號已更新」 ===== */
+let latestIssue = null; /* {y,m}＝找到、false＝找不到、null＝還沒查 */
+async function findLatestIssue() {
+  if (latestIssue !== null) return latestIssue;
+  const now = new Date();
+  let y = now.getFullYear(), m = now.getMonth() + 2; /* 從下個月開始往回找 */
+  if (m > 12) { m -= 12; y += 1; }
+  for (let i = 0; i < 24; i++) {
+    try {
+      const res = await fetch(`member-only-content/member-only-content-preview-${y}-${String(m).padStart(2, '0')}.html`, { method: 'HEAD', cache: 'no-store' });
+      if (res.ok) { latestIssue = { y, m }; return latestIssue; }
+    } catch (e) { latestIssue = false; return latestIssue; }
+    m -= 1;
+    if (m < 1) { m = 12; y -= 1; }
+  }
+  latestIssue = false;
+  return latestIssue;
+}
+function markLatestIssue() {
+  findLatestIssue().then(v => {
+    if (!v) return;
+    document.querySelectorAll('a.card[href$="member-only-content/latest.html"] p').forEach(p => {
+      if (p.querySelector('.upd')) return;
+      p.insertAdjacentHTML('beforeend', `｜<span class="upd">${v.y} 年 ${v.m} 月號已更新</span>`);
+    });
+  });
+}
+markLatestIssue();
 
 /* ===== 額外說明視窗：卡片有填「額外說明」時，先跳出說明確認再前往 ===== */
 const noteOverlay = document.getElementById('note-overlay');
