@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>走心分享預覽（最新一期）</title>
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans TC', -apple-system, sans-serif;
+  color: #9a826e;
+  background: linear-gradient(180deg, #ffffff 0%, #fff7f0 55%, #fff1e3 100%);
+}
+.msg { text-align: center; font-size: 16px; letter-spacing: 1px; line-height: 2; padding: 0 24px; }
+.msg b { color: #ff6320; }
+</style>
+</head>
+<body>
+<div class="msg" id="msg">正在開啟<b>最新一期</b>走心分享⋯</div>
+<script>
+/* 從下個月開始往回找，找到最新存在的一期就跳轉。
+   每月上傳新檔（member-only-content-preview-YYYY-MM.html）後這頁會自動指向它，不用改任何東西。 */
+(async () => {
+  const now = new Date();
+  let y = now.getFullYear();
+  let m = now.getMonth() + 2; /* 先看下個月（提早上傳也抓得到） */
+  if (m > 12) { m -= 12; y += 1; }
+  for (let i = 0; i < 24; i++) {
+    const file = `member-only-content-preview-${y}-${String(m).padStart(2, '0')}.html`;
+    try {
+      const res = await fetch(file, { method: 'HEAD', cache: 'no-store' });
+      if (res.ok) { location.replace(file); return; }
+    } catch (e) { /* 網路異常就繼續往前找 */ }
+    m -= 1;
+    if (m < 1) { m = 12; y -= 1; }
+  }
+  document.getElementById('msg').innerHTML = '找不到任何一期走心分享，請聯絡管理員。';
+})();
+</script>
+</body>
+</html>
