@@ -1,5 +1,5 @@
 {
-  "說明": "Apps Script 部署後，把 .../exec 結尾的網址填進下面的 url。填好之前網頁會自動略過 Drive，只用網站上的圖。",
-  "url": "",
+  "說明": "Apps Script（drive-images.gs）部署後的網址。網頁與收圖.command 都會讀這裡。清空 url 就等於暫時關掉 Drive 對照。",
+  "url": "https://script.google.com/macros/s/AKfycbx9PWb2so3Hx-fNBaYUndVQx89hO_VGDkE2gPJ2B8Doknl19VXCuOLTVGorF5oynYxq/exec",
   "資料夾": "https://drive.google.com/drive/folders/1_VGFhvX1W83B0_BHHiRHZ1t2AyMDOtFG"
 }
