@@ -1,0 +1,174 @@
+#!/bin/bash
+# 看我動作片｜演出前收圖
+# 用法：在 Finder 裡對著這個檔案按兩下。
+# 做的事：Google Drive 的圖 → 下載到本機 → 收進網站 → 現場就不靠網路
+
+cd "$(dirname "$0")" || exit 1
+
+echo ""
+echo "===================================="
+echo " 看我動作片｜演出前收圖"
+echo "===================================="
+echo ""
+
+python3 - <<'PYEOF'
+# -*- coding: utf-8 -*-
+import json, os, re, sys, urllib.request, urllib.parse
+
+HERE = os.getcwd()
+IMG = re.compile(r'\.(jpe?g|png|webp|gif)$', re.I)
+
+def get(url, timeout=60):
+    # 網址若含中文等非 ASCII 字元要先編碼，否則 urllib 會直接炸掉
+    parts = urllib.parse.urlsplit(url)
+    url = urllib.parse.urlunsplit((
+        parts.scheme, parts.netloc,
+        urllib.parse.quote(parts.path, safe='/%'),
+        urllib.parse.quote(parts.query, safe='=&%'), parts.fragment))
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    return urllib.request.urlopen(req, timeout=timeout)
+
+# ---------- 讀設定 ----------
+try:
+    cfg = json.load(open('drive.json', encoding='utf-8'))
+except Exception:
+    cfg = {}
+api = (cfg.get('url') or '').strip()
+
+groups = []
+if not api:
+    print('⚠️  還沒設定 Drive 網址（drive.json 裡的 url 是空的）。')
+    print('    這次只會重新整理本機已經有的圖。')
+    print('    要從 Drive 收圖的話，請先照 drive-images.gs 裡的步驟部署，')
+    print('    再把 .../exec 網址給 Claude 填進去。')
+    print('')
+else:
+    print('【1/4】跟 Google Drive 對照⋯⋯')
+    try:
+        data = json.loads(get(api).read().decode('utf-8'))
+        if not data.get('ok'):
+            raise RuntimeError(data.get('error', '未知錯誤'))
+        groups = data.get('groups', [])
+        print('      Drive 上共 %d 個回合' % len(groups))
+        for g in groups:
+            print('        ・%s：%d 張' % (g['name'], len(g.get('files', []))))
+    except Exception as e:
+        print('❌ 連不到 Drive：%s' % e)
+        print('   （網路不通，或 Apps Script 網址不對／沒設成「所有人」可存取）')
+        print('   這次只會重新整理本機已經有的圖。')
+        groups = []
+    print('')
+
+# ---------- 下載新的圖 ----------
+新增 = 0
+失敗 = []
+if groups:
+    print('【2/4】下載新的圖⋯⋯')
+    for g in groups:
+        folder = g['name']
+        os.makedirs(folder, exist_ok=True)
+        for f in g.get('files', []):
+            name = f['name']
+            if not IMG.search(name):
+                continue
+            dest = os.path.join(folder, name)
+            if os.path.exists(dest) and os.path.getsize(dest) > 0:
+                continue                      # 已經有了就不重抓
+            urls = ([f['url']] if f.get('url') else []) + [
+                'https://drive.google.com/uc?export=download&id=' + f['id'],
+                'https://drive.google.com/thumbnail?id=%s&sz=w2000' % f['id']]
+            ok = False
+            for u in urls:
+                try:
+                    r = get(u)
+                    ctype = r.headers.get('Content-Type', '')
+                    blob = r.read()
+                    if not ctype.startswith('image/') or len(blob) < 1000:
+                        continue              # 抓到的不是圖，換下一個網址試
+                    with open(dest, 'wb') as fh:
+                        fh.write(blob)
+                    ok = True
+                    break
+                except Exception:
+                    continue
+            if ok:
+                新增 += 1
+                print('      ＋ %s／%s' % (folder, name))
+            else:
+                失敗.append('%s／%s' % (folder, name))
+    if 新增 == 0 and not 失敗:
+        print('      沒有新的圖，本機已經是最新的。')
+    if 失敗:
+        print('')
+        print('      ⚠️ 這幾張抓不下來（現場還是會即時去 Drive 抓）：')
+        for x in 失敗:
+            print('         ・' + x)
+    print('')
+
+# ---------- 產生清單 ----------
+print('【3/4】整理清單⋯⋯')
+回合 = []
+for folder in sorted(os.listdir('.')):
+    if not os.path.isdir(folder) or folder.startswith('.'):
+        continue
+    files = sorted([x for x in os.listdir(folder)
+                    if IMG.search(x) and not x.startswith('.')])
+    if files:
+        回合.append({'名稱': folder, '檔案': files})
+
+with open('清單.json', 'w', encoding='utf-8') as fh:
+    json.dump({'回合': 回合}, fh, ensure_ascii=False, indent=2)
+
+總數 = sum(len(r['檔案']) for r in 回合)
+if 回合:
+    for r in 回合:
+        print('      第 %d 回合「%s」：%d 張' % (回合.index(r) + 1, r['名稱'], len(r['檔案'])))
+else:
+    print('      本機還沒有任何圖，網頁會用內建火柴人。')
+print('')
+
+open('.收圖結果', 'w').write('%d %d' % (len(回合), 總數))
+PYEOF
+
+[ $? -ne 0 ] && { echo "❌ 整理失敗，把這個畫面截圖給 Claude 看。"; exit 1; }
+
+read ROUNDS TOTAL < .收圖結果 2>/dev/null
+rm -f .收圖結果
+
+# ---------- 上傳 ----------
+cd .. || exit 1
+git add action-poses >/dev/null 2>&1
+
+if git diff --cached --quiet; then
+  echo "【4/4】網站上已經是最新的了，不用上傳。"
+  echo ""
+  echo "✅ 收圖完成：${ROUNDS:-0} 個回合、共 ${TOTAL:-0} 張。"
+  echo ""
+  echo "（這個視窗可以直接關掉）"
+  exit 0
+fi
+
+echo "【4/4】上傳到網站⋯⋯"
+git commit -q -m "feat(action-draw): 收圖（${ROUNDS:-0} 個回合、${TOTAL:-0} 張）" || {
+  echo "❌ 存檔失敗，把這個畫面截圖給 Claude 看。"; exit 1; }
+
+if ! git push -q origin main 2>/dev/null; then
+  echo ""
+  echo "❌ 上傳失敗（可能沒網路，或網站上有別人的新變更）。"
+  echo "   圖已經存到本機了，把這個畫面截圖給 Claude 看。"
+  exit 1
+fi
+
+echo ""
+echo "===================================="
+echo " ✅ 收圖完成：${ROUNDS:-0} 個回合、共 ${TOTAL:-0} 張"
+echo "===================================="
+echo ""
+echo "網站約 1 分鐘後生效："
+echo "  https://allen365apple.github.io/jokes-on-me/action-draw.html"
+echo ""
+echo "打開後點下方「動作清單」可以核對每個回合收到幾張。"
+echo "演出當天如果有人臨時丟新圖到 Drive，網頁開場時會自動補進來，"
+echo "抓不到也沒關係，會用剛剛收好的這批照跑。"
+echo ""
+echo "（這個視窗可以直接關掉）"

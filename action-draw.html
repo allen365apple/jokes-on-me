@@ -167,9 +167,24 @@ body {
 .gname { width: 56px; flex: 0 0 auto; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prow input[type=range] { flex: 1; accent-color: #d97706; }
 .gpct { width: 56px; text-align: right; flex: 0 0 auto; color: #f0c894; font-size: 14px; }
-#src-row { display: none; align-items: center; gap: 8px; margin: 10px 0 2px; cursor: pointer; }
-#src-row input { accent-color: #d97706; width: 16px; height: 16px; }
-#photo-status { font-size: 12px; opacity: .5; margin-top: 8px; line-height: 1.6; }
+#lib-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+#lib-btns button {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 14px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(249,245,234,.3);
+  background: #222;
+  color: #f9f5ea;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#lib-btns button.on { background: #f9f5ea; color: #111; border-color: #f9f5ea; }
+#photo-status { font-size: 12px; opacity: .5; margin-top: 10px; line-height: 1.6; }
 #panel-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 #panel-btns button {
   font-family: inherit;
@@ -281,9 +296,10 @@ body {
     <button data-f="kai" style="font-family:'LXGW WenKai TC','Kaiti TC','BiauKai',serif">楷書</button>
     <button data-f="ming" style="font-family:'Noto Serif TC','Songti TC',serif">明體</button>
   </div>
+  <div class="psec">目前回合（圖庫）</div>
+  <div id="lib-btns"></div>
   <div class="psec">出現比例</div>
   <div id="panel-rows"></div>
-  <label id="src-row"><input type="checkbox" id="photo-only"><span>只抽真人照片（不抽火柴人）</span></label>
   <div id="photo-status"></div>
   <div class="psec">不重複張數</div>
   <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="10" step="1"><span class="gpct" id="no-repeat-val"></span></div>
@@ -335,9 +351,6 @@ if (!(noRepeat >= 0 && noRepeat <= 10)) noRepeat = DEFAULT_NO_REPEAT;
 const DEFAULT_ROUND_LEN = 30;
 let roundLen = parseInt(store.get('dongzuo-round-len'), 10);
 if (!(roundLen >= 1 && roundLen <= 60)) roundLen = DEFAULT_ROUND_LEN;
-
-/* 只抽真人照片 */
-let photoOnly = store.get('dongzuo-photo-only') === '1';
 
 let drawsThisRound = 0;
 let roundEnded = false;
@@ -548,15 +561,23 @@ const DECO = [
 ];
 
 /* =========================================================================
-   真人照片
-   檔名自己帶類別，例：正經一.jpg／雙人3.png／荒謬二 高抬腿踢.jpg
-   程式怎麼知道資料夾裡有哪些檔案？兩條路，先試第一條：
-     1. action-poses/清單.txt —— 雙擊「更新清單.command」就會自動產生
-     2. GitHub 的資料夾內容 API —— 沒有清單檔時的備援（要連得上網）
+   圖庫（一個圖庫 = 一個回合）
+
+   來源有兩個，兩個都會用，而且是「疊加」的關係：
+
+   (A) 網站上的圖 —— action-poses/ 底下每個子資料夾就是一個回合。
+       這是「保底」，演出前用「收圖.command」收好，現場一定在，不靠網路。
+   (B) Google Drive 的圖 —— 開頁時去對照一次，Drive 上有、網站上還沒有的
+       就即時補進來（例如演出當天有人臨時丟新圖）。
+       抓不到就靜靜略過，完全不影響演出。
+
+   規則：回合＝資料夾（兩邊的資料夾合併，依名稱排序）。
+        沒有任何資料夾、或某個回合一張圖都沒有 → 那個回合用內建火柴人頂著。
    ========================================================================= */
-const PHOTO_DIR = 'action-poses/';
-const GH_API = 'https://api.github.com/repos/allen365apple/jokes-on-me/contents/action-poses';
+const LOCAL_DIR = 'action-poses/';
 const IMG_EXT = /\.(jpe?g|png|webp|gif)$/i;
+/* Drive 圖片的顯示網址（公開分享的檔案可以直接這樣嵌） */
+const driveImgURL = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600';
 
 const CN = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
 function cnNum(s) {
@@ -587,44 +608,97 @@ function parseFileName(file) {
   return { cat: cat.replace(/[-_]+$/, ''), idx, name: rest.join(' ') };
 }
 
-let photoNote = '還沒有偵測到照片，目前全部使用火柴人。';
+/* ===== 圖庫組裝 ===== */
+let LIBS = [];          /* [{ name, poses, stick }]，一個 = 一個回合 */
+let curLib = 0;
+let libNote = '目前用內建火柴人。';
+let driveNote = '';
 
-function addPhotos(files) {
-  const list = files.filter(f => IMG_EXT.test(f) && !f.startsWith('.'));
-  if (!list.length) return false;
-  const added = list.map(f => {
-    const info = parseFileName(f);
-    return { cat: info.cat, idx: info.idx, name: info.name, src: 'photo', url: PHOTO_DIR + encodeURIComponent(f), file: f };
-  });
-  added.sort((a, b) => a.cat.localeCompare(b.cat, 'zh-Hant') || a.idx - b.idx || a.file.localeCompare(b.file));
-  POSES.push(...added);
-  const cats = [...new Set(added.map(p => p.cat))];
-  photoNote = `已載入 ${added.length} 張真人照片，類別：${cats.join('、')}。`;
-  return true;
+function makePhoto(file, url, from) {
+  const info = parseFileName(file);
+  return { rawCat: info.cat, cat: info.cat, idx: info.idx, name: info.name, file, url, src: 'photo', from };
 }
 
-function loadPhotos() {
-  return fetch(PHOTO_DIR + '清單.txt', { cache: 'no-store' })
-    .then(r => { if (!r.ok) throw 0; return r.text(); })
-    .then(txt => {
-      const files = txt.split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
-      if (!addPhotos(files)) throw 0;
+/* 同一個前綴至少有 2 張才算一個「類別」，否則整個回合當成一類。
+   這樣「正經一/正經二/…」會分類；動漫、迷因那種自由命名的就不會爆出一堆滑桿。 */
+function buildCats(lib) {
+  const n = {};
+  lib.poses.forEach(p => { if (p.rawCat) n[p.rawCat] = (n[p.rawCat] || 0) + 1; });
+  lib.poses.forEach(p => { p.cat = (p.rawCat && n[p.rawCat] >= 2) ? p.rawCat : lib.name; });
+}
+
+function assembleLibs(localGroups, driveGroups) {
+  const map = new Map();
+  const take = (groups, from) => groups.forEach(g => {
+    if (!map.has(g.name)) map.set(g.name, { name: g.name, poses: [], seen: new Set() });
+    const lib = map.get(g.name);
+    g.files.forEach(f => {
+      if (!IMG_EXT.test(f.file) || f.file.startsWith('.') || lib.seen.has(f.file)) return;
+      lib.seen.add(f.file);
+      lib.poses.push(makePhoto(f.file, f.url, from));
+    });
+  });
+  take(localGroups, 'local');   /* 網站上的先進來，Drive 只補沒有的 */
+  take(driveGroups, 'drive');
+
+  const libs = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+  libs.forEach(lib => {
+    lib.poses.sort((a, b) =>
+      a.cat.localeCompare(b.cat, 'zh-Hant') || a.idx - b.idx || a.file.localeCompare(b.file, 'zh-Hant'));
+    if (!lib.poses.length) { lib.poses = POSES; lib.stick = true; }   /* 空的回合用火柴人頂著 */
+    else buildCats(lib);
+    delete lib.seen;
+  });
+  LIBS = libs.length ? libs : [{ name: '動作', poses: POSES, stick: true }];
+  if (curLib >= LIBS.length) curLib = 0;
+
+  const photo = LIBS.filter(l => !l.stick);
+  libNote = photo.length
+    ? `共 ${LIBS.length} 個回合：` + LIBS.map(l =>
+        `${l.name}（${l.stick ? '火柴人' : l.poses.length + ' 張'}）`).join('、')
+    : '還沒有任何照片，目前全部用內建火柴人。';
+}
+
+function loadLocal() {
+  return fetch(LOCAL_DIR + '清單.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(j => (j.回合 || []).map(g => ({
+      name: g.名稱,
+      files: (g.檔案 || []).map(f => ({
+        file: f,
+        url: LOCAL_DIR + encodeURIComponent(g.名稱) + '/' + encodeURIComponent(f)
+      }))
+    })))
+    .catch(() => []);
+}
+
+/* Drive 讀不到就回空陣列——現場沒網路照樣能演 */
+function loadDrive() {
+  return fetch(LOCAL_DIR + 'drive.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw 0; return r.json(); })
+    .then(cfg => {
+      if (!cfg.url) { driveNote = '（還沒接上 Drive）'; return []; }
+      return fetch(cfg.url, { cache: 'no-store' })
+        .then(r => { if (!r.ok) throw 0; return r.json(); })
+        .then(j => {
+          if (!j.ok) throw 0;
+          driveNote = 'Drive 對照成功。';
+          return (j.groups || []).map(g => ({
+            name: g.name,
+            files: (g.files || []).map(f => ({ file: f.name, url: driveImgURL(f.id) }))
+          }));
+        });
     })
-    .catch(() => fetch(GH_API)
-      .then(r => { if (!r.ok) throw 0; return r.json(); })
-      .then(json => { addPhotos((json || []).map(f => f.name)); })
-      .catch(() => {}));
+    .catch(() => { driveNote = 'Drive 這次沒讀到（不影響演出，用網站上的圖）。'; return []; });
+}
+
+function loadLibraries() {
+  return Promise.all([loadLocal(), loadDrive()]).then(([a, b]) => assembleLibs(a, b));
 }
 
 /* ===== 抽籤池 ===== */
-function pool() {
-  let list = POSES;
-  if (photoOnly) {
-    const ph = list.filter(p => p.src === 'photo');
-    if (ph.length) list = ph;
-  }
-  return list;
-}
+const lib = () => LIBS[curLib] || { name: '動作', poses: POSES, stick: true };
+const pool = () => lib().poses;
 const cats = () => [...new Set(pool().map(p => p.cat))];
 
 let recent = [];
@@ -646,8 +720,15 @@ function drawPose() {
 
 function mediaHTML(p) {
   return p.src === 'photo'
-    ? `<img src="${p.url}" alt="${p.name || p.cat}" loading="lazy">`
+    ? `<img src="${p.url}" alt="" loading="lazy">`
     : figureSVG(p);
+}
+
+/* 開場先把當回合的圖偷偷載好，抽的時候才不會等 */
+function preload(l) {
+  (l ? [l] : LIBS).forEach(x => x.poses.forEach(p => {
+    if (p.src === 'photo' && !p.pre) { p.pre = new Image(); p.pre.src = p.url; }
+  }));
 }
 
 /* ===== 開場裝飾 ===== */
@@ -678,7 +759,14 @@ function onDraw() {
   void posebox.offsetWidth;
   posebox.classList.add('pop');
   drawsThisRound++;
-  roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
+  updateInfo();
+}
+
+function updateInfo() {
+  const head = '第 ' + (curLib + 1) + ' 回合「' + lib().name + '」';
+  roundInfo.textContent = drawsThisRound
+    ? head + '　第 ' + drawsThisRound + ' / ' + roundLen + ' 個'
+    : head;
 }
 
 function endRound() {
@@ -693,12 +781,19 @@ function endRound() {
   goBtn.style.display = 'none';
   endBtn.style.display = 'none';
   nextBtn.style.display = '';
-  roundInfo.textContent = '回合結束';
+  const nx = LIBS[(curLib + 1) % LIBS.length];
+  document.getElementById('end-sub').textContent =
+    LIBS.length > 1 ? '按空白鍵開始下一回合：' + nx.name : '按空白鍵開始下一回合';
+  roundInfo.textContent = '第 ' + (curLib + 1) + ' 回合結束';
 }
 
+/* 下一回合＝下一個圖庫（最後一個之後繞回第一個） */
 function startNextRound() {
   roundEnded = false;
   drawsThisRound = 0;
+  curLib = (curLib + 1) % LIBS.length;
+  recent = [];
+  preload(lib());
   endview.style.display = 'none';
   nextBtn.style.display = 'none';
   goBtn.style.display = '';
@@ -752,21 +847,27 @@ fsBtn.addEventListener('click', () => { toggleFullscreen(); fsBtn.blur(); });
 const listBox = document.getElementById('list');
 function renderList() {
   document.getElementById('list-note').innerHTML =
-    `<b>要把火柴人換成真人照片：</b>照片檔名寫成「<code>類別＋編號</code>」放進網頁旁邊的 <code>action-poses/</code> 資料夾，` +
-    `例如 <code>正經一.jpg</code>、<code>雙人3.jpg</code>、<code>荒謬二.jpg</code>。想在這份清單上看到動作名稱，就在編號後面空一格再寫，例如 <code>荒謬二 高抬腿踢.jpg</code>（<b>投影畫面上不會出現任何文字</b>，只有圖）。<br>` +
-    `<b>類別名稱由檔名決定</b>，程式裡沒有寫死——之後想把「正經」改叫別的，直接改檔名，控制台的比例滑桿就會跟著變。<br>` +
-    `放好照片後<b>雙擊 <code>action-poses/更新清單.command</code></b>（網頁靠這份清單才知道有哪些檔案）。放到 GitHub 上之後，就算忘了跑也會自動去問 GitHub。<br>` +
-    `<span style="opacity:.8">目前狀態：${photoNote}</span>`;
+    `<b>一個資料夾＝一個回合。</b>圖片放在 Google Drive 的「看我動作片 圖片素材」底下，每個回合一個子資料夾。<br>` +
+    `<b>演出前雙擊 <code>action-poses/收圖.command</code></b>：把 Drive 上的圖收進網站，現場就不靠網路。<br>` +
+    `開頁時還是會跟 Drive 對照一次，<b>Drive 上有、網站上還沒有的會即時補進來</b>；讀不到就自動略過，用網站上的圖照跑。<br>` +
+    `檔名寫成「<code>類別＋編號</code>」（例 <code>正經一.jpg</code>）會自動分類，控制台就能分別調比例；隨便命名也可以，那個回合就當成一類。<br>` +
+    `<b>投影畫面上不會出現任何文字</b>，只有圖。<br>` +
+    `<span style="opacity:.8">目前狀態：${libNote}${driveNote ? '　' + driveNote : ''}</span>`;
 
-  const groups = {};
-  POSES.forEach(p => { (groups[p.cat] = groups[p.cat] || []).push(p); });
-  document.getElementById('list-body').innerHTML = Object.keys(groups).map(cat =>
-    `<div class="lgroup">${cat}（${groups[cat].length}）</div><div class="lgrid">` +
-    groups[cat].map(p =>
-      `<div class="lcard${p.src === 'photo' ? ' photo' : ''}">${mediaHTML(p)}` +
-      `<div class="lname">${p.name || (p.file || '').replace(IMG_EXT, '')}</div>` +
-      `<div class="lsrc">${p.src === 'photo' ? '📷 照片' : '火柴人'}</div></div>`).join('') +
-    `</div>`).join('');
+  document.getElementById('list-body').innerHTML = LIBS.map((l, i) => {
+    const groups = {};
+    l.poses.forEach(p => { (groups[p.cat] = groups[p.cat] || []).push(p); });
+    return `<div class="lgroup" style="font-size:19px;color:#f0c894;padding-top:26px">` +
+      `第 ${i + 1} 回合｜${l.name}（${l.stick ? '火柴人 ' + l.poses.length : l.poses.length + ' 張照片'}）</div>` +
+      Object.keys(groups).map(cat =>
+        (Object.keys(groups).length > 1 ? `<div class="lgroup">${cat}（${groups[cat].length}）</div>` : '') +
+        `<div class="lgrid">` +
+        groups[cat].map(p =>
+          `<div class="lcard${p.src === 'photo' ? ' photo' : ''}">${mediaHTML(p)}` +
+          `<div class="lname">${p.name || (p.file || '').replace(IMG_EXT, '') || p.cat}</div>` +
+          `<div class="lsrc">${p.src === 'photo' ? (p.from === 'drive' ? '☁️ Drive' : '📷 網站') : '火柴人'}</div></div>`).join('') +
+        `</div>`).join('');
+  }).join('');
 }
 function closeList() { listBox.style.display = 'none'; }
 document.getElementById('list-link').addEventListener('click', () => {
@@ -794,10 +895,9 @@ function refreshPanel() {
     const el = document.getElementById('pct-' + c);
     if (el) el.textContent = total > 0 ? (count[c] * (W[c] === undefined ? 1 : W[c]) / total * 100).toFixed(1) + '%' : '—';
   });
-  const hasPhoto = POSES.some(p => p.src === 'photo');
-  document.getElementById('src-row').style.display = hasPhoto ? 'flex' : 'none';
-  document.getElementById('photo-only').checked = photoOnly;
-  document.getElementById('photo-status').textContent = photoNote;
+  document.getElementById('lib-btns').innerHTML = LIBS.map((l, i) =>
+    `<button data-lib="${i}" class="${i === curLib ? 'on' : ''}" title="${l.name}">${i + 1}. ${l.name}</button>`).join('');
+  document.getElementById('photo-status').textContent = libNote + (driveNote ? '　' + driveNote : '');
   document.getElementById('round-len').value = roundLen;
   document.getElementById('round-len-val').textContent = roundLen + ' 個';
   document.getElementById('no-repeat').value = noRepeat;
@@ -817,10 +917,20 @@ document.getElementById('round-len').addEventListener('input', e => {
     roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
   }
 });
-document.getElementById('photo-only').addEventListener('change', e => {
-  photoOnly = e.target.checked;
-  store.set('dongzuo-photo-only', photoOnly ? '1' : '0');
+/* 控制台手動切回合（不用等抽完） */
+document.getElementById('lib-btns').addEventListener('click', e => {
+  const i = e.target.dataset ? e.target.dataset.lib : null;
+  if (i === undefined || i === null) return;
+  curLib = parseInt(i, 10);
   recent = [];
+  drawsThisRound = 0;
+  roundEnded = false;
+  endview.style.display = 'none';
+  nextBtn.style.display = 'none';
+  goBtn.style.display = '';
+  endBtn.style.display = '';
+  preload(lib());
+  updateInfo();
   refreshPanel();
 });
 rowsBox.addEventListener('input', e => {
@@ -855,8 +965,14 @@ function applyFont() {
 }
 applyFont();
 
-/* ===== 開場就去找照片 ===== */
-loadPhotos().then(() => { if (panel.style.display === 'block') refreshPanel(); });
+/* ===== 開場就去組圖庫（網站上的 ＋ Drive 補的） ===== */
+assembleLibs([], []);
+updateInfo();
+loadLibraries().then(() => {
+  updateInfo();
+  preload(lib());
+  if (panel.style.display === 'block') refreshPanel();
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,5 @@
+{
+  "說明": "Apps Script 部署後，把 .../exec 結尾的網址填進下面的 url。填好之前網頁會自動略過 Drive，只用網站上的圖。",
+  "url": "",
+  "資料夾": "https://drive.google.com/drive/folders/1_VGFhvX1W83B0_BHHiRHZ1t2AyMDOtFG"
+}
