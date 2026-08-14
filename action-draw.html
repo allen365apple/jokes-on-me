@@ -58,16 +58,9 @@ body {
   min-height: 62vh;
   justify-content: center;
 }
-#posebox { height: min(54vh, 74vw); display: flex; align-items: center; justify-content: center; }
-#posebox svg, #posebox img { height: 100%; max-width: 92vw; object-fit: contain; display: block; }
-#reading {
-  font-size: min(6.5vh, 8vw);
-  font-weight: var(--fw);
-  letter-spacing: .08em;
-  margin-top: 2.5vh;
-  white-space: nowrap;
-  min-height: 1.2em;
-}
+/* 畫面上不放任何文字——圖本身就是要模仿的動作 */
+#posebox { height: min(62vh, 84vw); display: flex; align-items: center; justify-content: center; }
+#posebox svg, #posebox img { height: 100%; max-width: 94vw; object-fit: contain; display: block; }
 #endview {
   display: none;
   flex-direction: column;
@@ -261,7 +254,6 @@ body {
 
 <div id="drawview">
   <div id="posebox"></div>
-  <div id="reading"></div>
 </div>
 
 <div id="endview">
@@ -668,7 +660,6 @@ document.getElementById('deco-right').innerHTML =
 const intro = document.getElementById('intro');
 const drawview = document.getElementById('drawview');
 const posebox = document.getElementById('posebox');
-const reading = document.getElementById('reading');
 const endview = document.getElementById('endview');
 const goBtn = document.getElementById('go');
 const endBtn = document.getElementById('end');
@@ -683,12 +674,9 @@ function onDraw() {
   drawview.style.display = 'flex';
   currentPose = drawPose();
   posebox.innerHTML = mediaHTML(currentPose);
-  reading.textContent = currentPose.name || '';
-  [posebox, reading].forEach(el => {
-    el.classList.remove('pop');
-    void el.offsetWidth;
-    el.classList.add('pop');
-  });
+  posebox.classList.remove('pop');
+  void posebox.offsetWidth;
+  posebox.classList.add('pop');
   drawsThisRound++;
   roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
 }
@@ -765,7 +753,7 @@ const listBox = document.getElementById('list');
 function renderList() {
   document.getElementById('list-note').innerHTML =
     `<b>要把火柴人換成真人照片：</b>照片檔名寫成「<code>類別＋編號</code>」放進網頁旁邊的 <code>action-poses/</code> 資料夾，` +
-    `例如 <code>正經一.jpg</code>、<code>雙人3.jpg</code>、<code>荒謬二.jpg</code>。想讓畫面上出現動作名稱，就在編號後面空一格再寫，例如 <code>荒謬二 高抬腿踢.jpg</code>。<br>` +
+    `例如 <code>正經一.jpg</code>、<code>雙人3.jpg</code>、<code>荒謬二.jpg</code>。想在這份清單上看到動作名稱，就在編號後面空一格再寫，例如 <code>荒謬二 高抬腿踢.jpg</code>（<b>投影畫面上不會出現任何文字</b>，只有圖）。<br>` +
     `<b>類別名稱由檔名決定</b>，程式裡沒有寫死——之後想把「正經」改叫別的，直接改檔名，控制台的比例滑桿就會跟著變。<br>` +
     `放好照片後<b>雙擊 <code>action-poses/更新清單.command</code></b>（網頁靠這份清單才知道有哪些檔案）。放到 GitHub 上之後，就算忘了跑也會自動去問 GitHub。<br>` +
     `<span style="opacity:.8">目前狀態：${photoNote}</span>`;
