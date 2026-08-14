@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>看我動作片｜看我笑話工作室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&family=Noto+Sans+TC:wght@400;900&family=Noto+Serif+TC:wght@900&display=swap" rel="stylesheet">
+<style>
+:root { --face: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif; --fw: 900; }
+html, body { margin: 0; }
+html { background: #000; scrollbar-color: #2e2e2e #000; }
+::-webkit-scrollbar { width: 10px; background: #000; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+body {
+  background: #000;
+  color: #f9f5ea;
+  font-family: var(--face);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+#top-pad { height: 45vh; flex: 0 0 auto; }
+#bottom-pad { height: 100vh; flex: 0 0 auto; }
+
+#intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3vw;
+  min-height: 62vh;
+}
+#intro h1 {
+  font-size: min(11vw, 17vh);
+  font-weight: var(--fw);
+  letter-spacing: .08em;
+  margin: 0;
+  white-space: nowrap;
+}
+.deco { display: flex; flex-direction: column; align-items: center; gap: 2.5vh; }
+.deco svg { height: 17vh; display: block; }
+.deco .a { transform: rotate(-8deg); }
+.deco .b { transform: rotate(6deg); }
+.deco .c { transform: rotate(7deg); }
+.deco .d { transform: rotate(-6deg); }
+
+#drawview {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  min-height: 62vh;
+  justify-content: center;
+}
+#posebox { height: min(54vh, 74vw); display: flex; align-items: center; justify-content: center; }
+#posebox svg, #posebox img { height: 100%; max-width: 92vw; object-fit: contain; display: block; }
+#reading {
+  font-size: min(6.5vh, 8vw);
+  font-weight: var(--fw);
+  letter-spacing: .08em;
+  margin-top: 2.5vh;
+  white-space: nowrap;
+  min-height: 1.2em;
+}
+#endview {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 62vh;
+  gap: 3vh;
+}
+#end-big {
+  font-size: min(11vh, 13vw);
+  font-weight: var(--fw);
+  letter-spacing: .12em;
+}
+#end-sub { font-size: min(2.8vh, 17px); letter-spacing: 3px; opacity: .55; }
+.pop { animation: pop .28s ease; }
+@keyframes pop {
+  from { transform: scale(.82) rotate(-3deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+#controls { text-align: center; margin-top: 3.5vh; }
+#round-info { font-size: 14px; opacity: .4; letter-spacing: 1px; margin-bottom: 10px; min-height: 17px; }
+#btn-row { display: flex; gap: 12px; justify-content: center; align-items: center; }
+#end {
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 2px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(249,245,234,.25);
+  background: transparent;
+  color: rgba(249,245,234,.7);
+  cursor: pointer;
+}
+#end:hover { border-color: rgba(249,245,234,.5); color: #f9f5ea; }
+#end:active { transform: scale(.95); }
+#go, #next {
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  padding: 7px 30px 8px 34px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(249,245,234,.4);
+  background: #111;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#go:hover, #next:hover { background: #1d1d1d; }
+#go:active, #next:active { transform: scale(.95); }
+#hint { margin-top: 9px; font-size: 13px; opacity: .4; letter-spacing: 1px; line-height: 2; }
+#fs, #console-link, #list-link {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+#fs:hover, #console-link:hover, #list-link:hover { color: #f9f5ea; opacity: 1; }
+#home-link {
+  color: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+#home-link:hover { color: #f9f5ea; }
+
+@media (max-width: 600px) {
+  #intro { gap: 2vw; }
+  .deco { gap: 1.8vh; }
+  .deco svg { height: 9vh; }
+  #panel { bottom: 12px; }
+}
+
+#panel {
+  display: none;
+  position: fixed;
+  left: 50%; bottom: 56px;
+  transform: translateX(-50%);
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: #161616;
+  border: 1px solid #3a3a3a;
+  border-radius: 12px;
+  padding: 18px 22px 16px;
+  z-index: 10;
+  font-size: 15px;
+}
+#panel-title { font-size: 17px; font-weight: 700; letter-spacing: 2px; margin-bottom: 4px; }
+.psec { font-size: 13px; letter-spacing: 2px; color: rgba(249,245,234,.5); margin: 14px 0 8px; }
+#font-btns { display: flex; gap: 8px; }
+#font-btns button {
+  flex: 1;
+  font-size: 15px;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(249,245,234,.3);
+  background: #222;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#font-btns button.on { background: #f9f5ea; color: #111; border-color: #f9f5ea; }
+.prow { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.gname { width: 56px; flex: 0 0 auto; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow input[type=range] { flex: 1; accent-color: #d97706; }
+.gpct { width: 56px; text-align: right; flex: 0 0 auto; color: #f0c894; font-size: 14px; }
+#src-row { display: none; align-items: center; gap: 8px; margin: 10px 0 2px; cursor: pointer; }
+#src-row input { accent-color: #d97706; width: 16px; height: 16px; }
+#photo-status { font-size: 12px; opacity: .5; margin-top: 8px; line-height: 1.6; }
+#panel-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+#panel-btns button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 4px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(249,245,234,.35);
+  background: #222;
+  color: #f9f5ea;
+  cursor: pointer;
+}
+#panel-note { font-size: 12px; opacity: .45; margin-top: 10px; line-height: 1.6; }
+
+/* ===== 動作清單（拍攝對照表） ===== */
+#list {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  z-index: 20;
+  overflow-y: auto;
+  padding: 26px 20px 60px;
+  box-sizing: border-box;
+}
+#list h2 { font-size: 22px; letter-spacing: 3px; margin: 0 0 6px; text-align: center; }
+#list-note {
+  max-width: 780px;
+  margin: 0 auto 22px;
+  font-size: 13px;
+  line-height: 1.9;
+  opacity: .65;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+#list-note code { color: #f0c894; font-size: 13px; }
+#list-note b { color: #f9f5ea; }
+#list-close {
+  position: fixed; top: 14px; right: 16px; z-index: 21;
+  font-family: inherit; font-size: 14px; padding: 6px 16px;
+  border-radius: 8px; border: 1px solid rgba(249,245,234,.35);
+  background: #222; color: #f9f5ea; cursor: pointer;
+}
+.lgroup {
+  max-width: 1100px;
+  margin: 0 auto 6px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: rgba(249,245,234,.55);
+  padding: 18px 2px 6px;
+  border-bottom: 1px solid #242424;
+}
+.lgrid {
+  max-width: 1100px;
+  margin: 12px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+.lcard {
+  background: #141414;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  padding: 10px 8px 12px;
+  text-align: center;
+}
+.lcard svg, .lcard img { height: 120px; width: 100%; object-fit: contain; display: block; }
+.lname { font-size: 14px; font-weight: 700; margin-top: 8px; }
+.lsrc { font-size: 11px; opacity: .4; margin-top: 3px; letter-spacing: 1px; }
+.lcard.photo { border-color: #7a5416; }
+</style>
+</head>
+<body>
+<div id="top-pad"></div>
+
+<div id="intro">
+  <div class="deco" id="deco-left"></div>
+  <h1>看我動作片</h1>
+  <div class="deco" id="deco-right"></div>
+</div>
+
+<div id="drawview">
+  <div id="posebox"></div>
+  <div id="reading"></div>
+</div>
+
+<div id="endview">
+  <div id="end-big">回合結束</div>
+  <div id="end-sub">按空白鍵開始下一回合</div>
+</div>
+
+<div id="controls">
+  <div id="round-info"></div>
+  <div id="btn-row">
+    <button id="go">抽動作</button>
+    <button id="end">結束這回合</button>
+    <button id="next" style="display:none">開始下一回合</button>
+  </div>
+  <div id="hint">空白鍵抽動作 ・ Enter 結束回合<span id="fs-wrap"> ・ <span id="fs">點我進入全螢幕</span>（F 鍵）</span> ・ <span id="list-link">動作清單</span> ・ <span id="console-link">控制台</span> ・ <a href="index.html" id="home-link">看我笑話工具箱</a></div>
+</div>
+
+<div id="bottom-pad"></div>
+
+<div id="panel">
+  <div id="panel-title">控制台</div>
+  <div class="psec">字體</div>
+  <div id="font-btns">
+    <button data-f="hei" style="font-family:'Noto Sans TC','PingFang TC',sans-serif;font-weight:900">粗黑體</button>
+    <button data-f="kai" style="font-family:'LXGW WenKai TC','Kaiti TC','BiauKai',serif">楷書</button>
+    <button data-f="ming" style="font-family:'Noto Serif TC','Songti TC',serif">明體</button>
+  </div>
+  <div class="psec">出現比例</div>
+  <div id="panel-rows"></div>
+  <label id="src-row"><input type="checkbox" id="photo-only"><span>只抽真人照片（不抽火柴人）</span></label>
+  <div id="photo-status"></div>
+  <div class="psec">不重複張數</div>
+  <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="10" step="1"><span class="gpct" id="no-repeat-val"></span></div>
+  <div class="psec">一回合幾張</div>
+  <div class="prow"><span class="gname">張數</span><input type="range" id="round-len" min="1" max="60" step="1"><span class="gpct" id="round-len-val"></span></div>
+  <div id="panel-btns">
+    <button id="panel-reset">恢復預設比例</button>
+    <button id="panel-close">關閉</button>
+  </div>
+  <div id="panel-note">百分比是該類動作整組被抽到的機率；「前幾張」是抽出的動作不與最近幾張重複（0 為關閉）；「張數」是抽滿幾張後下一按就結束回合。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
+</div>
+
+<div id="list">
+  <button id="list-close">關閉</button>
+  <h2>動作清單</h2>
+  <div id="list-note"></div>
+  <div id="list-body"></div>
+</div>
+
+<script>
+/* =========================================================================
+   看我動作片 — 即興劇肢體動作抽籤機
+
+   動作來源有兩種，會同時放進抽籤池：
+   (1) 真人照片 —— 放在 action-poses/ 資料夾，檔名自己帶類別（例：正經一.jpg）
+   (2) 內建火柴人 —— 純程式畫的，照片還沒到齊之前的替身
+
+   類別完全由「檔名」決定，程式裡沒有寫死任何類別名稱。
+   想把「正經」改叫「認真」，就把檔名改成「認真一.jpg」，控制台的滑桿會自己變。
+   ========================================================================= */
+
+/* ===== 設定的記憶（無痕模式等讀不到 localStorage 時自動跳過，不影響演出） ===== */
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+/* 各類別出現權重（控制台可調，會記住）。類別是動態的，所以這裡只存使用者調過的值 */
+let W = {};
+try { Object.assign(W, JSON.parse(store.get('dongzuo-weights') || '{}')); } catch (e) {}
+const weightOf = p => (W[p.cat] === undefined ? 1 : W[p.cat]);
+
+/* 抽出的動作不與前面幾張重複（預設 3） */
+const DEFAULT_NO_REPEAT = 3;
+let noRepeat = parseInt(store.get('dongzuo-no-repeat'), 10);
+if (!(noRepeat >= 0 && noRepeat <= 10)) noRepeat = DEFAULT_NO_REPEAT;
+
+/* 一回合幾張（預設 30） */
+const DEFAULT_ROUND_LEN = 30;
+let roundLen = parseInt(store.get('dongzuo-round-len'), 10);
+if (!(roundLen >= 1 && roundLen <= 60)) roundLen = DEFAULT_ROUND_LEN;
+
+/* 只抽真人照片 */
+let photoOnly = store.get('dongzuo-photo-only') === '1';
+
+let drawsThisRound = 0;
+let roundEnded = false;
+
+/* ===== 字體設定（控制台可切換，預設粗黑體） ===== */
+const FONTS = {
+  hei:  { stack: 'Noto Sans TC, PingFang TC, Microsoft JhengHei, sans-serif', weight: 900 },
+  kai:  { stack: 'LXGW WenKai TC, Kaiti TC, BiauKai, DFKai-SB, KaiTi, serif', weight: 700 },
+  ming: { stack: 'Noto Serif TC, Songti TC, PMingLiU, serif', weight: 900 }
+};
+let fontKey = store.get('dongzuo-font') || 'hei';
+if (!FONTS[fontKey]) fontKey = 'hei';
+
+/* =========================================================================
+   火柴人繪圖
+   角度：0=向下、90=向右、180=向上、-90=向左。
+   arms / legs 都是 [左邊, 右邊]，每個是 [大臂(大腿)角度, 小臂(小腿)角度]。
+   一個動作可以有一個或兩個人（figs）。
+   ========================================================================= */
+const IV = '#f9f5ea';
+const TORSO = 62, SHO = 50, HEADD = 22, HEADR = 20;
+const UA = 38, FA = 36, TH = 46, SHIN = 46;
+
+const D = a => [Math.sin(a * Math.PI / 180), Math.cos(a * Math.PI / 180)];
+const seg = (p, a, l) => { const d = D(a); return [p[0] + d[0] * l, p[1] + d[1] * l]; };
+const n2 = v => Math.round(v * 10) / 10;
+
+/* 左右鏡射一個人（雙人對稱動作用這個生出另一半） */
+function mirror(f, cx) {
+  const neg = ab => [-ab[0], -ab[1]];
+  const out = {
+    hip: [2 * cx - f.hip[0], f.hip[1]],
+    torso: -(f.torso === undefined ? 180 : f.torso),
+    head: -(f.head || 0),
+    arms: [neg(f.arms ? f.arms[1] : [4, 4]), neg(f.arms ? f.arms[0] : [-4, -4])],
+    legs: [neg(f.legs ? f.legs[1] : [3, 3]), neg(f.legs ? f.legs[0] : [-3, -3])]
+  };
+  if (f.ground !== undefined) out.ground = f.ground;
+  return out;
+}
+
+const PAD = 18;
+
+function figureSVG(p) {
+  const figs = p.figs || [p];
+  const parts = [];
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const mark = (x, y) => { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; };
+  let groundY;
+
+  figs.forEach(f => {
+    const hip = f.hip || [120, 170];
+    const t = f.torso === undefined ? 180 : f.torso;
+    const neck = seg(hip, t, TORSO);
+    const sho = seg(hip, t, SHO);
+    const headC = seg(neck, t + (f.head || 0), HEADD);
+    const bones = [];
+    const hands = [];
+    (f.arms || [[-9, -9], [9, 9]]).forEach(([u, fa]) => {
+      const e = seg(sho, u, UA), h = seg(e, fa, FA);
+      bones.push([sho, e], [e, h]);
+      hands.push(h);
+    });
+    (f.legs || [[-6, -6], [6, 6]]).forEach(([u, sh]) => {
+      const k = seg(hip, u, TH), a2 = seg(k, sh, SHIN);
+      bones.push([hip, k], [k, a2]);
+    });
+    parts.push({ hip, neck, headC, bones, hands });
+    mark(hip[0], hip[1]);
+    bones.forEach(([a, b]) => { mark(a[0], a[1]); mark(b[0], b[1]); });
+    mark(headC[0] - HEADR, headC[1] - HEADR);
+    mark(headC[0] + HEADR, headC[1] + HEADR);
+    if (f.ground !== undefined) { groundY = f.ground; mark(hip[0], f.ground); }
+  });
+
+  /* 手勢小圖示（比 V、讚、愛心…）也要算進畫面範圍 */
+  const icons = p.icons || (p.icon ? [p.icon] : []);
+  const handAt = ref => parts[ref[0]].hands[ref[1]];
+  icons.forEach(ic => {
+    (ic.hands || [[0, ic.side || 0]]).forEach(ref => {
+      const h = handAt(ref);
+      mark(h[0] - 24, h[1] - 28); mark(h[0] + 24, h[1] + 14);
+    });
+  });
+
+  x0 -= PAD; y0 -= PAD; x1 += PAD; y1 += PAD;
+  let vw = x1 - x0, vh = y1 - y0;
+  /* 裁切到人物實際範圍，再補成固定比例 —— 每個動作投影出來大小才會一致 */
+  const aspect = figs.length > 1 ? 1.3 : 0.8;
+  if (vw / vh < aspect) { const nw = vh * aspect; x0 -= (nw - vw) / 2; vw = nw; }
+  else { const nh = vw / aspect; y0 -= (nh - vh) / 2; vh = nh; }
+
+  let g = '';
+  if (groundY !== undefined) {
+    g += `<line x1="${n2(x0 + 6)}" y1="${groundY}" x2="${n2(x0 + vw - 6)}" y2="${groundY}" stroke="${IV}" stroke-width="3" opacity=".22"/>`;
+  }
+  parts.forEach(pt => {
+    g += `<line x1="${n2(pt.hip[0])}" y1="${n2(pt.hip[1])}" x2="${n2(pt.neck[0])}" y2="${n2(pt.neck[1])}" stroke="${IV}" stroke-width="11" stroke-linecap="round"/>`;
+    pt.bones.forEach(([a, b]) => {
+      g += `<line x1="${n2(a[0])}" y1="${n2(a[1])}" x2="${n2(b[0])}" y2="${n2(b[1])}" stroke="${IV}" stroke-width="9" stroke-linecap="round"/>`;
+    });
+    g += `<circle cx="${n2(pt.headC[0])}" cy="${n2(pt.headC[1])}" r="${HEADR}" fill="none" stroke="${IV}" stroke-width="9"/>`;
+  });
+  icons.forEach(ic => { g += drawIcon(ic, handAt); });
+
+  return `<svg viewBox="${n2(x0)} ${n2(y0)} ${n2(vw)} ${n2(vh)}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+
+/* 手部小圖示：讓「比 V」「讚」「愛心」「招手」一眼看得懂 */
+function drawIcon(ic, handAt) {
+  const refs = ic.hands || [[0, ic.side || 0]];
+  if (ic.type === 'heart') {
+    const a = handAt(refs[0]), b = handAt(refs[1] || refs[0]);
+    const cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2 - 4, s = 15;
+    return `<path d="M ${n2(cx)} ${n2(cy + 0.85 * s)} C ${n2(cx - 1.45 * s)} ${n2(cy - 0.2 * s)}, ${n2(cx - 0.7 * s)} ${n2(cy - 1.15 * s)}, ${n2(cx)} ${n2(cy - 0.4 * s)} C ${n2(cx + 0.7 * s)} ${n2(cy - 1.15 * s)}, ${n2(cx + 1.45 * s)} ${n2(cy - 0.2 * s)}, ${n2(cx)} ${n2(cy + 0.85 * s)} Z" fill="none" stroke="${IV}" stroke-width="6" stroke-linejoin="round"/>`;
+  }
+  const h = handAt(refs[0]);
+  if (ic.type === 'v') {
+    return `<line x1="${n2(h[0])}" y1="${n2(h[1])}" x2="${n2(h[0] - 9)}" y2="${n2(h[1] - 21)}" stroke="${IV}" stroke-width="7" stroke-linecap="round"/>` +
+           `<line x1="${n2(h[0])}" y1="${n2(h[1])}" x2="${n2(h[0] + 10)}" y2="${n2(h[1] - 19)}" stroke="${IV}" stroke-width="7" stroke-linecap="round"/>`;
+  }
+  if (ic.type === 'spark') {
+    /* 擊掌的火花 */
+    let s = '';
+    for (let a = 0; a < 360; a += 45) {
+      const r1 = 15, r2 = 26, rad = a * Math.PI / 180;
+      s += `<line x1="${n2(h[0] + r1 * Math.cos(rad))}" y1="${n2(h[1] + r1 * Math.sin(rad))}" x2="${n2(h[0] + r2 * Math.cos(rad))}" y2="${n2(h[1] + r2 * Math.sin(rad))}" stroke="${IV}" stroke-width="5" stroke-linecap="round" opacity=".7"/>`;
+    }
+    return s;
+  }
+  if (ic.type === 'wave') {
+    return `<path d="M ${n2(h[0] + 12)} ${n2(h[1] - 14)} A 16 16 0 0 1 ${n2(h[0] + 12)} ${n2(h[1] + 10)}" fill="none" stroke="${IV}" stroke-width="5" stroke-linecap="round" opacity=".75"/>` +
+           `<path d="M ${n2(h[0] + 22)} ${n2(h[1] - 20)} A 26 26 0 0 1 ${n2(h[0] + 22)} ${n2(h[1] + 16)}" fill="none" stroke="${IV}" stroke-width="5" stroke-linecap="round" opacity=".45"/>`;
+  }
+  return '';
+}
+
+/* =========================================================================
+   內建火柴人：正經 10 ／ 雙人 10 ／ 荒謬 10
+   想改名稱、增減動作、改分類，改這份清單就好。
+   （類別字串同時是控制台滑桿上的名字）
+   ========================================================================= */
+const 擊掌A = { hip: [90, 170], arms: [[-10, -10], [130, 150]], legs: [[-6, -6], [6, 6]] };
+const 握手A = { hip: [75, 170], arms: [[-10, -10], [40, 95]], legs: [[-6, -6], [6, 6]] };
+const 抱胸A = { hip: [88, 170], arms: [[-45, 70], [45, -110]], legs: [[-6, -6], [6, 6]] };
+const 愛心A = { hip: [88, 170], arms: [[-10, -10], [150, 172]], legs: [[-6, -6], [6, 6]] };
+const 歡呼A = { hip: [80, 170], arms: [[-160, -160], [160, 160]], legs: [[-8, -8], [8, 8]] };
+const 攤手A = { hip: [80, 170], arms: [[-45, -115], [45, 115]], legs: [[-8, -8], [8, 8]] };
+
+const POSES = [
+  /* ---------- 正經 ---------- */
+  { cat: '正經', name: '立正站好', arms: [[-9, -9], [9, 9]] },
+  { cat: '正經', name: '雙手叉腰', arms: [[-50, 35], [50, -35]] },
+  { cat: '正經', name: '雙手抱胸', arms: [[-45, 70], [45, -110]] },
+  { cat: '正經', name: '敬禮', arms: [[-4, -4], [95, -160]], legs: [[-3, -3], [3, 3]] },
+  { cat: '正經', name: '舉手發問', arms: [[-4, -4], [145, 165]], legs: [[-4, -4], [4, 4]] },
+  { cat: '正經', name: '雙手合十', arms: [[-25, 146], [25, -146]], legs: [[-5, -5], [5, 5]] },
+  { cat: '正經', name: '鞠躬', torso: 210, head: -12, arms: [[-8, -8], [8, 8]], legs: [[-4, -4], [4, 4]] },
+  { cat: '正經', name: '指向前方', arms: [[-6, -6], [88, 88]] },
+  { cat: '正經', name: '雙手交握', arms: [[-20, 25], [20, -25]], legs: [[-5, -5], [5, 5]] },
+  { cat: '正經', name: '托腮思考', head: 8, arms: [[-45, 45], [40, -160]], legs: [[-5, -5], [5, 5]] },
+
+  /* ---------- 雙人 ---------- */
+  { cat: '雙人', name: '擊掌', figs: [擊掌A, mirror(擊掌A, 140)], icons: [{ type: 'spark', hands: [[0, 1]] }] },
+  { cat: '雙人', name: '握手', figs: [握手A, mirror(握手A, 135)] },
+  { cat: '雙人', name: '背靠背抱胸', figs: [抱胸A, mirror(抱胸A, 130)] },
+  { cat: '雙人', name: '勾肩搭背', figs: [
+      { hip: [100, 170], arms: [[-10, -10], [125, 80]], legs: [[-6, -6], [6, 6]] },
+      { hip: [180, 170], arms: [[-125, -80], [10, 10]], legs: [[-6, -6], [6, 6]] }
+    ] },
+  { cat: '雙人', name: '單膝跪地求婚', figs: [
+      { hip: [80, 190], ground: 240, arms: [[-15, -15], [75, 90]], legs: [[5, 265], [90, 0]] },
+      { hip: [205, 170], ground: 240, arms: [[-70, 148], [70, -148]], legs: [[-5, -5], [5, 5]] }
+    ] },
+  { cat: '雙人', name: '面對面互指', figs: [
+      { hip: [72, 170], arms: [[-10, -10], [85, 85]], legs: [[-6, -6], [6, 6]] },
+      { hip: [210, 170], arms: [[-95, -95], [10, 10]], legs: [[-6, -6], [6, 6]] }
+    ] },
+  { cat: '雙人', name: '一起比愛心', figs: [愛心A, mirror(愛心A, 140)],
+    icons: [{ type: 'heart', hands: [[0, 1], [1, 0]] }] },
+  { cat: '雙人', name: '一起歡呼', figs: [歡呼A, mirror(歡呼A, 140)] },
+  { cat: '雙人', name: '一蹲一指', figs: [
+      { hip: [85, 205], arms: [[-70, 148], [70, -148]], legs: [[-60, -5], [60, 5]] },
+      { hip: [210, 170], arms: [[10, 10], [-88, -88]], legs: [[-6, -6], [6, 6]] }
+    ] },
+  { cat: '雙人', name: '互相攤手', figs: [攤手A, mirror(攤手A, 140)] },
+
+  /* ---------- 荒謬 ---------- */
+  { cat: '荒謬', name: '大字型張開', arms: [[-135, -135], [135, 135]], legs: [[-35, -35], [35, 35]] },
+  { cat: '荒謬', name: '劈腿', hip: [120, 238], arms: [[-160, -160], [160, 160]], legs: [[-90, -90], [90, 90]] },
+  { cat: '荒謬', name: '倒立', hip: [120, 118], torso: 0, ground: 248, arms: [[-20, -10], [20, 10]], legs: [[188, 182], [172, 178]] },
+  { cat: '荒謬', name: '迪斯可指天', arms: [[-40, -40], [140, 140]], legs: [[-25, -20], [20, 10]] },
+  { cat: '荒謬', name: '殭屍前伸手', torso: 175, arms: [[-100, -105], [-70, -72]], legs: [[-3, -3], [3, 3]] },
+  { cat: '荒謬', name: '芭蕾後抬腿', torso: 170, arms: [[-150, -150], [110, 110]], legs: [[-125, -115], [5, 5]] },
+  { cat: '荒謬', name: '高抬腿踢', arms: [[-140, -140], [70, 70]], legs: [[-5, -5], [80, 70]] },
+  { cat: '荒謬', name: '伏地挺身', hip: [110, 176], torso: 90, ground: 252, arms: [[0, 0], [7, 7]], legs: [[312, 312], [318, 318]] },
+  { cat: '荒謬', name: '跪地仰天', hip: [120, 190], head: -25, ground: 244, arms: [[-145, -160], [145, 160]], legs: [[-8, 88], [8, 92]] },
+  { cat: '荒謬', name: '螃蟹橫走', arms: [[-100, -160], [100, 160]], legs: [[-55, -15], [55, 15]] }
+];
+POSES.forEach(p => { p.src = 'stick'; });
+
+/* 開場標題兩側的裝飾（只是裝飾，不會被抽到） */
+const DECO = [
+  { arms: [[-6, -6], [120, 170]], legs: [[-5, -5], [5, 5]], icon: { side: 1, type: 'v' } },
+  { arms: [[-6, -6], [140, 155]], legs: [[-5, -5], [5, 5]], icon: { side: 1, type: 'wave' } },
+  { arms: [[-135, -135], [135, 135]], legs: [[-35, -35], [35, 35]] },
+  { arms: [[-140, -140], [70, 70]], legs: [[-5, -5], [80, 70]] }
+];
+
+/* =========================================================================
+   真人照片
+   檔名自己帶類別，例：正經一.jpg／雙人3.png／荒謬二 高抬腿踢.jpg
+   程式怎麼知道資料夾裡有哪些檔案？兩條路，先試第一條：
+     1. action-poses/清單.txt —— 雙擊「更新清單.command」就會自動產生
+     2. GitHub 的資料夾內容 API —— 沒有清單檔時的備援（要連得上網）
+   ========================================================================= */
+const PHOTO_DIR = 'action-poses/';
+const GH_API = 'https://api.github.com/repos/allen365apple/jokes-on-me/contents/action-poses';
+const IMG_EXT = /\.(jpe?g|png|webp|gif)$/i;
+
+const CN = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
+function cnNum(s) {
+  if (!s) return 0;
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  const m = s.match(/^([一二三四五六七八九])?十([一二三四五六七八九])?$/);
+  if (m) return (m[1] ? CN[m[1]] : 1) * 10 + (m[2] ? CN[m[2]] : 0);
+  return CN[s] || 0;
+}
+
+/* 把檔名拆成 類別 / 編號 / 動作名稱 */
+function parseFileName(file) {
+  const base = file.replace(IMG_EXT, '');
+  const bits = base.split(/[\s_]+/).filter(Boolean);
+  let head = bits[0] || base;
+  let rest = bits.slice(1);
+  let m = head.match(/^(.*?)[-]?(\d+|[一二三四五六七八九十]+)$/);
+  let cat, idx;
+  if (m && m[1]) { cat = m[1]; idx = cnNum(m[2]); }
+  else {
+    /* 類別和編號中間有空白的寫法：荒謬 02 高抬腿 */
+    cat = head; idx = 0;
+    if (rest.length && /^(\d+|[一二三四五六七八九十]+)$/.test(rest[0])) {
+      idx = cnNum(rest[0]);
+      rest = rest.slice(1);
+    }
+  }
+  return { cat: cat.replace(/[-_]+$/, ''), idx, name: rest.join(' ') };
+}
+
+let photoNote = '還沒有偵測到照片，目前全部使用火柴人。';
+
+function addPhotos(files) {
+  const list = files.filter(f => IMG_EXT.test(f) && !f.startsWith('.'));
+  if (!list.length) return false;
+  const added = list.map(f => {
+    const info = parseFileName(f);
+    return { cat: info.cat, idx: info.idx, name: info.name, src: 'photo', url: PHOTO_DIR + encodeURIComponent(f), file: f };
+  });
+  added.sort((a, b) => a.cat.localeCompare(b.cat, 'zh-Hant') || a.idx - b.idx || a.file.localeCompare(b.file));
+  POSES.push(...added);
+  const cats = [...new Set(added.map(p => p.cat))];
+  photoNote = `已載入 ${added.length} 張真人照片，類別：${cats.join('、')}。`;
+  return true;
+}
+
+function loadPhotos() {
+  return fetch(PHOTO_DIR + '清單.txt', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw 0; return r.text(); })
+    .then(txt => {
+      const files = txt.split(/\r?\n/).map(s => s.trim()).filter(s => s && !s.startsWith('#'));
+      if (!addPhotos(files)) throw 0;
+    })
+    .catch(() => fetch(GH_API)
+      .then(r => { if (!r.ok) throw 0; return r.json(); })
+      .then(json => { addPhotos((json || []).map(f => f.name)); })
+      .catch(() => {}));
+}
+
+/* ===== 抽籤池 ===== */
+function pool() {
+  let list = POSES;
+  if (photoOnly) {
+    const ph = list.filter(p => p.src === 'photo');
+    if (ph.length) list = ph;
+  }
+  return list;
+}
+const cats = () => [...new Set(pool().map(p => p.cat))];
+
+let recent = [];
+function drawPose() {
+  const all = pool();
+  let p2 = all.filter(p => weightOf(p) > 0 && recent.indexOf(p) === -1);
+  /* 防呆：排除後沒東西可抽（張數設太大或比例調太極端）就放寬到只看權重 */
+  if (!p2.length || p2.reduce((s, p) => s + weightOf(p), 0) <= 0) {
+    p2 = all.filter(p => weightOf(p) > 0);
+  }
+  if (!p2.length) p2 = all;
+  const total = p2.reduce((s, p) => s + weightOf(p), 0);
+  let r = Math.random() * total, pick = p2[p2.length - 1];
+  for (const p of p2) { r -= weightOf(p); if (r <= 0) { pick = p; break; } }
+  recent.push(pick);
+  while (recent.length > noRepeat) recent.shift();
+  return pick;
+}
+
+function mediaHTML(p) {
+  return p.src === 'photo'
+    ? `<img src="${p.url}" alt="${p.name || p.cat}" loading="lazy">`
+    : figureSVG(p);
+}
+
+/* ===== 開場裝飾 ===== */
+document.getElementById('deco-left').innerHTML =
+  `<span class="a">${figureSVG(DECO[0])}</span><span class="b">${figureSVG(DECO[1])}</span>`;
+document.getElementById('deco-right').innerHTML =
+  `<span class="c">${figureSVG(DECO[2])}</span><span class="d">${figureSVG(DECO[3])}</span>`;
+
+/* ===== 畫面更新 ===== */
+const intro = document.getElementById('intro');
+const drawview = document.getElementById('drawview');
+const posebox = document.getElementById('posebox');
+const reading = document.getElementById('reading');
+const endview = document.getElementById('endview');
+const goBtn = document.getElementById('go');
+const endBtn = document.getElementById('end');
+const nextBtn = document.getElementById('next');
+const roundInfo = document.getElementById('round-info');
+let currentPose = null;
+
+function onDraw() {
+  if (roundEnded) return;
+  if (drawsThisRound >= roundLen) { endRound(); return; }
+  intro.style.display = 'none';
+  drawview.style.display = 'flex';
+  currentPose = drawPose();
+  posebox.innerHTML = mediaHTML(currentPose);
+  reading.textContent = currentPose.name || '';
+  [posebox, reading].forEach(el => {
+    el.classList.remove('pop');
+    void el.offsetWidth;
+    el.classList.add('pop');
+  });
+  drawsThisRound++;
+  roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
+}
+
+function endRound() {
+  if (roundEnded) return;
+  roundEnded = true;
+  intro.style.display = 'none';
+  drawview.style.display = 'none';
+  endview.style.display = 'flex';
+  endview.classList.remove('pop');
+  void endview.offsetWidth;
+  endview.classList.add('pop');
+  goBtn.style.display = 'none';
+  endBtn.style.display = 'none';
+  nextBtn.style.display = '';
+  roundInfo.textContent = '回合結束';
+}
+
+function startNextRound() {
+  roundEnded = false;
+  drawsThisRound = 0;
+  endview.style.display = 'none';
+  nextBtn.style.display = 'none';
+  goBtn.style.display = '';
+  endBtn.style.display = '';
+  onDraw();
+}
+
+goBtn.addEventListener('click', () => { onDraw(); goBtn.blur(); });
+endBtn.addEventListener('click', () => { endRound(); endBtn.blur(); });
+nextBtn.addEventListener('click', () => { startNextRound(); nextBtn.blur(); });
+window.addEventListener('keydown', e => {
+  if (panel.style.display === 'block') return;
+  if (listBox.style.display === 'block') {
+    if (e.code === 'Escape') closeList();
+    return;
+  }
+  if (e.code === 'Space' && !e.repeat) {
+    e.preventDefault();
+    if (roundEnded) startNextRound(); else onDraw();
+  } else if (e.code === 'Enter' && !e.repeat) {
+    e.preventDefault();
+    if (!roundEnded) endRound();
+  } else if (e.code === 'KeyF' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+/* ===== 全螢幕 ===== */
+/* iPhone 的 Safari 不支援網頁全螢幕 API，偵測不到就把整段入口藏起來 */
+const fsBtn = document.getElementById('fs');
+if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) {
+  document.getElementById('fs-wrap').style.display = 'none';
+}
+function toggleFullscreen() {
+  const doc = document, root = doc.documentElement;
+  if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+    (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+  } else {
+    (root.requestFullscreen || root.webkitRequestFullscreen).call(root);
+  }
+}
+fsBtn.addEventListener('click', () => { toggleFullscreen(); fsBtn.blur(); });
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, () => {
+    const on = document.fullscreenElement || document.webkitFullscreenElement;
+    fsBtn.textContent = on ? '點我退出全螢幕（或按 Esc）' : '點我進入全螢幕';
+  }));
+
+/* ===== 動作清單（也是拍攝對照表） ===== */
+const listBox = document.getElementById('list');
+function renderList() {
+  document.getElementById('list-note').innerHTML =
+    `<b>要把火柴人換成真人照片：</b>照片檔名寫成「<code>類別＋編號</code>」放進網頁旁邊的 <code>action-poses/</code> 資料夾，` +
+    `例如 <code>正經一.jpg</code>、<code>雙人3.jpg</code>、<code>荒謬二.jpg</code>。想讓畫面上出現動作名稱，就在編號後面空一格再寫，例如 <code>荒謬二 高抬腿踢.jpg</code>。<br>` +
+    `<b>類別名稱由檔名決定</b>，程式裡沒有寫死——之後想把「正經」改叫別的，直接改檔名，控制台的比例滑桿就會跟著變。<br>` +
+    `放好照片後<b>雙擊 <code>action-poses/更新清單.command</code></b>（網頁靠這份清單才知道有哪些檔案）。放到 GitHub 上之後，就算忘了跑也會自動去問 GitHub。<br>` +
+    `<span style="opacity:.8">目前狀態：${photoNote}</span>`;
+
+  const groups = {};
+  POSES.forEach(p => { (groups[p.cat] = groups[p.cat] || []).push(p); });
+  document.getElementById('list-body').innerHTML = Object.keys(groups).map(cat =>
+    `<div class="lgroup">${cat}（${groups[cat].length}）</div><div class="lgrid">` +
+    groups[cat].map(p =>
+      `<div class="lcard${p.src === 'photo' ? ' photo' : ''}">${mediaHTML(p)}` +
+      `<div class="lname">${p.name || (p.file || '').replace(IMG_EXT, '')}</div>` +
+      `<div class="lsrc">${p.src === 'photo' ? '📷 照片' : '火柴人'}</div></div>`).join('') +
+    `</div>`).join('');
+}
+function closeList() { listBox.style.display = 'none'; }
+document.getElementById('list-link').addEventListener('click', () => {
+  renderList();
+  listBox.style.display = 'block';
+  listBox.scrollTop = 0;
+});
+document.getElementById('list-close').addEventListener('click', closeList);
+
+/* ===== 控制台 ===== */
+const panel = document.getElementById('panel');
+const rowsBox = document.getElementById('panel-rows');
+
+function refreshPanel() {
+  const list = pool();
+  const cs = cats();
+  const count = {};
+  cs.forEach(c => { count[c] = list.filter(p => p.cat === c).length; });
+  rowsBox.innerHTML = cs.map(c =>
+    `<div class="prow"><span class="gname" title="${c}">${c}</span>` +
+    `<input type="range" min="0" max="3" step="0.05" value="${W[c] === undefined ? 1 : W[c]}" data-g="${c}">` +
+    `<span class="gpct" id="pct-${c}"></span></div>`).join('');
+  const total = cs.reduce((s, c) => s + count[c] * (W[c] === undefined ? 1 : W[c]), 0);
+  cs.forEach(c => {
+    const el = document.getElementById('pct-' + c);
+    if (el) el.textContent = total > 0 ? (count[c] * (W[c] === undefined ? 1 : W[c]) / total * 100).toFixed(1) + '%' : '—';
+  });
+  const hasPhoto = POSES.some(p => p.src === 'photo');
+  document.getElementById('src-row').style.display = hasPhoto ? 'flex' : 'none';
+  document.getElementById('photo-only').checked = photoOnly;
+  document.getElementById('photo-status').textContent = photoNote;
+  document.getElementById('round-len').value = roundLen;
+  document.getElementById('round-len-val').textContent = roundLen + ' 個';
+  document.getElementById('no-repeat').value = noRepeat;
+  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 個';
+}
+document.getElementById('no-repeat').addEventListener('input', e => {
+  noRepeat = parseInt(e.target.value, 10);
+  store.set('dongzuo-no-repeat', noRepeat);
+  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 個';
+  while (recent.length > noRepeat) recent.shift();
+});
+document.getElementById('round-len').addEventListener('input', e => {
+  roundLen = parseInt(e.target.value, 10);
+  store.set('dongzuo-round-len', roundLen);
+  document.getElementById('round-len-val').textContent = roundLen + ' 個';
+  if (!roundEnded && drawsThisRound > 0) {
+    roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
+  }
+});
+document.getElementById('photo-only').addEventListener('change', e => {
+  photoOnly = e.target.checked;
+  store.set('dongzuo-photo-only', photoOnly ? '1' : '0');
+  recent = [];
+  refreshPanel();
+});
+rowsBox.addEventListener('input', e => {
+  if (e.target.dataset.g) {
+    W[e.target.dataset.g] = parseFloat(e.target.value);
+    store.set('dongzuo-weights', JSON.stringify(W));
+    refreshPanel();
+  }
+});
+document.getElementById('console-link').addEventListener('click', () => {
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  refreshPanel();
+});
+document.getElementById('font-btns').addEventListener('click', e => {
+  const f = e.target.dataset ? e.target.dataset.f : null;
+  if (f) { fontKey = f; store.set('dongzuo-font', f); applyFont(); }
+});
+document.getElementById('panel-close').addEventListener('click', () => { panel.style.display = 'none'; });
+document.getElementById('panel-reset').addEventListener('click', () => {
+  W = {};
+  store.set('dongzuo-weights', '{}');
+  refreshPanel();
+});
+
+/* ===== 套用字體 ===== */
+function applyFont() {
+  const F = FONTS[fontKey];
+  document.documentElement.style.setProperty('--face', F.stack);
+  document.documentElement.style.setProperty('--fw', F.weight);
+  document.querySelectorAll('#font-btns button').forEach(b =>
+    b.classList.toggle('on', b.dataset.f === fontKey));
+}
+applyFont();
+
+/* ===== 開場就去找照片 ===== */
+loadPhotos().then(() => { if (panel.style.display === 'block') refreshPanel(); });
+</script>
+</body>
+</html>

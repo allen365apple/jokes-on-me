@@ -7,6 +7,7 @@
 | 企劃 | 網頁 | 說明 |
 |------|------|------|
 | 看我摸牌 | [mahjong-draw.html](mahjong-draw.html) | 即興劇用的麻將抽牌機：按空白鍵或「摸牌」抽出一張臺灣麻將，顯示牌面與唸法，演員須將其加入臺詞 |
+| 看我動作片 | [action-draw.html](action-draw.html) | 即興劇用的肢體動作抽籤機：按空白鍵或「抽動作」抽出一個全身動作（內建正經／雙人／荒謬各 10 個火柴人），演員須將該動作融入劇情。把真人照片放進 [action-poses/](action-poses/)，檔名寫成「類別＋編號」（如 `正經一.jpg`）就會自動取代火柴人，類別由檔名決定、程式不用改 |
 | 現場抽籤機 | [comment-lottery.html](comment-lottery.html) | 觀眾留言抽籤機：觀眾掃 QR Code 填 Google 表單，現場隨機抽出留言，同回合不重複 |
 
 ## 使用方式
