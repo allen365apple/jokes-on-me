@@ -575,7 +575,10 @@ const DECO = [
         沒有任何資料夾、或某個回合一張圖都沒有 → 那個回合用內建火柴人頂著。
    ========================================================================= */
 const LOCAL_DIR = 'action-poses/';
+/* 本機的圖：只收瀏覽器一定看得懂的格式 */
 const IMG_EXT = /\.(jpe?g|png|webp|gif)$/i;
+/* Drive 的圖：可以多收 heic（iPhone 預設格式），因為 Drive 會自動轉成 JPEG 給我們 */
+const DRIVE_EXT = /\.(jpe?g|png|webp|gif|heic|heif)$/i;
 /* Drive 圖片的顯示網址（公開分享的檔案可以直接這樣嵌） */
 const driveImgURL = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600';
 
@@ -619,27 +622,36 @@ function makePhoto(file, url, from) {
   return { rawCat: info.cat, cat: info.cat, idx: info.idx, name: info.name, file, url, src: 'photo', from };
 }
 
+/* 相機、手機、截圖的自動檔名——這些不能當成「類別」，
+   不然朋友丟一堆 IMG_2847.JPG 進來，控制台就會冒出一個叫「IMG」的滑桿 */
+const AUTO_NAME = /^(img|dsc|dscn|pxl|mvimg|line|photo|image|pic|screenshot|scr|未命名|照片|圖片|截圖|螢幕截圖|下載)$/i;
+
 /* 同一個前綴至少有 2 張才算一個「類別」，否則整個回合當成一類。
    這樣「正經一/正經二/…」會分類；動漫、迷因那種自由命名的就不會爆出一堆滑桿。 */
 function buildCats(lib) {
   const n = {};
   lib.poses.forEach(p => { if (p.rawCat) n[p.rawCat] = (n[p.rawCat] || 0) + 1; });
-  lib.poses.forEach(p => { p.cat = (p.rawCat && n[p.rawCat] >= 2) ? p.rawCat : lib.name; });
+  lib.poses.forEach(p => {
+    p.cat = (p.rawCat && !AUTO_NAME.test(p.rawCat) && n[p.rawCat] >= 2) ? p.rawCat : lib.name;
+  });
 }
 
 function assembleLibs(localGroups, driveGroups) {
   const map = new Map();
-  const take = (groups, from) => groups.forEach(g => {
+  /* 比對用的鍵去掉副檔名——Drive 上的 abc.heic 收進網站後會變成 abc.jpg，
+     不去掉的話會被當成兩張不同的圖 */
+  const key = f => f.replace(/\.[^.]+$/, '').toLowerCase();
+  const take = (groups, from, ext) => groups.forEach(g => {
     if (!map.has(g.name)) map.set(g.name, { name: g.name, poses: [], seen: new Set() });
     const lib = map.get(g.name);
     g.files.forEach(f => {
-      if (!IMG_EXT.test(f.file) || f.file.startsWith('.') || lib.seen.has(f.file)) return;
-      lib.seen.add(f.file);
+      if (!ext.test(f.file) || f.file.startsWith('.') || lib.seen.has(key(f.file))) return;
+      lib.seen.add(key(f.file));
       lib.poses.push(makePhoto(f.file, f.url, from));
     });
   });
-  take(localGroups, 'local');   /* 網站上的先進來，Drive 只補沒有的 */
-  take(driveGroups, 'drive');
+  take(localGroups, 'local', IMG_EXT);   /* 網站上的先進來，Drive 只補沒有的 */
+  take(driveGroups, 'drive', DRIVE_EXT);
 
   const libs = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
   libs.forEach(lib => {

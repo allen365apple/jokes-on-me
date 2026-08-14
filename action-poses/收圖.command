@@ -13,10 +13,14 @@ echo ""
 
 python3 - <<'PYEOF'
 # -*- coding: utf-8 -*-
-import json, os, re, sys, urllib.request, urllib.parse
+import json, os, re, shutil, subprocess, urllib.request, urllib.parse
 
-HERE = os.getcwd()
-IMG = re.compile(r'\.(jpe?g|png|webp|gif)$', re.I)
+IMG = re.compile(r'\.(jpe?g|png|webp|gif)$', re.I)          # 瀏覽器看得懂的
+ANY = re.compile(r'\.(jpe?g|png|webp|gif|heic|heif)$', re.I) # Drive 上收得到的
+MAP_FILE = '.drive-對照.json'      # Drive 檔案 ↔ 本機檔名（避免同名互相蓋掉）
+MAX_BYTES = 1200 * 1024            # 超過就縮圖
+MAX_PIXEL = 1800                   # 長邊縮到這個大小，投影綽綽有餘
+SIPS = shutil.which('sips')        # macOS 內建的圖片處理工具
 
 def get(url, timeout=60):
     # 網址若含中文等非 ASCII 字元要先編碼，否則 urllib 會直接炸掉
@@ -60,42 +64,109 @@ else:
     print('')
 
 # ---------- 下載新的圖 ----------
+try:
+    對照 = json.load(open(MAP_FILE, encoding='utf-8'))
+except Exception:
+    對照 = {}
+
+def 縮圖(path):
+    """手機原圖動輒 3～5MB，縮一下省空間也讓現場載得快。用 macOS 內建的 sips。"""
+    if not SIPS:
+        return
+    try:
+        if os.path.getsize(path) <= MAX_BYTES:
+            return
+        subprocess.run([SIPS, '-Z', str(MAX_PIXEL), path],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+    except Exception:
+        pass
+
 新增 = 0
+轉檔 = 0
 失敗 = []
 if groups:
     print('【2/4】下載新的圖⋯⋯')
     for g in groups:
         folder = g['name']
         os.makedirs(folder, exist_ok=True)
+        本回合 = 對照.setdefault(folder, {})
+        已用 = set(本回合.values())
+
         for f in g.get('files', []):
             name = f['name']
-            if not IMG.search(name):
+            if not ANY.search(name):
                 continue
-            dest = os.path.join(folder, name)
-            if os.path.exists(dest) and os.path.getsize(dest) > 0:
-                continue                      # 已經有了就不重抓
+
+            # 這張之前收過了嗎？（用 Drive 的檔案 ID 認，不是用檔名）
+            舊 = 本回合.get(f['id'])
+            if 舊 and os.path.exists(os.path.join(folder, 舊)) and os.path.getsize(os.path.join(folder, 舊)) > 0:
+                continue
+
+            # heic 等瀏覽器看不懂的格式 → 請 Drive 幫忙轉成 JPEG
+            web = bool(IMG.search(name))
+            base = re.sub(r'\.[^.]+$', '', name)
+            ext = name[len(base):] if web else '.jpg'
+
+            # 不同人可能丟同名檔案，後來的不能蓋掉先來的
+            檔名 = base + ext
+            n = 2
+            while 檔名 in 已用:
+                檔名 = '%s-%d%s' % (base, n, ext)
+                n += 1
+
+            dest = os.path.join(folder, 檔名)
             urls = ([f['url']] if f.get('url') else []) + [
                 'https://drive.google.com/uc?export=download&id=' + f['id'],
-                'https://drive.google.com/thumbnail?id=%s&sz=w2000' % f['id']]
+                'https://drive.google.com/thumbnail?id=%s&sz=w%d' % (f['id'], MAX_PIXEL)]
             ok = False
             for u in urls:
                 try:
                     r = get(u)
-                    ctype = r.headers.get('Content-Type', '')
                     blob = r.read()
-                    if not ctype.startswith('image/') or len(blob) < 1000:
+                    if not r.headers.get('Content-Type', '').startswith('image/') or len(blob) < 1000:
                         continue              # 抓到的不是圖，換下一個網址試
-                    with open(dest, 'wb') as fh:
-                        fh.write(blob)
+                    if web:
+                        with open(dest, 'wb') as fh:
+                            fh.write(blob)
+                    else:
+                        # heic 等格式：先存原檔，再用 sips 轉成瀏覽器看得懂的 jpg
+                        tmp = dest + '.原檔'
+                        with open(tmp, 'wb') as fh:
+                            fh.write(blob)
+                        轉好 = False
+                        if SIPS:
+                            轉好 = subprocess.run(
+                                [SIPS, '-s', 'format', 'jpeg', '-Z', str(MAX_PIXEL), tmp, '--out', dest],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                            ).returncode == 0 and os.path.exists(dest)
+                        if not 轉好:
+                            # sips 也轉不動，就退回讓 Drive 幫忙轉（thumbnail 一律回傳 JPEG）
+                            os.remove(tmp)
+                            continue
+                        os.remove(tmp)
                     ok = True
                     break
                 except Exception:
                     continue
+
             if ok:
+                縮圖(dest)
+                本回合[f['id']] = 檔名
+                已用.add(檔名)
                 新增 += 1
-                print('      ＋ %s／%s' % (folder, name))
+                if not web:
+                    轉檔 += 1
+                    print('      ＋ %s／%s　(%s 已自動轉成 jpg)' % (folder, 檔名, name))
+                elif 檔名 != name:
+                    print('      ＋ %s／%s　(原檔名 %s 已有人用了，自動改名)' % (folder, 檔名, name))
+                else:
+                    print('      ＋ %s／%s' % (folder, 檔名))
             else:
                 失敗.append('%s／%s' % (folder, name))
+
+    with open(MAP_FILE, 'w', encoding='utf-8') as fh:
+        json.dump(對照, fh, ensure_ascii=False, indent=1)
+
     if 新增 == 0 and not 失敗:
         print('      沒有新的圖，本機已經是最新的。')
     if 失敗:
