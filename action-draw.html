@@ -167,23 +167,28 @@ body {
 .gname { width: 56px; flex: 0 0 auto; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prow input[type=range] { flex: 1; accent-color: #d97706; }
 .gpct { width: 56px; text-align: right; flex: 0 0 auto; color: #f0c894; font-size: 14px; }
-#lib-btns { display: flex; gap: 8px; flex-wrap: wrap; }
 #lib-btns button {
-  flex: 1 1 auto;
-  min-width: 0;
   font-family: inherit;
   font-size: 14px;
-  padding: 7px 10px;
   border-radius: 8px;
   border: 1px solid rgba(249,245,234,.3);
   background: #222;
   color: #f9f5ea;
   cursor: pointer;
+}
+.librow { display: flex; gap: 6px; margin-bottom: 6px; }
+.librow .libpick {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 10px;
+  text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#lib-btns button.on { background: #f9f5ea; color: #111; border-color: #f9f5ea; }
+.librow .libpick.on { background: #f9f5ea; color: #111; border-color: #f9f5ea; }
+.librow .libmv { flex: 0 0 32px; padding: 7px 0; line-height: 1; }
+.librow .libmv:disabled { opacity: .25; cursor: default; }
 #photo-status { font-size: 12px; opacity: .5; margin-top: 10px; line-height: 1.6; }
 #panel-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
 #panel-btns button {
@@ -307,7 +312,7 @@ body {
     <button id="panel-reset">恢復預設比例</button>
     <button id="panel-close">關閉</button>
   </div>
-  <div id="panel-note">同一回合裡每張圖最多出現一次，全部出現過才會重新洗牌（圖比回合張數少時才會遇到）。百分比是該類動作被抽到的比重，調高的類別會更早出現。「張數」是抽滿幾張後下一按就結束回合。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
+  <div id="panel-note">回合順序用 ▲▼ 調，調完會記住（換電腦要重調一次；沒調過就照 Drive 資料夾名稱排）。同一回合裡每張圖最多出現一次，全部出現過才會重新洗牌（圖比回合張數少時才會遇到）。百分比是該類動作被抽到的比重，調高的類別會更早出現。「張數」是抽滿幾張後下一按就結束回合。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
 </div>
 
 <div id="list">
@@ -605,6 +610,15 @@ function parseFileName(file) {
   return { cat: cat.replace(/[-_]+$/, ''), idx, name: rest.join(' ') };
 }
 
+/* 回合順序（可以在控制台用上下箭頭調，調完會記住）。
+   沒調過的話就照資料夾名稱排——所以資料夾前面加 1 / 2 / 3 仍然是預設順序。 */
+function 讀順序() {
+  try {
+    const a = JSON.parse(store.get('dongzuo-order') || '[]');
+    return Array.isArray(a) ? a : [];
+  } catch (e) { return []; }
+}
+
 /* ===== 圖庫組裝 ===== */
 let LIBS = [];          /* [{ name, poses, stick }]，一個 = 一個回合 */
 let curLib = 0;
@@ -618,7 +632,7 @@ function makePhoto(file, url, from) {
 
 /* 相機、手機、截圖的自動檔名——這些不能當成「類別」，
    不然朋友丟一堆 IMG_2847.JPG 進來，控制台就會冒出一個叫「IMG」的滑桿 */
-const AUTO_NAME = /^(img|dsc|dscn|pxl|mvimg|line|photo|image|pic|screenshot|scr|未命名|照片|圖片|截圖|螢幕截圖|下載)$/i;
+const AUTO_NAME = /^(imgs?|dscn?|pxl|mvimg|line|photos?|images?|pics?|scr|screenshots?|shot|download|untitled|unnamed|未命名|無標題|照片|圖片|圖檔|截圖|螢幕截圖|下載)$/i;
 
 /* 同一個前綴至少有 2 張才算一個「類別」，否則整個回合當成一類。
    這樣「正經一/正經二/…」會分類；動漫、迷因那種自由命名的就不會爆出一堆滑桿。 */
@@ -647,7 +661,14 @@ function assembleLibs(localGroups, driveGroups) {
   take(localGroups, 'local', IMG_EXT);   /* 網站上的先進來，Drive 只補沒有的 */
   take(driveGroups, 'drive', DRIVE_EXT);
 
-  const libs = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+  const 順序 = 讀順序();
+  const libs = [...map.values()].sort((a, b) => {
+    const ia = 順序.indexOf(a.name), ib = 順序.indexOf(b.name);
+    if (ia >= 0 && ib >= 0) return ia - ib;      /* 兩個都排過 → 照記住的順序 */
+    if (ia >= 0) return -1;                      /* 只有一個排過 → 排過的在前 */
+    if (ib >= 0) return 1;
+    return a.name.localeCompare(b.name, 'zh-Hant');
+  });
   libs.forEach(lib => {
     lib.poses.sort((a, b) =>
       a.cat.localeCompare(b.cat, 'zh-Hant') || a.idx - b.idx || a.file.localeCompare(b.file, 'zh-Hant'));
@@ -954,7 +975,11 @@ function refreshPanel() {
     if (el) el.textContent = total > 0 ? (count[c] * (W[c] === undefined ? 1 : W[c]) / total * 100).toFixed(1) + '%' : '—';
   });
   document.getElementById('lib-btns').innerHTML = LIBS.map((l, i) =>
-    `<button data-lib="${i}" class="${i === curLib ? 'on' : ''}" title="${l.name}">${i + 1}. ${l.name}</button>`).join('');
+    `<div class="librow">` +
+    `<button class="libpick${i === curLib ? ' on' : ''}" data-lib="${i}" title="切到這個回合">${i + 1}. ${l.name}</button>` +
+    `<button class="libmv" data-mv="${i}" data-dir="-1" title="往前移"${i === 0 ? ' disabled' : ''}>▲</button>` +
+    `<button class="libmv" data-mv="${i}" data-dir="1" title="往後移"${i === LIBS.length - 1 ? ' disabled' : ''}>▼</button>` +
+    `</div>`).join('');
   document.getElementById('photo-status').textContent = libNote + (driveNote ? '　' + driveNote : '');
   document.getElementById('round-len').value = roundLen;
   document.getElementById('round-len-val').textContent = roundLen + ' 個';
@@ -967,9 +992,23 @@ document.getElementById('round-len').addEventListener('input', e => {
     roundInfo.textContent = '本回合第 ' + drawsThisRound + ' / ' + roundLen + ' 個';
   }
 });
+/* 上下箭頭調回合順序（記在這台電腦裡） */
+function 移動回合(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= LIBS.length) return;
+  const 停在 = lib().name;
+  const t = LIBS[i]; LIBS[i] = LIBS[j]; LIBS[j] = t;
+  store.set('dongzuo-order', JSON.stringify(LIBS.map(l => l.name)));
+  curLib = Math.max(0, LIBS.findIndex(l => l.name === 停在));   /* 順序變了還是停在同一個回合 */
+  updateInfo();
+  refreshPanel();
+}
+
 /* 控制台手動切回合（不用等抽完） */
 document.getElementById('lib-btns').addEventListener('click', e => {
-  const i = e.target.dataset ? e.target.dataset.lib : null;
+  const d = e.target.dataset || {};
+  if (d.mv !== undefined) { 移動回合(parseInt(d.mv, 10), parseInt(d.dir, 10)); return; }
+  const i = d.lib;
   if (i === undefined || i === null) return;
   curLib = parseInt(i, 10);
   lib().deck = null;          /* 換回合重新洗牌 */
