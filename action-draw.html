@@ -302,7 +302,7 @@ body {
   <div id="panel-rows"></div>
   <div id="photo-status"></div>
   <div class="psec">不重複張數</div>
-  <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="10" step="1"><span class="gpct" id="no-repeat-val"></span></div>
+  <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="30" step="1"><span class="gpct" id="no-repeat-val"></span></div>
   <div class="psec">一回合幾張</div>
   <div class="prow"><span class="gname">張數</span><input type="range" id="round-len" min="1" max="60" step="1"><span class="gpct" id="round-len-val"></span></div>
   <div id="panel-btns">
@@ -342,10 +342,12 @@ let W = {};
 try { Object.assign(W, JSON.parse(store.get('dongzuo-weights') || '{}')); } catch (e) {}
 const weightOf = p => (W[p.cat] === undefined ? 1 : W[p.cat]);
 
-/* 抽出的動作不與前面幾張重複（預設 3） */
-const DEFAULT_NO_REPEAT = 3;
-let noRepeat = parseInt(store.get('dongzuo-no-repeat'), 10);
-if (!(noRepeat >= 0 && noRepeat <= 10)) noRepeat = DEFAULT_NO_REPEAT;
+/* 抽出的動作不與前面幾張重複（預設 15）
+   ※ 儲存的鍵換過名字，這樣舊瀏覽器裡存的舊設定不會蓋掉新的預設值 */
+const DEFAULT_NO_REPEAT = 15;
+const MAX_NO_REPEAT = 30;
+let noRepeat = parseInt(store.get('dongzuo-no-repeat15'), 10);
+if (!(noRepeat >= 0 && noRepeat <= MAX_NO_REPEAT)) noRepeat = DEFAULT_NO_REPEAT;
 
 /* 一回合幾張（預設 30） */
 const DEFAULT_ROUND_LEN = 30;
@@ -957,7 +959,7 @@ function refreshPanel() {
 }
 document.getElementById('no-repeat').addEventListener('input', e => {
   noRepeat = parseInt(e.target.value, 10);
-  store.set('dongzuo-no-repeat', noRepeat);
+  store.set('dongzuo-no-repeat15', noRepeat);
   document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 個';
   while (recent.length > noRepeat) recent.shift();
 });
