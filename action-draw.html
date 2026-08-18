@@ -710,8 +710,36 @@ function loadDrive() {
     .catch(() => { driveNote = 'Drive 這次沒讀到（不影響演出，用網站上的圖）。'; return []; });
 }
 
+/* 網站上的圖先載（快），Drive 晚點到再補——
+   不能讓開場時 Drive 那 1～3 秒的等待，害第一下抽到火柴人 */
+let ready = false;
+let pendingDraw = false;
+
+function 圖庫就緒() {
+  ready = true;
+  updateInfo();
+  preload(lib());
+  if (panel.style.display === 'block') refreshPanel();
+  if (pendingDraw) { pendingDraw = false; onDraw(); }
+  /* 稍後把其他回合的圖也偷偷載好，中場換回合才不會等 */
+  setTimeout(() => preload(), 2500);
+}
+
 function loadLibraries() {
-  return Promise.all([loadLocal(), loadDrive()]).then(([a, b]) => assembleLibs(a, b));
+  const 本機 = loadLocal();
+  const drive = loadDrive();
+  return 本機.then(a => {
+    assembleLibs(a, []);
+    圖庫就緒();
+    return drive.then(b => {
+      const 現在第幾回合 = curLib;
+      assembleLibs(a, b);
+      if (現在第幾回合 < LIBS.length) curLib = 現在第幾回合;
+      updateInfo();
+      preload(lib());
+      if (panel.style.display === 'block') refreshPanel();
+    });
+  });
 }
 
 /* ===== 抽籤池 ===== */
@@ -768,6 +796,12 @@ let currentPose = null;
 
 function onDraw() {
   if (roundEnded) return;
+  /* 圖庫還沒載好就先記著，載好立刻補抽——不會讓人抽到還沒被取代的火柴人 */
+  if (!ready) {
+    pendingDraw = true;
+    roundInfo.textContent = '圖庫載入中⋯⋯';
+    return;
+  }
   if (drawsThisRound >= roundLen) { endRound(); return; }
   intro.style.display = 'none';
   drawview.style.display = 'flex';
@@ -985,12 +1019,7 @@ applyFont();
 
 /* ===== 開場就去組圖庫（網站上的 ＋ Drive 補的） ===== */
 assembleLibs([], []);
-updateInfo();
-loadLibraries().then(() => {
-  updateInfo();
-  preload(lib());
-  if (panel.style.display === 'block') refreshPanel();
-});
+loadLibraries();
 </script>
 </body>
 </html>
