@@ -301,15 +301,13 @@ body {
   <div class="psec">出現比例</div>
   <div id="panel-rows"></div>
   <div id="photo-status"></div>
-  <div class="psec">不重複張數</div>
-  <div class="prow"><span class="gname">前幾張</span><input type="range" id="no-repeat" min="0" max="30" step="1"><span class="gpct" id="no-repeat-val"></span></div>
   <div class="psec">一回合幾張</div>
   <div class="prow"><span class="gname">張數</span><input type="range" id="round-len" min="1" max="60" step="1"><span class="gpct" id="round-len-val"></span></div>
   <div id="panel-btns">
     <button id="panel-reset">恢復預設比例</button>
     <button id="panel-close">關閉</button>
   </div>
-  <div id="panel-note">百分比是該類動作整組被抽到的機率；「前幾張」是抽出的動作不與最近幾張重複（0 為關閉）；「張數」是抽滿幾張後下一按就結束回合。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
+  <div id="panel-note">同一回合裡每張圖最多出現一次，全部出現過才會重新洗牌（圖比回合張數少時才會遇到）。百分比是該類動作被抽到的比重，調高的類別會更早出現。「張數」是抽滿幾張後下一按就結束回合。所有設定都會自動記住。面板開啟時空白鍵與 Enter 暫停作用。</div>
 </div>
 
 <div id="list">
@@ -341,13 +339,6 @@ const store = {
 let W = {};
 try { Object.assign(W, JSON.parse(store.get('dongzuo-weights') || '{}')); } catch (e) {}
 const weightOf = p => (W[p.cat] === undefined ? 1 : W[p.cat]);
-
-/* 抽出的動作不與前面幾張重複（預設 15）
-   ※ 儲存的鍵換過名字，這樣舊瀏覽器裡存的舊設定不會蓋掉新的預設值 */
-const DEFAULT_NO_REPEAT = 15;
-const MAX_NO_REPEAT = 30;
-let noRepeat = parseInt(store.get('dongzuo-no-repeat15'), 10);
-if (!(noRepeat >= 0 && noRepeat <= MAX_NO_REPEAT)) noRepeat = DEFAULT_NO_REPEAT;
 
 /* 一回合幾張（預設 30） */
 const DEFAULT_ROUND_LEN = 30;
@@ -749,20 +740,32 @@ const lib = () => LIBS[curLib] || { name: '動作', poses: POSES, stick: true };
 const pool = () => lib().poses;
 const cats = () => [...new Set(pool().map(p => p.cat))];
 
-let recent = [];
+/* ===== 洗牌式抽籤 =====
+   把該回合的圖當成一副牌洗好，一張一張發，發完才重新洗。
+   所以同一回合裡每張圖最多出現一次（圖比回合張數少時才會洗第二副）。
+   「出現比例」還是有用：權重高的類別會被洗到比較前面，等於在一回合裡更早出現。 */
+let lastPose = null;
+
+function 洗牌(l) {
+  let src = l.poses.filter(p => weightOf(p) > 0);
+  if (!src.length) src = l.poses;                 /* 防呆：比例全歸零就無視比例 */
+  l.deck = src
+    .map(p => ({ p, k: -Math.log(Math.random() || 1e-9) / (weightOf(p) || 1e-9) }))
+    .sort((a, b) => a.k - b.k)
+    .map(x => x.p);
+}
+
 function drawPose() {
-  const all = pool();
-  let p2 = all.filter(p => weightOf(p) > 0 && recent.indexOf(p) === -1);
-  /* 防呆：排除後沒東西可抽（張數設太大或比例調太極端）就放寬到只看權重 */
-  if (!p2.length || p2.reduce((s, p) => s + weightOf(p), 0) <= 0) {
-    p2 = all.filter(p => weightOf(p) > 0);
+  const l = lib();
+  if (!l.deck || !l.deck.length) 洗牌(l);
+  let pick = l.deck.shift();
+  /* 剛洗完的第一張如果跟上一張一樣，跟下一張換位子，看起來才不像卡住 */
+  if (pick === lastPose && l.deck.length) {
+    const alt = l.deck.shift();
+    l.deck.unshift(pick);
+    pick = alt;
   }
-  if (!p2.length) p2 = all;
-  const total = p2.reduce((s, p) => s + weightOf(p), 0);
-  let r = Math.random() * total, pick = p2[p2.length - 1];
-  for (const p of p2) { r -= weightOf(p); if (r <= 0) { pick = p; break; } }
-  recent.push(pick);
-  while (recent.length > noRepeat) recent.shift();
+  lastPose = pick;
   return pick;
 }
 
@@ -846,7 +849,8 @@ function startNextRound() {
   roundEnded = false;
   drawsThisRound = 0;
   curLib = (curLib + 1) % LIBS.length;
-  recent = [];
+  lib().deck = null;          /* 新回合重新洗牌 */
+  lastPose = null;
   preload(lib());
   endview.style.display = 'none';
   nextBtn.style.display = 'none';
@@ -954,15 +958,7 @@ function refreshPanel() {
   document.getElementById('photo-status').textContent = libNote + (driveNote ? '　' + driveNote : '');
   document.getElementById('round-len').value = roundLen;
   document.getElementById('round-len-val').textContent = roundLen + ' 個';
-  document.getElementById('no-repeat').value = noRepeat;
-  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 個';
 }
-document.getElementById('no-repeat').addEventListener('input', e => {
-  noRepeat = parseInt(e.target.value, 10);
-  store.set('dongzuo-no-repeat15', noRepeat);
-  document.getElementById('no-repeat-val').textContent = noRepeat === 0 ? '關閉' : noRepeat + ' 個';
-  while (recent.length > noRepeat) recent.shift();
-});
 document.getElementById('round-len').addEventListener('input', e => {
   roundLen = parseInt(e.target.value, 10);
   store.set('dongzuo-round-len', roundLen);
@@ -976,7 +972,8 @@ document.getElementById('lib-btns').addEventListener('click', e => {
   const i = e.target.dataset ? e.target.dataset.lib : null;
   if (i === undefined || i === null) return;
   curLib = parseInt(i, 10);
-  recent = [];
+  lib().deck = null;          /* 換回合重新洗牌 */
+  lastPose = null;
   drawsThisRound = 0;
   roundEnded = false;
   endview.style.display = 'none';
@@ -991,6 +988,7 @@ rowsBox.addEventListener('input', e => {
   if (e.target.dataset.g) {
     W[e.target.dataset.g] = parseFloat(e.target.value);
     store.set('dongzuo-weights', JSON.stringify(W));
+    lib().deck = null;        /* 比例改了，剩下的牌重洗 */
     refreshPanel();
   }
 });
@@ -1006,6 +1004,7 @@ document.getElementById('panel-close').addEventListener('click', () => { panel.s
 document.getElementById('panel-reset').addEventListener('click', () => {
   W = {};
   store.set('dongzuo-weights', '{}');
+  lib().deck = null;
   refreshPanel();
 });
 
