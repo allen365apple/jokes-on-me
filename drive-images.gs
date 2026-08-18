@@ -27,11 +27,11 @@ function doGet() {
     var folders = root.getFolders();
     while (folders.hasNext()) {
       var f = folders.next();
-      groups.push({ name: f.getName(), files: listImages(f) });
+      groups.push({ name: f.getName(), files: walk(f, '') });
     }
 
     /* 如果根目錄自己就直接放圖（沒有分子資料夾），也當成一個回合 */
-    var loose = listImages(root);
+    var loose = listImages(root, '');
     if (loose.length) groups.push({ name: root.getName(), files: loose });
 
     groups.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh-Hant'); });
@@ -44,14 +44,32 @@ function doGet() {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-function listImages(folder) {
+/**
+ * 走訪一個回合資料夾，連同底下的子資料夾（例如「雙人照」）一起收。
+ * 子資料夾裡的圖會標上 sub＝子資料夾名稱，網頁會把它當成一個「類別」，
+ * 控制台就能單獨調整它的出現比例。
+ */
+function walk(folder, prefix) {
+  var files = listImages(folder, prefix);
+  var subs = folder.getFolders();
+  while (subs.hasNext()) {
+    var s = subs.next();
+    var name = prefix ? prefix + ' ' + s.getName() : s.getName();
+    files = files.concat(walk(s, name));
+  }
+  return files;
+}
+
+function listImages(folder, sub) {
   var files = [];
   var it = folder.getFiles();
   while (it.hasNext()) {
     var file = it.next();
     var mime = file.getMimeType() || '';
     if (mime.indexOf('image/') !== 0) continue;      /* 只要圖片 */
-    files.push({ id: file.getId(), name: file.getName() });
+    var item = { id: file.getId(), name: file.getName() };
+    if (sub) item.sub = sub;
+    files.push(item);
   }
   files.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh-Hant'); });
   return files;
@@ -63,6 +81,8 @@ function 測試() {
   if (!r.ok) { Logger.log('讀取失敗：' + r.error); return; }
   Logger.log('共 ' + r.groups.length + ' 個回合');
   r.groups.forEach(function (g) {
-    Logger.log('  ' + g.name + '：' + g.files.length + ' 張');
+    var subs = {};
+    g.files.forEach(function (f) { var k = f.sub || '（直接放）'; subs[k] = (subs[k] || 0) + 1; });
+    Logger.log('  ' + g.name + '：' + g.files.length + ' 張　' + JSON.stringify(subs));
   });
 }

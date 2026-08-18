@@ -577,8 +577,9 @@ const DECO = [
 const LOCAL_DIR = 'action-poses/';
 /* 本機的圖：只收瀏覽器一定看得懂的格式 */
 const IMG_EXT = /\.(jpe?g|png|webp|gif)$/i;
-/* Drive 的圖：可以多收 heic（iPhone 預設格式），因為 Drive 會自動轉成 JPEG 給我們 */
-const DRIVE_EXT = /\.(jpe?g|png|webp|gif|heic|heif)$/i;
+/* Drive 的圖：多收 heic（iPhone 預設格式）與 jfif（其實就是 jpg），
+   這兩種收圖時會自動轉成 jpg，即時讀 Drive 時則由 Drive 轉成 JPEG 給我們 */
+const DRIVE_EXT = /\.(jpe?g|jfif|png|webp|gif|heic|heif)$/i;
 /* Drive 圖片的顯示網址（公開分享的檔案可以直接這樣嵌） */
 const driveImgURL = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1600';
 
@@ -697,7 +698,12 @@ function loadDrive() {
           driveNote = 'Drive 對照成功。';
           return (j.groups || []).map(g => ({
             name: g.name,
-            files: (g.files || []).map(f => ({ file: f.name, url: driveImgURL(f.id) }))
+            files: (g.files || []).map(f => ({
+              /* 子資料夾（例如「雙人照」）的圖，檔名前面補上資料夾名 →
+                 它就會自成一個類別，控制台可以單獨調比例 */
+              file: f.sub ? f.sub + ' ' + f.name : f.name,
+              url: driveImgURL(f.id)
+            }))
           }));
         });
     })

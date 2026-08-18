@@ -16,11 +16,22 @@ python3 - <<'PYEOF'
 import json, os, re, shutil, subprocess, urllib.request, urllib.parse
 
 IMG = re.compile(r'\.(jpe?g|png|webp|gif)$', re.I)          # 瀏覽器看得懂的
-ANY = re.compile(r'\.(jpe?g|png|webp|gif|heic|heif)$', re.I) # Drive 上收得到的
+ANY = re.compile(r'\.(jpe?g|jfif|png|webp|gif|heic|heif)$', re.I) # Drive 上收得到的
 MAP_FILE = '.drive-對照.json'      # Drive 檔案 ↔ 本機檔名（避免同名互相蓋掉）
 MAX_BYTES = 1200 * 1024            # 超過就縮圖
 MAX_PIXEL = 1800                   # 長邊縮到這個大小，投影綽綽有餘
 SIPS = shutil.which('sips')        # macOS 內建的圖片處理工具
+
+def 是圖片(blob, ctype):
+    """別只信伺服器標的 Content-Type（.jfif 之類常常被標成 octet-stream），
+       直接看檔案開頭的特徵碼比較準。"""
+    if ctype.startswith('image/'):
+        return True
+    return (blob[:3] == b'\xff\xd8\xff'                      # jpeg / jfif
+            or blob[:8] == b'\x89PNG\r\n\x1a\n'                # png
+            or blob[:6] in (b'GIF87a', b'GIF89a')             # gif
+            or (blob[:4] == b'RIFF' and blob[8:12] == b'WEBP') # webp
+            or blob[4:8] == b'ftyp')                          # heic / heif
 
 def get(url, timeout=60):
     # 網址若含中文等非 ASCII 字元要先編碼，否則 urllib 會直接炸掉
@@ -102,10 +113,14 @@ if groups:
             if 舊 and os.path.exists(os.path.join(folder, 舊)) and os.path.getsize(os.path.join(folder, 舊)) > 0:
                 continue
 
-            # heic 等瀏覽器看不懂的格式 → 請 Drive 幫忙轉成 JPEG
+            # heic / jfif 這類瀏覽器不一定看得懂的格式 → 轉成 jpg
             web = bool(IMG.search(name))
             base = re.sub(r'\.[^.]+$', '', name)
             ext = name[len(base):] if web else '.jpg'
+            # 子資料夾（例如「雙人照」）的圖，檔名前面補上資料夾名，
+            # 網頁就會把它當成一個類別
+            if f.get('sub'):
+                base = f['sub'] + ' ' + base
 
             # 不同人可能丟同名檔案，後來的不能蓋掉先來的
             檔名 = base + ext
@@ -123,7 +138,7 @@ if groups:
                 try:
                     r = get(u)
                     blob = r.read()
-                    if not r.headers.get('Content-Type', '').startswith('image/') or len(blob) < 1000:
+                    if len(blob) < 1000 or not 是圖片(blob, r.headers.get('Content-Type', '')):
                         continue              # 抓到的不是圖，換下一個網址試
                     if web:
                         with open(dest, 'wb') as fh:
