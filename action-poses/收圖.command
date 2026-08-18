@@ -124,8 +124,10 @@ if groups:
 
             # 不同人可能丟同名檔案，後來的不能蓋掉先來的
             檔名 = base + ext
+            撞名 = False
             n = 2
             while 檔名 in 已用:
+                撞名 = True
                 檔名 = '%s-%d%s' % (base, n, ext)
                 n += 1
 
@@ -169,13 +171,16 @@ if groups:
                 本回合[f['id']] = 檔名
                 已用.add(檔名)
                 新增 += 1
+                註 = []
                 if not web:
                     轉檔 += 1
-                    print('      ＋ %s／%s　(%s 已自動轉成 jpg)' % (folder, 檔名, name))
-                elif 檔名 != name:
-                    print('      ＋ %s／%s　(原檔名 %s 已有人用了，自動改名)' % (folder, 檔名, name))
-                else:
-                    print('      ＋ %s／%s' % (folder, 檔名))
+                    註.append('%s 已自動轉成 jpg' % name)
+                if f.get('sub'):
+                    註.append('來自「%s」子資料夾' % f['sub'])
+                if 撞名:
+                    註.append('檔名跟別人重複，自動加了序號')
+                print('      ＋ %s／%s%s' % (folder, 檔名,
+                      '　(' + '；'.join(註) + ')' if 註 else ''))
             else:
                 失敗.append('%s／%s' % (folder, name))
 
