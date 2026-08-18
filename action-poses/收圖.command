@@ -96,6 +96,34 @@ def 縮圖(path):
 轉檔 = 0
 失敗 = []
 孤兒清單 = []
+
+# ---------- 先偵測「Drive 資料夾被改名」 ----------
+# 比對「這個回合記錄過的 Drive 檔案 ID」：如果 Drive 上出現一個新名字的資料夾，
+# 裡面的檔案跟本機某個資料夾高度重疊，那就是同一個回合被改名，
+# 直接把本機資料夾一起改名——不然會被當成新回合，整份重新下載。
+if groups:
+    線上名稱 = [g['name'] for g in groups]
+    for g in groups:
+        if g['name'] in 對照:
+            continue
+        ids = set(f['id'] for f in g.get('files', []))
+        if not ids:
+            continue
+        最像, 相似度 = None, 0.0
+        for 舊名, rec in 對照.items():
+            if 舊名 in 線上名稱 or not rec:
+                continue                      # 這個名字 Drive 上還在，就不是被改名
+            重疊 = len(ids & set(rec.keys())) / float(len(rec))
+            if 重疊 > 相似度:
+                最像, 相似度 = 舊名, 重疊
+        if 最像 and 相似度 >= 0.5:
+            if os.path.isdir(最像) and not os.path.exists(g['name']):
+                os.rename(最像, g['name'])
+            對照[g['name']] = 對照.pop(最像)
+            print('      ↻ 偵測到回合改名：「%s」→「%s」' % (最像, g['name']))
+            print('        （沿用原本的圖，不會重新下載）')
+    print('')
+
 if groups:
     print('【2/4】下載新的圖⋯⋯')
     for g in groups:
