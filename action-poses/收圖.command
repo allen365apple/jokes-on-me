@@ -95,13 +95,22 @@ def 縮圖(path):
 新增 = 0
 轉檔 = 0
 失敗 = []
+孤兒清單 = []
 if groups:
     print('【2/4】下載新的圖⋯⋯')
     for g in groups:
         folder = g['name']
         os.makedirs(folder, exist_ok=True)
         本回合 = 對照.setdefault(folder, {})
-        已用 = set(本回合.values())
+        # 舊格式（值是字串）轉成新格式，才存得下「Drive 上的更新時間」
+        for k, v in list(本回合.items()):
+            if isinstance(v, str):
+                本回合[k] = {'file': v, 'updated': 0}
+
+        # 只有「Drive 上還在」的檔案才算佔用檔名。
+        # 這樣別人把圖刪掉重傳同名新檔時，會直接蓋回原本那個檔名，不會多長一張。
+        線上 = set(f['id'] for f in g.get('files', []))
+        已用 = set(r['file'] for i, r in 本回合.items() if i in 線上)
 
         for f in g.get('files', []):
             name = f['name']
@@ -110,8 +119,14 @@ if groups:
 
             # 這張之前收過了嗎？（用 Drive 的檔案 ID 認，不是用檔名）
             舊 = 本回合.get(f['id'])
-            if 舊 and os.path.exists(os.path.join(folder, 舊)) and os.path.getsize(os.path.join(folder, 舊)) > 0:
-                continue
+            更新時間 = int(f.get('updated') or 0)
+            if 舊:
+                舊路徑 = os.path.join(folder, 舊['file'])
+                有檔案 = os.path.exists(舊路徑) and os.path.getsize(舊路徑) > 0
+                # Drive 上這張被換成新版本了（更新時間比較新）就重抓
+                要更新 = 更新時間 > 0 and 更新時間 > 舊.get('updated', 0)
+                if 有檔案 and not 要更新:
+                    continue
 
             # heic / jfif 這類瀏覽器不一定看得懂的格式 → 轉成 jpg
             web = bool(IMG.search(name))
@@ -122,14 +137,19 @@ if groups:
             if f.get('sub'):
                 base = f['sub'] + ' ' + base
 
-            # 不同人可能丟同名檔案，後來的不能蓋掉先來的
-            檔名 = base + ext
-            撞名 = False
-            n = 2
-            while 檔名 in 已用:
-                撞名 = True
-                檔名 = '%s-%d%s' % (base, n, ext)
-                n += 1
+            # 重抓同一張（換了新版本）就沿用原本的檔名，直接覆蓋
+            if 舊:
+                檔名 = 舊['file']
+                撞名 = False
+            else:
+                # 同時有兩張同名的才需要加序號；只是舊檔殘留的話直接蓋掉
+                檔名 = base + ext
+                撞名 = False
+                n = 2
+                while 檔名 in 已用:
+                    撞名 = True
+                    檔名 = '%s-%d%s' % (base, n, ext)
+                    n += 1
 
             dest = os.path.join(folder, 檔名)
             urls = ([f['url']] if f.get('url') else []) + [
@@ -168,10 +188,12 @@ if groups:
 
             if ok:
                 縮圖(dest)
-                本回合[f['id']] = 檔名
+                本回合[f['id']] = {'file': 檔名, 'updated': 更新時間}
                 已用.add(檔名)
                 新增 += 1
                 註 = []
+                if 舊:
+                    註.append('Drive 上換了新版本，已更新')
                 if not web:
                     轉檔 += 1
                     註.append('%s 已自動轉成 jpg' % name)
@@ -184,6 +206,16 @@ if groups:
             else:
                 失敗.append('%s／%s' % (folder, name))
 
+        # 這一輪跑完才判斷孤兒：Drive 上已經沒有、而且檔名也沒被新的圖接手
+        線上檔名 = set(r['file'] for i, r in 本回合.items() if i in 線上)
+        孤兒 = sorted(set(r['file'] for i, r in 本回合.items()
+                          if i not in 線上 and r['file'] not in 線上檔名))
+        if 孤兒:
+            孤兒清單.append((folder, 孤兒))
+        # 已經被接手的舊紀錄可以清掉，對照表才不會越長越肥
+        for i in [i for i, r in 本回合.items() if i not in 線上 and r['file'] in 線上檔名]:
+            del 本回合[i]
+
     with open(MAP_FILE, 'w', encoding='utf-8') as fh:
         json.dump(對照, fh, ensure_ascii=False, indent=1)
 
@@ -194,6 +226,13 @@ if groups:
         print('      ⚠️ 這幾張抓不下來（現場還是會即時去 Drive 抓）：')
         for x in 失敗:
             print('         ・' + x)
+    if 孤兒清單:
+        print('')
+        print('      ℹ️ 這幾張 Drive 上已經沒有了，但本機還留著（還是會被抽到）：')
+        for folder, names in 孤兒清單:
+            for x in names:
+                print('         ・%s／%s' % (folder, x))
+        print('        不想要的話，直接到資料夾裡把檔案刪掉，再跑一次這個就好。')
     print('')
 
 # ---------- 產生清單 ----------
