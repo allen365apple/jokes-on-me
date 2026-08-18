@@ -67,7 +67,8 @@ function listImages(folder, sub) {
     var file = it.next();
     var mime = file.getMimeType() || '';
     if (mime.indexOf('image/') !== 0) continue;      /* 只要圖片 */
-    var item = { id: file.getId(), name: file.getName() };
+    /* updated＝檔案最後更新時間。收圖時靠它判斷「這張是不是被換成新版本了」 */
+    var item = { id: file.getId(), name: file.getName(), updated: file.getLastUpdated().getTime() };
     if (sub) item.sub = sub;
     files.push(item);
   }
