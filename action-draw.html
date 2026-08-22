@@ -640,7 +640,9 @@ function buildCats(lib) {
   const n = {};
   lib.poses.forEach(p => { if (p.rawCat) n[p.rawCat] = (n[p.rawCat] || 0) + 1; });
   lib.poses.forEach(p => {
-    p.cat = (p.rawCat && !AUTO_NAME.test(p.rawCat) && n[p.rawCat] >= 2) ? p.rawCat : lib.name;
+    /* 只有 1～2 個英文字母的前綴也算自動檔名（LINE 存的 S__1234.jpg、相機的 P_0001 之類） */
+    const 自動 = !p.rawCat || AUTO_NAME.test(p.rawCat) || /^[A-Za-z]{1,2}$/.test(p.rawCat);
+    p.cat = (!自動 && n[p.rawCat] >= 2) ? p.rawCat : lib.name;
   });
 }
 
