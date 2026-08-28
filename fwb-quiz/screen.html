@@ -88,6 +88,11 @@ let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
 
 // 觀眾加入網址（QR code 指向這裡）
 const joinUrl = new URL('index.html?code=' + encodeURIComponent(CONFIG.joinCode), location.href).href;
+// 備援網址：預設場次可用短網址；其他場次必須顯示完整網址（含 code），否則會連到錯的場次
+function shortJoinUrl() {
+  const bare = new URL('./', location.href).href.replace(/^https?:\/\//, '');
+  return CONFIG.joinCode === 'FWB520' ? bare : joinUrl.replace(/^https?:\/\//, '');
+}
 
 // 快捷鍵（開頁即註冊）：F=全螢幕；有控制金鑰時 Enter=開始/略過/重玩、Esc=關控制台
 document.addEventListener('keydown', e => {
@@ -128,7 +133,7 @@ async function boot() {
 
 // ═══ 控制模式（大螢幕即駕駛）═══════════════════════════════
 function initController() {
-  $('#ovEditor').href = 'host.html?key=' + encodeURIComponent(KEY);
+  $('#ovEditor').href = 'host.html?code=' + encodeURIComponent(CONFIG.joinCode) + '&key=' + encodeURIComponent(KEY);
   // 節奏驅動：階段時間到自動推進
   setInterval(() => {
     const s = S.session;
@@ -280,7 +285,7 @@ function renderLobbyShell() {
     <div class="lobby-left">
       <div class="scanhint">掃碼加入遊戲</div>
       <div class="qr" id="qrBox"></div>
-      <div class="shorturl">掃不到？直接開<br>allen365apple.github.io/jokes-on-me/fwb-quiz/</div>
+      <div class="shorturl">掃不到？直接開<br>${esc(shortJoinUrl())}</div>
       ${KEY ? `<div class="start-cta">
         <button class="btn-gold pulse" id="btnStartScreen">開始遊戲</button>
         <span class="keyhint">或按 Enter 開始</span>

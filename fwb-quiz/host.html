@@ -27,7 +27,7 @@ import { CONFIG, rpc, clock, createSync, normalizeState,
 const KEY = new URLSearchParams(location.search).get('key') || '';
 const body = $('#body');
 // 右上角：一鍵開大螢幕（帶控制金鑰）
-$('#lnkScreen').href = 'screen.html' + (KEY ? '?key=' + encodeURIComponent(KEY) : '');
+$('#lnkScreen').href = 'screen.html?code=' + encodeURIComponent(CONFIG.joinCode) + (KEY ? '&key=' + encodeURIComponent(KEY) : '');
 const S = {
   session: null, lobby: null, questions: null,
   advancing: false, renderedKey: '', editorOpen: false, editorDraft: null,

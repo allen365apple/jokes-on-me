@@ -35,6 +35,18 @@
   .card.disabled{opacity:.45; pointer-events:none}
   .keyhint{font-size:12px; color:var(--muted); margin-top:-6px; margin-bottom:14px; line-height:1.6}
   .foot{text-align:center; font-size:11px; color:#6d665f; margin-top:24px; letter-spacing:.05em}
+  .picker{margin-bottom:22px}
+  .picker-label{font-size:11px; letter-spacing:.25em; color:var(--muted); font-weight:800; margin-bottom:10px;
+    display:flex; align-items:center; gap:10px}
+  .picker-label::after{content:""; flex:1; height:1px; background:#55504b}
+  .picker-opts{display:flex; gap:10px}
+  .popt{flex:1; background:var(--panel2); border:1px solid #55504b; border-radius:12px; padding:12px 10px;
+    text-align:center; cursor:pointer; transition:border-color .15s, background .15s}
+  .popt:hover{border-color:var(--muted)}
+  .popt b{display:block; font-size:15px; font-weight:900; color:var(--ink)}
+  .popt span{display:block; font-size:11px; color:var(--muted); font-weight:700; margin-top:3px}
+  .popt.on{background:linear-gradient(135deg, rgba(244,180,0,.18), var(--panel2)); border-color:var(--gold)}
+  .popt.on b{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -42,6 +54,14 @@
   <img class="logo-img hero" src="logo.jpg" alt="FWB.manzai" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo',textContent:'FWB.manzai'}))">
   <h1>支薪好友現場問答系統首頁</h1>
   <p class="sub">喜劇專場《向上管理》・串場互動遊戲「績效考核」</p>
+
+  <div class="picker">
+    <div class="picker-label">目前場次</div>
+    <div class="picker-opts">
+      <div class="popt" data-code="FWB520"><b>正式場</b><span>《績效考核》9 題</span></div>
+      <div class="popt" data-code="FWBTRY"><b>試演場</b><span>Try out 專用題目</span></div>
+    </div>
+  </div>
 
   <a class="card primary" href="index.html">
     <div class="name">🙋 觀眾加入 <span class="arrow">→</span></div>
@@ -74,18 +94,27 @@
   const HOST_KEY = 'fwb-host-x7k2m9';
   const STORE_KEY = 'fwbquiz:staffpw';
 
+  const CODE_KEY = 'fwbquiz:session';
   const input = document.getElementById('keyInput');
   const hint = document.getElementById('keyHint');
+  const joinCard = document.querySelector('.card.primary');
   const cards = [
     { el: document.getElementById('cardScreen'), page: 'screen.html' },
     { el: document.getElementById('cardHost'),   page: 'host.html' },
   ];
+  // 場次切換：正式場 / 試演場，兩組題目各自獨立
+  let code = localStorage.getItem(CODE_KEY) || 'FWB520';
+  document.querySelectorAll('.popt').forEach(el => el.addEventListener('click', () => {
+    code = el.dataset.code; localStorage.setItem(CODE_KEY, code); apply();
+  }));
   function apply() {
+    document.querySelectorAll('.popt').forEach(el => el.classList.toggle('on', el.dataset.code === code));
+    joinCard.href = 'index.html?code=' + encodeURIComponent(code);
     const pw = input.value.trim();
     const ok = pw === STAFF_PASSWORD;
     for (const c of cards) {
       c.el.classList.toggle('disabled', !ok);
-      c.el.href = ok ? c.page + '?key=' + encodeURIComponent(HOST_KEY) : c.page;
+      c.el.href = c.page + '?code=' + encodeURIComponent(code) + (ok ? '&key=' + encodeURIComponent(HOST_KEY) : '');
     }
     input.classList.toggle('err', !!pw && !ok);
     hint.textContent = !pw ? '輸入工作人員密碼，解鎖下面兩個入口。'
