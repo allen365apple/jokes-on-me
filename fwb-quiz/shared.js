@@ -24,8 +24,8 @@ export const TABLE_IDS = Array.from({ length: 24 }, (_, i) => 'B' + (i + 3)).con
 export const SHAPES = ['▲', '◆', '●', '■'];
 export const LETTERS = ['A', 'B', 'C', 'D'];
 
-// 作答後文案：8 秒內快答誇獎、8 秒後慢答吐槽
-export const FAST_SEC = 8;
+// 作答後文案：5 秒內快答誇獎、5 秒後慢答吐槽（作答總時間 10 秒）
+export const FAST_SEC = 5;
 export const FAST_QUIPS = [
   { e: '🚀', t: '這手速，下一季直接幫你加薪！' },
   { e: '⚡', t: '反應比老闆變臉還快，優秀！' },

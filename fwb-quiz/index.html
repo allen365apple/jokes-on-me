@@ -7,7 +7,7 @@
 <title>績效考核｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260706a">
+<link rel="stylesheet" href="shared.css?v=20260815a">
 </head>
 <body>
 <div class="app">
@@ -22,7 +22,7 @@
 <script type="module">
 import { CONFIG, sb, rpc, clock, createSync, findMyRank, normalizeState,
          TABLE_IDS, SHAPES, LETTERS, FAST_SEC, FAST_QUIPS, SLOW_QUIPS,
-         $, esc, secs } from './shared.js?v=20260706a';
+         $, esc, secs } from './shared.js?v=20260815a';
 
 const body = $('#body');
 const state = {
@@ -214,7 +214,7 @@ function renderReady() {
 function renderAnswer() {
   const s = state.session, q = state.question;
   if (!q) { body.innerHTML = `<div class="bigmsg"><h2>載入題目中⋯</h2></div>`; return; }
-  const total = (q.time_limit_seconds || 15) * 1000;
+  const total = (q.time_limit_seconds || 10) * 1000;
   body.innerHTML = `<div class="answerbox">
     <div class="ptrack"><div class="fill" id="phFill" style="width:100%"></div></div>
     <div class="prow"><span>第 ${s.qindex + 1} 題</span><span class="sec" id="phSec">${q.time_limit_seconds} 秒</span></div>
@@ -261,7 +261,7 @@ function renderLocked() {
   if (state.lockedQuipQ !== s.qindex) {
     const a = state.answers[s.qindex];
     const fast = a && a.elapsed_ms !== undefined ? a.elapsed_ms / 1000 < FAST_SEC
-               : (s.deadline - clock.now()) > ((state.question?.time_limit_seconds || 15) - FAST_SEC) * 1000;
+               : (s.deadline - clock.now()) > ((state.question?.time_limit_seconds || 10) - FAST_SEC) * 1000;
     const pool = fast ? FAST_QUIPS : SLOW_QUIPS;
     state.lockedQuip = pool[Math.floor(Math.random() * pool.length)];
     state.lockedQuipQ = s.qindex;

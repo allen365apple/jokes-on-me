@@ -7,7 +7,7 @@
 <title>績效考核・大螢幕｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260706a">
+<link rel="stylesheet" href="shared.css?v=20260815a">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
@@ -73,7 +73,7 @@
 
 <script type="module">
 import { CONFIG, rpc, sb, clock, createSync, normalizeState,
-         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260706a';
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815a';
 
 const body = $('#body');
 // 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
@@ -339,7 +339,7 @@ function renderShow() {
 function renderOpen() {
   const q = S.question, s = S.session;
   if (!q) { body.innerHTML = `<div class="qshow"><h2>⋯</h2></div>`; return; }
-  const total = (q.time_limit_seconds || 15) * 1000;
+  const total = (q.time_limit_seconds || 10) * 1000;
   body.innerHTML = `<div class="qopen">
     <div class="qtop">
       <div class="qtext">${esc(q.text)}</div>

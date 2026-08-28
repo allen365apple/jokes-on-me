@@ -7,7 +7,7 @@
 <title>績效考核・主持人｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260706a">
+<link rel="stylesheet" href="shared.css?v=20260815a">
 </head>
 <body>
 <div class="host">
@@ -22,7 +22,7 @@
 
 <script type="module">
 import { CONFIG, rpc, clock, createSync, normalizeState,
-         TABLE_IDS, LETTERS, $, esc } from './shared.js?v=20260706a';
+         TABLE_IDS, LETTERS, $, esc } from './shared.js?v=20260815a';
 
 const KEY = new URLSearchParams(location.search).get('key') || '';
 const body = $('#body');
@@ -329,7 +329,7 @@ function renderEditor() {
   box.oninput = e => {
     const t = e.target, qi = +t.dataset.qi;
     if (Number.isNaN(qi)) return;
-    if (t.dataset.k === 'time') qs[qi].time_limit_seconds = Math.max(5, Math.min(60, +t.value || 15));
+    if (t.dataset.k === 'time') qs[qi].time_limit_seconds = Math.max(5, Math.min(60, +t.value || 10));
     else if (t.dataset.k === 'text') qs[qi].text = t.value;
     else if (t.dataset.oi !== undefined) qs[qi].options[+t.dataset.oi] = t.value;
   };
@@ -339,7 +339,7 @@ function renderEditor() {
   };
   box.onclick = async e => {
     if (e.target.id === 'qeAdd') {
-      qs.push({ text: '新題目', options: ['選項 A','選項 B','選項 C','選項 D'], correct_index: 0, time_limit_seconds: 15 });
+      qs.push({ text: '新題目', options: ['選項 A','選項 B','選項 C','選項 D'], correct_index: 0, time_limit_seconds: 10 });
       renderEditor(); return;
     }
     if (e.target.dataset.up !== undefined) {
