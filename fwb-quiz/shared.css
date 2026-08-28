@@ -61,11 +61,13 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .lobby-left{width:50%; display:flex; flex-direction:column; align-items:center; gap:clamp(8px,1.4vh,20px); justify-content:center; min-height:0}
 .scanhint{font-size:clamp(20px,2.3vw,40px); letter-spacing:.3em; color:var(--gold); font-weight:900; text-indent:.35em}
 .qr{background:#fff; border-radius:clamp(12px,1.6vw,24px); padding:clamp(10px,1.4vw,22px); box-shadow:0 10px 40px rgba(0,0,0,.4)}
-.qr canvas,.qr img{display:block; width:min(44vw,58vh); height:auto; image-rendering:pixelated}
+.qr canvas,.qr img{display:block; width:min(44vw,66vh); height:auto; image-rendering:pixelated}
 .joincode{font-size:15px; color:var(--muted)}
 .joincode b{color:var(--gold); font-size:24px; letter-spacing:.2em; font-weight:900; margin-left:6px}
 .shorturl{font-size:clamp(12px,1.1vw,20px); color:var(--muted); text-align:center; line-height:1.4; white-space:nowrap}
 .lobby-right{flex:1; display:flex; flex-direction:column; min-height:0; justify-content:center}
+.lobby-title{font-size:clamp(40px,6.4vw,140px); font-weight:900; line-height:1.05; letter-spacing:.04em;
+  color:var(--gold); margin-bottom:clamp(10px,2vh,28px); text-shadow:0 4px 24px rgba(0,0,0,.35)}
 .lobbystats{display:flex; align-items:baseline; gap:32px}
 .bignum{font-size:clamp(48px,6vw,120px); font-weight:900; color:var(--gold); line-height:1; font-variant-numeric:tabular-nums}
 .bignum small{font-size:clamp(15px,1.5vw,28px); color:var(--muted); font-weight:700; margin-left:8px}

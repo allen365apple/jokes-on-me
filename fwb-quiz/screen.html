@@ -7,7 +7,7 @@
 <title>績效考核・大螢幕｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260815c">
+<link rel="stylesheet" href="shared.css?v=20260815d">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
@@ -73,7 +73,7 @@
 
 <script type="module">
 import { CONFIG, rpc, sb, clock, createSync, normalizeState,
-         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815c';
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815d';
 
 const body = $('#body');
 // 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
@@ -283,7 +283,6 @@ function render() {
 function renderLobbyShell() {
   body.innerHTML = `<div class="lobby">
     <div class="lobby-left">
-      <div class="scanhint">掃碼加入遊戲</div>
       <div class="qr" id="qrBox"></div>
       <div class="shorturl">掃不到？直接開 ${esc(shortJoinUrl())}</div>
       ${KEY ? `<div class="start-cta">
@@ -292,6 +291,7 @@ function renderLobbyShell() {
       </div>` : ''}
     </div>
     <div class="lobby-right">
+      <div class="lobby-title">績效考核</div>
       <div class="lobbystats">
         <div class="bignum" id="lbTotal">0<small>人已加入</small></div>
         <div class="readynum" id="lbReady">0<small>/ ${TABLE_IDS.length} 桌到齊</small></div>
