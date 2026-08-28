@@ -7,7 +7,7 @@
 <title>績效考核・大螢幕｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260815a">
+<link rel="stylesheet" href="shared.css?v=20260815c">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
@@ -73,7 +73,7 @@
 
 <script type="module">
 import { CONFIG, rpc, sb, clock, createSync, normalizeState,
-         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815a';
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815c';
 
 const body = $('#body');
 // 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
@@ -87,7 +87,7 @@ const S = {
 let sync = null, uiTimer = null, lobbyTimer = null, playersChannel = null;
 
 // 觀眾加入網址（QR code 指向這裡）
-const joinUrl = new URL('index.html?code=' + encodeURIComponent(CONFIG.joinCode), location.href).href;
+const joinUrl = new URL('./?code=' + encodeURIComponent(CONFIG.joinCode), location.href).href;
 // 備援網址：預設場次可用短網址；其他場次必須顯示完整網址（含 code），否則會連到錯的場次
 function shortJoinUrl() {
   const bare = new URL('./', location.href).href.replace(/^https?:\/\//, '');
@@ -285,7 +285,7 @@ function renderLobbyShell() {
     <div class="lobby-left">
       <div class="scanhint">掃碼加入遊戲</div>
       <div class="qr" id="qrBox"></div>
-      <div class="shorturl">掃不到？直接開<br>${esc(shortJoinUrl())}</div>
+      <div class="shorturl">掃不到？直接開 ${esc(shortJoinUrl())}</div>
       ${KEY ? `<div class="start-cta">
         <button class="btn-gold pulse" id="btnStartScreen">開始遊戲</button>
         <span class="keyhint">或按 Enter 開始</span>
@@ -305,10 +305,10 @@ function renderLobbyShell() {
   lobbyTimer = setInterval(refreshLobby, 2000); // 輪詢保底，Realtime insert 另外即時觸發
 }
 function drawQR() {
-  const qr = qrcode(0, 'M');
+  const qr = qrcode(0, 'L');   // 投影畫面乾淨，用最低容錯換取最大格點
   qr.addData(joinUrl);
   qr.make();
-  $('#qrBox').innerHTML = qr.createImgTag(8, 8);
+  $('#qrBox').innerHTML = qr.createImgTag(8, 4);   // margin=4：QR 規格要求的留白，少了會掃不到
 }
 async function refreshLobby() {
   try { S.lobby = await rpc('get_lobby_state', { p_session_id: S.session.sessionId }); }
