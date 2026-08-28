@@ -19,3 +19,5 @@ fwb-quiz/supabase-setup.sql
 fwb-quiz/supabase-functions.sql
 fwb-quiz/live-quiz-spec.md
 fwb-quiz/.claude/
+fwb-quiz/supabase-questions-backup.sql
+fwb-quiz/supabase-questions-tryout-backup.sql
