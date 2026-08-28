@@ -7,7 +7,7 @@
 <title>績效考核・大螢幕｜支薪好友《向上管理》</title>
 <link rel="icon" href="logo.jpg">
 <link rel="apple-touch-icon" href="logo.jpg">
-<link rel="stylesheet" href="shared.css?v=20260815d">
+<link rel="stylesheet" href="shared.css?v=20260815j">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
   body{overflow:hidden}
@@ -73,7 +73,7 @@
 
 <script type="module">
 import { CONFIG, rpc, sb, clock, createSync, normalizeState,
-         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815d';
+         SHAPES, LETTERS, TABLE_IDS, $, esc, secs } from './shared.js?v=20260815j';
 
 const body = $('#body');
 // 帶 ?key=主持人金鑰 開啟時，大螢幕本身就是節奏駕駛（可 Enter 開始/略過、⚙ 控制台）
@@ -93,6 +93,29 @@ function shortJoinUrl() {
   const bare = new URL('./', location.href).href.replace(/^https?:\/\//, '');
   return CONFIG.joinCode === 'FWB520' ? bare : joinUrl.replace(/^https?:\/\//, '');
 }
+
+// ── 自動縮字：投影要最大字，但長題目/長選項不能被切掉 ──────
+// CSS 先給到最大，這裡量測若超出容器就逐步降級，直到剛好塞得下
+function fitText(el, minPx) {
+  if (!el) return;
+  el.style.fontSize = '';                                   // 先回到 CSS 的最大值
+  let size = parseFloat(getComputedStyle(el).fontSize);
+  let guard = 80;
+  // 容差 6px：行高的四捨五入誤差常有 2-3px，容差太小會誤判而把字縮過頭
+  while (el.scrollHeight > el.clientHeight + 6 && size > minPx && guard-- > 0) {
+    size = Math.max(minPx, size - Math.max(1, size * 0.05));
+    el.style.fontSize = size + 'px';
+  }
+}
+function fitAll() {
+  document.querySelectorAll('#body .opt').forEach(el => fitText(el, 22));
+  document.querySelectorAll('#body .qtext, #body .qshow h2').forEach(el => fitText(el, 26));
+  document.querySelectorAll('#body .top5 li, #body .ranklist .row').forEach(el => fitText(el, 18));
+}
+// 用 setTimeout 而非 requestAnimationFrame：rAF 在背景分頁不會執行，
+// 萬一操作者把瀏覽器切到別的分頁，縮字就會失效
+function scheduleFit() { fitAll(); setTimeout(fitAll, 150); }
+window.addEventListener('resize', scheduleFit);
 
 // 快捷鍵（開頁即註冊）：F=全螢幕；有控制金鑰時 Enter=開始/略過/重玩、Esc=關控制台
 document.addEventListener('keydown', e => {
@@ -273,10 +296,11 @@ function render() {
 
   if (s.phase === 'lobby') { if (changed) renderLobbyShell(); return; }
   if (!changed) { if (s.phase === 'question_open') updateAnswered(); return; }
-  if (s.phase === 'question_show') return renderShow();
-  if (s.phase === 'question_open') return renderOpen();
-  if (s.phase === 'question_result') return renderResult();
-  if (s.phase === 'final_ranking') return S.review.active ? renderReview() : renderFinal();
+  if (s.phase === 'question_show') renderShow();
+  else if (s.phase === 'question_open') renderOpen();
+  else if (s.phase === 'question_result') renderResult();
+  else if (s.phase === 'final_ranking') { S.review.active ? renderReview() : renderFinal(); }
+  scheduleFit();
 }
 
 // ── 大廳 ────────────────────────────────────────────────────
@@ -475,6 +499,7 @@ function renderReview() {
       <button class="btn-ghost" id="rvNext" ${i === d.length - 1 ? 'disabled' : ''}>下一題 →</button>
       <button class="btn-gold" id="rvBack">回到總排行榜</button>
     </div>`;
+  scheduleFit();
   $('#rvPrev').onclick = () => reviewNav(-1);
   $('#rvNext').onclick = () => reviewNav(1);
   $('#rvBack').onclick = exitReview;

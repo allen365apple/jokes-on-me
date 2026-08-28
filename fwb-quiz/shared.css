@@ -52,8 +52,8 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
   overflow:hidden; position:relative; display:flex; flex-direction:column; height:100dvh}
 .stage-head{display:flex; align-items:center; gap:10px; padding:16px 24px 0}
 .stage-head .logo{font-weight:900; font-size:clamp(15px,1.4vw,26px); color:var(--gold); letter-spacing:.12em}
-.stage-head .sub{font-size:clamp(13px,1.35vw,26px); color:var(--muted)}
-.stage-head .qtag{margin-left:auto; font-size:clamp(15px,1.6vw,32px); font-weight:800; color:var(--gold); font-variant-numeric:tabular-nums}
+.stage-head .sub{font-size:clamp(14px,1.5vw,30px); color:var(--muted)}
+.stage-head .qtag{margin-left:auto; font-size:clamp(16px,1.9vw,38px); font-weight:800; color:var(--gold); font-variant-numeric:tabular-nums}
 .stage-body{flex:1; padding:12px 28px 24px; display:flex; flex-direction:column; min-height:0}
 
 /* 大廳 */
@@ -66,12 +66,12 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .joincode b{color:var(--gold); font-size:24px; letter-spacing:.2em; font-weight:900; margin-left:6px}
 .shorturl{font-size:clamp(12px,1.1vw,20px); color:var(--muted); text-align:center; line-height:1.4; white-space:nowrap}
 .lobby-right{flex:1; display:flex; flex-direction:column; min-height:0; justify-content:center}
-.lobby-title{font-size:clamp(40px,6.4vw,140px); font-weight:900; line-height:1.05; letter-spacing:.04em;
+.lobby-title{font-size:clamp(44px,7.2vw,165px); font-weight:900; line-height:1.05; letter-spacing:.04em;
   color:var(--gold); margin-bottom:clamp(10px,2vh,28px); text-shadow:0 4px 24px rgba(0,0,0,.35)}
 .lobbystats{display:flex; align-items:baseline; gap:32px}
-.bignum{font-size:clamp(48px,6vw,120px); font-weight:900; color:var(--gold); line-height:1; font-variant-numeric:tabular-nums}
+.bignum{font-size:clamp(52px,6.6vw,140px); font-weight:900; color:var(--gold); line-height:1; font-variant-numeric:tabular-nums}
 .bignum small{font-size:clamp(15px,1.5vw,28px); color:var(--muted); font-weight:700; margin-left:8px}
-.readynum{font-size:clamp(26px,3.2vw,64px); font-weight:900; line-height:1; font-variant-numeric:tabular-nums}
+.readynum{font-size:clamp(28px,3.6vw,72px); font-weight:900; line-height:1; font-variant-numeric:tabular-nums}
 .readynum small{font-size:clamp(14px,1.4vw,26px); color:var(--muted); font-weight:700; margin-left:6px}
 .tgrid{flex:0 1 auto; max-height:58%; overflow-y:auto; margin-top:clamp(12px,2vh,26px); display:grid;
   grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px; align-content:start}
@@ -81,30 +81,31 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .tchip span{font-size:clamp(12px,1.15vw,20px); color:var(--muted); font-weight:800; font-variant-numeric:tabular-nums}
 .tchip.ready{background:linear-gradient(180deg,var(--gold),var(--amber)); border-color:var(--gold-hi); transform:scale(1.03)}
 .tchip.ready b,.tchip.ready span{color:#2E2A28}
-.ticker{height:clamp(28px,4vh,48px); margin-top:10px; font-size:clamp(16px,1.7vw,32px); font-weight:800; color:var(--gold-hi); overflow:hidden}
+.ticker{height:clamp(28px,4.4vh,54px); margin-top:10px; font-size:clamp(17px,2vw,38px); font-weight:800; color:var(--gold-hi); overflow:hidden}
 .ticker span{display:inline-block; animation:tickin .5s ease}
 @keyframes tickin{from{transform:translateY(18px); opacity:0}to{transform:none; opacity:1}}
 
 /* 讀題 / 作答 */
 .qshow{flex:1; display:flex; align-items:center; justify-content:center; text-align:center; padding:0 30px}
-.qshow h2{font-size:clamp(32px,5.2vw,110px); font-weight:900; line-height:1.45; text-wrap:balance}
+.qshow h2{font-size:clamp(36px,6.4vw,150px); font-weight:900; line-height:1.45; text-wrap:balance}
 .qopen{flex:1; display:flex; flex-direction:column; min-height:0; gap:14px}
 .qopen .qtop{flex:1 1 50%; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:24px}
-.qopen .opts{flex:1 1 50%}
-.qopen .qtext{font-size:clamp(32px,4.6vw,86px); font-weight:900; text-align:center; line-height:1.35; text-wrap:balance}
+.qopen .opts{flex:1 1 50%; min-height:0}
+.qopen .qtext{font-size:clamp(34px,5.4vw,112px); font-weight:900; text-align:center; line-height:1.35; text-wrap:balance}
 .countrow{display:flex; align-items:center; gap:16px}
 .countrow .track{flex:1}
-.timerbig{font-size:clamp(48px,5.4vw,104px); font-weight:900; color:var(--gold); width:clamp(90px,7vw,150px); text-align:center; font-variant-numeric:tabular-nums; line-height:1}
+.timerbig{font-size:clamp(52px,6.4vw,130px); font-weight:900; color:var(--gold); width:clamp(90px,8vw,180px); text-align:center; font-variant-numeric:tabular-nums; line-height:1}
 .timerbig.hot{color:var(--bad)}
-.answered{font-size:clamp(18px,1.9vw,36px); font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
-.answered b{color:var(--gold); font-size:clamp(26px,2.8vw,54px)}
-.opts{display:grid; grid-template-columns:1fr 1fr; gap:10px; min-height:0}
+.answered{font-size:clamp(20px,2.4vw,46px); font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+.answered b{color:var(--gold); font-size:clamp(28px,3.4vw,68px)}
+.opts{display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; min-height:0; overflow:hidden}
 .opt{border-radius:14px; display:flex; align-items:center; gap:16px; padding:10px 22px;
-  color:#fff; font-weight:800; font-size:clamp(24px,3.3vw,64px); position:relative;
+  color:#fff; font-weight:800; font-size:clamp(26px,4vw,84px); position:relative;
   transition:opacity .4s, box-shadow .4s, transform .4s;
   background-image:linear-gradient(180deg,rgba(255,255,255,.10),rgba(0,0,0,.14));
-  box-shadow:0 4px 16px rgba(0,0,0,.28); text-shadow:0 1px 3px rgba(0,0,0,.25)}
-.opt .shape{font-size:clamp(26px,3.4vw,64px); flex-shrink:0}
+  box-shadow:0 4px 16px rgba(0,0,0,.28); text-shadow:0 1px 3px rgba(0,0,0,.25); overflow:hidden}
+.opt .shape{font-size:1em; flex-shrink:0}
+.opt>span:not(.shape):not(.tick):not(.bar){min-width:0}
 .opt .tick{margin-left:auto; background:#fff; color:var(--ok); border-radius:50%;
   width:1.3em; height:1.3em; display:flex; align-items:center; justify-content:center;
   font-size:1em; font-weight:900; flex-shrink:0; text-shadow:none}
@@ -112,67 +113,67 @@ button{font:inherit; cursor:pointer; border:none; border-radius:10px; font-weigh
 .opt.C{background-color:var(--optC)} .opt.D{background-color:var(--optD)}
 .opt.dim{opacity:.22}
 .opt.win{box-shadow:0 0 0 3px #fff, 0 0 26px rgba(244,180,0,.55); transform:scale(1.03)}
-.opt .bar{position:absolute; right:14px; bottom:10px; display:flex; align-items:center; gap:8px}
+.opt .bar{margin-left:auto; padding-left:14px; display:flex; align-items:center; gap:8px; flex-shrink:0}
 .opt .bar i{display:block; height:10px; background:rgba(255,255,255,.85); border-radius:99px}
-.opt .bar em{font-style:normal; font-size:clamp(17px,1.8vw,34px); font-weight:900; font-variant-numeric:tabular-nums}
+.opt .bar em{font-style:normal; font-size:clamp(18px,2.1vw,40px); font-weight:900; font-variant-numeric:tabular-nums}
 
 /* 公布答案 */
 .resultgrid{flex:1; display:flex; gap:18px; min-height:0}
 .resultgrid .left{flex:1.55; display:flex; flex-direction:column; gap:8px; min-height:0}
-.resultgrid .left .opts{flex:1; grid-template-columns:1fr}
-.resultgrid .left .opt{font-size:clamp(20px,2.3vw,46px)}
-.resultgrid .left .qtext{font-size:clamp(22px,2.7vw,54px); font-weight:900; line-height:1.35}
+.resultgrid .left .opts{flex:1; grid-template-columns:1fr; grid-auto-rows:1fr; min-height:0}
+.resultgrid .left .opt{font-size:clamp(22px,2.9vw,60px)}
+.resultgrid .left .qtext{font-size:clamp(24px,3.4vw,70px); font-weight:900; line-height:1.35}
 .top5{flex:1; background:var(--panel2); border-radius:12px; padding:clamp(14px,1.4vw,26px); min-width:250px; display:flex; flex-direction:column}
-.top5 h3{font-size:clamp(16px,1.6vw,30px); letter-spacing:.16em; color:var(--gold); margin-bottom:8px; font-weight:900}
+.top5 h3{font-size:clamp(17px,1.9vw,36px); letter-spacing:.16em; color:var(--gold); margin-bottom:8px; font-weight:900}
 .top5 ol{list-style:none; flex:1; display:flex; flex-direction:column; justify-content:space-around}
-.top5 li{display:flex; align-items:center; gap:10px; padding:7px 4px; font-size:clamp(18px,2vw,40px); font-weight:800; min-width:0;
+.top5 li{display:flex; align-items:center; gap:10px; padding:6px 4px; font-size:clamp(20px,2.6vw,52px); font-weight:800; min-width:0;
   border-bottom:1px solid #514b46; animation:tickin .5s ease both}
 .top5 li:nth-child(2){animation-delay:.08s}.top5 li:nth-child(3){animation-delay:.16s}
 .top5 li:nth-child(4){animation-delay:.24s}.top5 li:nth-child(5){animation-delay:.32s}
 .top5 li:last-child{border:none}
-.top5 .rk{width:clamp(30px,2.6vw,52px); height:clamp(30px,2.6vw,52px); border-radius:50%; background:#57514c; color:var(--ink);
-  display:flex; align-items:center; justify-content:center; font-size:clamp(16px,1.5vw,28px); font-weight:900; flex-shrink:0}
+.top5 .rk{width:clamp(30px,3.1vw,62px); height:clamp(30px,3.1vw,62px); border-radius:50%; background:#57514c; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; font-size:clamp(16px,1.8vw,34px); font-weight:900; flex-shrink:0}
 .top5 li:first-child .rk{background:var(--gold); color:#2E2A28}
 .top5 .pts{margin-left:auto; color:var(--gold); font-variant-numeric:tabular-nums}
 .top5 li.me{color:var(--gold-hi)}
 
 /* 下一題倒數 */
-.nextin{display:flex; align-items:center; gap:18px; font-size:clamp(18px,1.9vw,36px); font-weight:900; color:var(--muted); padding-top:10px}
+.nextin{display:flex; align-items:center; gap:18px; font-size:clamp(20px,2.3vw,44px); font-weight:900; color:var(--muted); padding-top:10px}
 .nextin .track{flex:1}
 .nextin span{white-space:nowrap}
-.nextin b{color:var(--gold); font-size:clamp(28px,2.9vw,56px); font-variant-numeric:tabular-nums; margin:0 4px}
+.nextin b{color:var(--gold); font-size:clamp(30px,3.4vw,66px); font-variant-numeric:tabular-nums; margin:0 4px}
 
 /* 最終雙排行榜（表格式） */
 .finalsplit{flex:1; display:flex; gap:20px; min-height:0}
 .fcol{flex:1; display:flex; flex-direction:column; min-height:0}
 .fdivider{width:2px; background:#57514c; border-radius:99px}
-.final-title{text-align:center; font-size:clamp(26px,3.2vw,62px); font-weight:900; letter-spacing:.12em; color:var(--gold); margin:6px 0 14px}
+.final-title{text-align:center; font-size:clamp(28px,3.8vw,76px); font-weight:900; letter-spacing:.12em; color:var(--gold); margin:6px 0 14px}
 .rankhead{display:flex; align-items:center; gap:14px; padding:0 22px 6px}
 .rankhead .rh-spacer{width:36px; flex-shrink:0}
 .rankhead .rh-fill{flex:1}
-.rankhead .col{color:#8d867e; font-weight:700; font-size:clamp(12px,1.2vw,24px); letter-spacing:.06em}
+.rankhead .col{color:#8d867e; font-weight:700; font-size:clamp(13px,1.4vw,28px); letter-spacing:.06em}
 .ranklist{flex:1; overflow:hidden; display:flex; flex-direction:column; gap:8px; min-height:0; padding:0 4px 4px}
 .ranklist .row{flex:1; min-height:0; display:flex; align-items:center; gap:14px; background:var(--panel); border-radius:12px;
-  padding:6px 18px; font-weight:800; font-size:clamp(20px,2.2vw,46px); animation:tickin .5s ease both;
+  padding:6px 18px; font-weight:800; font-size:clamp(22px,2.8vw,58px); animation:tickin .5s ease both;
   box-shadow:0 3px 10px rgba(0,0,0,.2)}
 .ranklist .row.first{flex:1.35; border:2px solid var(--gold); background:linear-gradient(90deg,rgba(244,180,0,.16),var(--panel));
-  font-size:clamp(24px,2.7vw,56px)}
-.ranklist .rk{width:clamp(36px,3vw,64px); height:clamp(36px,3vw,64px); border-radius:50%; background:#57514c; color:var(--ink);
-  display:flex; align-items:center; justify-content:center; font-size:clamp(18px,1.7vw,32px); font-weight:900; flex-shrink:0}
+  font-size:clamp(26px,3.4vw,70px)}
+.ranklist .rk{width:clamp(36px,3.5vw,74px); height:clamp(36px,3.5vw,74px); border-radius:50%; background:#57514c; color:var(--ink);
+  display:flex; align-items:center; justify-content:center; font-size:clamp(18px,2vw,38px); font-weight:900; flex-shrink:0}
 .ranklist .row.first .rk{background:var(--gold); color:#2E2A28}
 .ranklist .who{flex:1; min-width:0; line-height:1.15; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.ranklist .who small{font-size:clamp(12px,1.25vw,24px); color:var(--muted); font-weight:700; margin-left:.5em}
-.ranklist .col,.rankhead .col{width:clamp(72px,8.5vw,190px); text-align:right; flex-shrink:0; white-space:nowrap; font-variant-numeric:tabular-nums}
-.ranklist .col{color:var(--muted); font-weight:700; font-size:clamp(16px,1.7vw,34px)}
+.ranklist .who small{font-size:clamp(13px,1.5vw,30px); color:var(--muted); font-weight:700; margin-left:.5em}
+.ranklist .col,.rankhead .col{width:clamp(72px,9.5vw,215px); text-align:right; flex-shrink:0; white-space:nowrap; font-variant-numeric:tabular-nums}
+.ranklist .col{color:var(--muted); font-weight:700; font-size:clamp(18px,2.1vw,42px)}
 .ranklist .row.me{outline:2px dashed var(--gold-hi)}
 
 /* 回顧模式 */
 .review-cta{text-align:center; padding-top:12px}
-.review-head{text-align:center; font-size:clamp(22px,2.6vw,48px); font-weight:900; color:var(--gold); letter-spacing:.06em; margin:4px 0 10px}
+.review-head{text-align:center; font-size:clamp(24px,3vw,58px); font-weight:900; color:var(--gold); letter-spacing:.06em; margin:4px 0 10px}
 .review-nav{display:flex; gap:14px; align-items:center; justify-content:center; padding-top:14px}
-.review-nav button{padding:10px 20px; font-size:clamp(15px,1.5vw,26px)}
+.review-nav button{padding:12px 24px; font-size:clamp(16px,1.8vw,32px)}
 .review-nav .btn-ghost{border-radius:10px}
-.review-nav .rv-idx{font-size:clamp(16px,1.7vw,30px); font-weight:900; color:var(--muted); font-variant-numeric:tabular-nums; min-width:64px; text-align:center}
+.review-nav .rv-idx{font-size:clamp(17px,2vw,36px); font-weight:900; color:var(--muted); font-variant-numeric:tabular-nums; min-width:64px; text-align:center}
 
 /* ── 觀眾手機 ── */
 .app{min-height:100dvh; display:flex; flex-direction:column;
