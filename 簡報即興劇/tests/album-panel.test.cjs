@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const context = await browser.newContext();
-    await context.route('**/firebase-config.js', route => route.fulfill({
+    await context.route('**/firebase-config.js**', route => route.fulfill({
       contentType: 'application/javascript',
       body: "window.SHOW_CONFIG={mode:'local',room:'album-panel-test',firebase:{}};"
     }));

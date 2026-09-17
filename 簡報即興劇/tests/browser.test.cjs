@@ -4,7 +4,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH || 'playwright');
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true});
  const context=await browser.newContext({viewport:{width:1440,height:900}});
- await context.route('**/firebase-config.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:"window.SHOW_CONFIG={mode:'local',room:'astra-browser-test',firebase:{},submitUrl:'',qrImage:''};"}));
+ await context.route('**/firebase-config.js**',route=>route.fulfill({status:200,contentType:'application/javascript',body:"window.SHOW_CONFIG={mode:'local',room:'astra-browser-test',firebase:{},submitUrl:'',qrImage:''};"}));
  const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base='http://127.0.0.1:8766/';
  await page.goto(base+'stage.html');
@@ -58,8 +58,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH || 'playwright');
  await submit.locator('#submitBtn').click();await submit.locator('#done').waitFor({state:'visible'});
  await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 筆'));
  const peek=await context.newPage();await peek.goto(base+'peek-k7x2.html');
- await peek.waitForFunction(()=>document.querySelector('#status').textContent.includes('5 筆'));
- await peek.getByRole('button',{name:'聊天／金句',exact:true}).click();
+ await peek.waitForFunction(()=>document.querySelector('#activeCount').textContent==='5');
+ await peek.getByRole('tab',{name:'聊天／金句',exact:true}).click();
  assert.equal(await peek.getByText('這是測試紙條',{exact:false}).count(),1);
  await page.keyboard.press('c');await page.locator('#toggleOpen').click();
  await submit.locator('#again').click();await submit.locator('#submitBtn').click();
@@ -89,7 +89,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_PATH || 'playwright');
  await page.screenshot({path:'/tmp/astra-romantic.png'});
  await page.keyboard.press('h');await page.screenshot({path:'/tmp/astra-title.png'});
  await page.keyboard.press('c');
- await page.locator('#trialBtn').click();
+ await page.locator('#poolToggle').click();
  assert.equal(await page.locator('#poolStatus').textContent(),'目前：試玩題庫 · 30 筆');
  const poolCheck=await page.evaluate(()=>{
    const textDeck=ShowCore.createDeck(()=>0.12);

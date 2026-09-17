@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await context.route('**/firebase-config.js', route => route.fulfill({ contentType: 'application/javascript', body: "window.SHOW_CONFIG={mode:'local',room:'title-pair-test',firebase:{}};" }));
+    await context.route('**/firebase-config.js**', route => route.fulfill({ contentType: 'application/javascript', body: "window.SHOW_CONFIG={mode:'local',room:'title-pair-test',firebase:{}};" }));
     const page = await context.newPage();
     await page.goto('http://127.0.0.1:8766/stage.html');
     await page.locator('.cast-card').nth(0).click();

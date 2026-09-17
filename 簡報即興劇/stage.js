@@ -273,12 +273,20 @@ function setPool(useTrial) {
   actorTags={};
   selected.forEach(id => { actorTags[id]=drawTags(); });
   photos.clear();loading.clear();preload(records);
-  text('#trialBtn',trialMode?'切回現場題庫':'切換至試玩題庫');
+  text('#poolToggle',trialMode?'試玩題庫 T':'現場題庫 T');
+  $('#poolToggle').setAttribute('aria-pressed',String(trialMode));
+  $('#poolToggle').title=trialMode?'切回現場題庫':'切換至試玩題庫';
   $('#controlPanel').classList.toggle('trial-mode',trialMode);
   text('#poolStatus',trialMode ? '目前：試玩題庫 · 30 筆' : '目前：現場題庫 · '+liveRecords.length+' 筆');
   notice(trialMode ? '已切換試玩題庫，抽選進度已重設' : '已切回現場題庫，抽選進度已重設');
 }
-$('#trialBtn').onclick=()=>setPool(!trialMode);
+$('#poolToggle').onclick=()=>setPool(!trialMode);
+$('#adminLogin').onclick=async()=>{
+  if(ShowStore.loggedIn()){ await ShowStore.login(); return; }
+  const password=prompt('請輸入後台密碼');
+  if(password===null)return;
+  ShowStore.login(password).catch(e=>notice(e.message));
+};
 $('#resetDeck').onclick=()=>{deck.reset();notice('已重設目前題庫的抽選進度');};
 $('#toggleOpen').onclick=()=>ShowStore.toggle().catch(e=>notice(e.message));
 $('#soundBtn').onclick=()=>{sound=!sound;text('#soundBtn','抽題音效：'+(sound?'開':'關'));};
@@ -301,6 +309,7 @@ addEventListener('keydown',e=>{
   else if(/^[3-8]$/.test(key))drawCue(Number(key)-1);
   else if(key==='[')focusActor(0);else if(key===']')focusActor(1);
   else if(key==='c')$('#controlPanel').classList.toggle('open');
+  else if(key==='t')setPool(!trialMode);
   else if(key==='s')goHome();
   else if(key==='h')showTitle();
   else if(key==='f')fullscreen();else if(key==='q')showQR();
@@ -362,12 +371,18 @@ function demo(){
 }
 ShowStore.subscribe(s=>{
   liveRecords=s.records;
-  if(!trialMode) { records=liveRecords; preload(records); }
+  if(!trialMode) {
+    records=liveRecords; preload(records);
+    const activeIds=new Set(records.map(r=>r.id));
+    Object.keys(actorTags).forEach(id=>{if(actorTags[id]&&!activeIds.has(actorTags[id].id))delete actorTags[id];});
+  }
   text('#status',s.status+' · '+(trialMode ? records.length+' 筆試玩答案' : liveRecords.length+' 筆投稿'));
   text('#poolStatus',trialMode ? '目前：試玩題庫 · '+records.length+' 筆' : '目前：現場題庫 · '+liveRecords.length+' 筆');
   text('#submissionStatus',s.open?'觀眾投稿：開放中':'觀眾投稿：已截止');
   text('#toggleOpen',s.open?'截止投稿':'開放投稿');
-  $('#toggleOpen').disabled=false;
+  $('#toggleOpen').disabled=!s.canManage;
+  $('#adminLogin').hidden=!s.live;
+  text('#adminLogin',s.user?'登出管理員':'管理員登入');
 });
 renderSelection();
 ShowStore.init().then(()=>{if(!ShowStore.live && !liveRecords.length)ShowStore.seed(demo());});

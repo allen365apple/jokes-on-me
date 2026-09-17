@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看我戀愛 · Astra</title><link rel="stylesheet" href="original-scenes.css"><link rel="stylesheet" href="stage.css"></head>
 <body>
-<header id="top"><span class="brand">看我戀愛<span class="edition">ASTRA</span></span><span id="credit">選擇今天的兩位主角</span><button id="consoleBtn">控制台 C</button></header>
+<header id="top"><span class="brand">看我戀愛<span class="edition">ASTRA</span></span><span id="credit">選擇今天的兩位主角</span><div class="top-actions"><button id="consoleBtn">控制台 C</button><button id="poolToggle" aria-pressed="false" title="切換至試玩題庫">現場題庫 T</button></div></header>
 <main id="viewport">
 <section id="selection"><div class="selection-heading"><h1>選擇兩位主角</h1><button id="editCast">設定演員</button></div><div class="selection-layout"><div id="castGrid"></div><aside class="pair-panel"><div id="pairPreview" aria-live="polite"></div><p id="selectionCount">已選 0 / 2</p><button id="start" class="primary" disabled>開始 →</button><small>Enter 開始</small></aside></div><footer><span>點選兩位角色 · 再次點選取消</span></footer></section>
 <section id="standby" hidden><p class="eyebrow">看我戀愛</p><h1>準備登場</h1><p id="standbyNames"></p><button id="nextIntro" class="primary">登場 → <small>Space / Enter</small></button></section>
@@ -62,8 +62,7 @@
   <header class="panel-heading"><h2 id="panelTitle">控制台</h2><button id="closePanel" aria-label="關閉控制台">收起 <kbd>C</kbd></button></header>
   <div class="panel-status" aria-live="polite"><strong id="poolStatus">目前：現場題庫</strong><p id="status"></p><span id="submissionStatus">正在確認投稿狀態…</span></div>
   <section class="panel-section"><h3>題庫與投稿</h3>
-    <button id="trialBtn">切換至試玩題庫</button>
-    <p class="panel-note">切換會重設抽題進度，投稿保留。</p>
+    <button id="adminLogin" hidden>管理員登入</button>
     <div class="panel-links"><a href="submit.html?edit=1" target="_blank" rel="noopener">編輯題目 ↗</a><a href="peek-k7x2.html" target="_blank" rel="noopener">查看答案 ↗</a></div>
     <div class="panel-setting"><div><strong>現場投稿</strong><small>試玩時也會影響現場。</small></div><button id="toggleOpen" disabled>讀取中…</button></div>
   </section>
@@ -73,5 +72,5 @@
   <details class="panel-section panel-advanced"><summary>重設抽題</summary><p>已抽答案可再出現，投稿保留。</p><button id="resetDeck">重設抽題進度</button></details>
 </aside>
 <dialog id="castDialog"><form method="dialog"><h2>設定演員</h2><p>姓名與照片儲存在這台瀏覽器。正式固定素材可編輯 cast-config.js。</p><div id="castEditor"></div><p id="castSaveStatus"></p><button value="cancel">取消</button><button type="button" id="saveCast" class="primary">儲存設定</button></form></dialog>
-<script src="firebase-config.js"></script><script src="cast-config.js"></script><script src="core.js"></script><script src="store.js"></script><script src="trial-data.js"></script><script src="vendor/qrcode.js"></script><script src="stage.js"></script>
+<script src="firebase-config.js?v=20260917-auth1"></script><script src="cast-config.js"></script><script src="core.js"></script><script src="store.js?v=20260917-auth1"></script><script src="trial-data.js"></script><script src="vendor/qrcode.js"></script><script src="stage.js?v=20260917-auth1"></script>
 </body></html>

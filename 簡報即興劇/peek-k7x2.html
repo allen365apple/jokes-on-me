@@ -1,1 +1,68 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>看我戀愛｜答案後台</title><link rel="stylesheet" href="forms.css"></head><body class="peek"><main><h1>答案後台</h1><p id="status">準備中</p><a href="stage.html">回投影頁</a><nav id="tabs"></nav><button id="refresh">換一批</button> <button id="photos">顯示照片</button><div id="answers"></div></main><script src="firebase-config.js"></script><script src="core.js"></script><script src="store.js"></script><script src="peek.js"></script></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>看我戀愛｜投稿答案後台</title>
+  <link rel="stylesheet" href="forms.css">
+</head>
+<body class="peek">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <span class="admin-kicker">看我戀愛 · 現場工具</span>
+        <h1>投稿答案後台</h1>
+        <p>查看、整理並管理本場觀眾投稿。</p>
+      </div>
+      <div class="admin-header-actions">
+        <a class="admin-link" href="stage.html">回投影頁</a>
+        <button id="adminLogin" class="admin-login" hidden>管理員登入</button>
+      </div>
+    </header>
+
+    <section class="admin-summary" aria-label="後台狀態">
+      <div class="summary-connection">
+        <span class="summary-label">連線狀態</span>
+        <strong id="status">準備中</strong>
+        <span id="manageNotice" role="status">正在確認權限…</span>
+      </div>
+      <div class="summary-stat"><strong id="activeCount">0</strong><span>可抽選</span></div>
+      <div class="summary-stat"><strong id="ignoredCount">0</strong><span>已忽略</span></div>
+      <div class="summary-stat"><strong id="archivedCount">0</strong><span>已封存</span></div>
+    </section>
+
+    <section class="admin-management">
+      <div class="section-heading">
+        <span class="section-kicker">投稿管理</span>
+        <h2>先選狀態，再處理投稿</h2>
+      </div>
+      <div class="status-filters" role="tablist" aria-label="投稿狀態">
+        <button class="status-filter active" data-filter="active" role="tab" aria-selected="true">可抽選 <b>0</b></button>
+        <button class="status-filter" data-filter="ignored" role="tab" aria-selected="false">已忽略 <b>0</b></button>
+        <button class="status-filter" data-filter="archived" role="tab" aria-selected="false">已封存 <b>0</b></button>
+      </div>
+      <div class="management-actions">
+        <button id="archiveAll" disabled>封存本場</button>
+      </div>
+    </section>
+    <p class="admin-hint">忽略：暫時不抽到，可恢復。封存：清空本場抽題池，但保留原始投稿。</p>
+
+    <section class="answer-panel" aria-labelledby="answerPanelTitle">
+      <header class="answer-panel-header">
+        <div>
+          <span class="section-kicker">內容預覽</span>
+          <h2 id="answerPanelTitle">答案</h2>
+        </div>
+        <div class="answer-actions"><button id="refresh">換一批</button><button id="photos" hidden>顯示照片</button></div>
+      </header>
+      <nav id="tabs" class="answer-tabs" aria-label="答案類型"></nav>
+      <div id="answers" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="firebase-config.js?v=20260917-auth1"></script>
+  <script src="core.js"></script>
+  <script src="store.js?v=20260917-auth1"></script>
+  <script src="peek.js"></script>
+</body>
+</html>
