@@ -8,7 +8,7 @@ try {
   const saved = JSON.parse(localStorage.getItem('astra-cast') || 'null');
   if (Array.isArray(saved)) cast = cast.map(p => {
     const prior=saved.find(s=>s.id===p.id);
-    return prior ? {...p, name: /待設定|待確認/.test(prior.name) ? p.name : (prior.name || p.name), image: prior.image || p.image} : p;
+    return prior ? {...p, name: /待設定|待確認/.test(prior.name) ? p.name : (prior.name || p.name), image: prior.image || p.image, crop: prior.crop || p.crop} : p;
   });
 } catch (_) {}
 let selected = [], phase = 'selection', intro = -1, focus = 0, currentCue = 0;
@@ -16,6 +16,7 @@ let liveRecords = [], records = [], actorTags = {}, trialMode = false, toastTime
 const photos = new Map(), loading = new Set();
 let sound = true;
 let lastStoryStyle = -1;
+const DEFAULT_CROP = { x: 50, y: 8, zoom: 1.08 };
 const storyStyles = [
   {color:'#fff4b8', angle:-4}, {color:'#ffabc8', angle:3},
   {color:'#aee9ff', angle:-3}, {color:'#c6ffce', angle:4},
@@ -30,12 +31,35 @@ bgm.loop = true; bgm.volume = .3; ending.volume = .5;
 function text(selector, value) { const el = $(selector); if (el) el.textContent = value; }
 function notice(message) { text('#toast', message); $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2800); }
 function person() { return cast.find(p => p.id === selected[focus]); }
+function cropOf(p) {
+  const crop = p?.crop || {};
+  const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  return {
+    x: Math.max(0, Math.min(100, number(crop.x, DEFAULT_CROP.x))),
+    y: Math.max(0, Math.min(100, number(crop.y, DEFAULT_CROP.y))),
+    zoom: Math.max(1, Math.min(1.8, number(crop.zoom, DEFAULT_CROP.zoom)))
+  };
+}
+function applyCrop(container, p) {
+  if (!container) return;
+  const crop = cropOf(p);
+  container.style.setProperty('--crop-x', crop.x + '%');
+  container.style.setProperty('--crop-y', crop.y + '%');
+  container.style.setProperty('--crop-zoom', crop.zoom);
+  const img = container.querySelector('img');
+  if (img) {
+    img.style.objectPosition = crop.x + '% ' + crop.y + '%';
+    img.style.transform = 'scale(' + crop.zoom + ')';
+    img.style.transformOrigin = '50% 50%';
+  }
+}
 function avatar(container, p) {
   container.dataset.actor = p.id;
+  applyCrop(container, p);
   container.textContent = p.name.slice(0,1);
   if (!p.image) return;
   const img = new Image(); img.alt = p.name; img.src = p.image;
-  img.onload = () => container.replaceChildren(img);
+  img.onload = () => { container.replaceChildren(img); applyCrop(container, p); };
 }
 function renderSelection() {
   $('#castGrid').replaceChildren();
@@ -98,6 +122,7 @@ function renderProfile() {
   if (p.image) {
     const img = $('#actorPhoto'); img.onload = () => { img.hidden=false; $('#actorFallback').hidden=true; };
     img.onerror = () => { img.hidden=true; $('#actorFallback').hidden=false; }; img.src=p.image;
+    applyCrop($('.portrait-panel'), p);
   }
   const r = actorTags[p.id]; $('#tags').replaceChildren();
   (r ? r.tags : ['等待觀眾投稿']).forEach(tag => { const span=document.createElement('span'); span.textContent='#'+tag.replace(/^#+/,''); $('#tags').append(span); });
@@ -226,7 +251,7 @@ function renderTitlePair() {
     if (actor.image) {
       const img = new Image(); img.alt = actor.name; img.src = actor.image;
       img.onerror = () => { img.hidden = true; portrait.classList.add('photo-unavailable'); };
-      portrait.append(img);
+      portrait.append(img); applyCrop(portrait, actor);
     } else portrait.classList.add('photo-unavailable');
     card.append(portrait); pair.append(card);
   });
@@ -329,16 +354,32 @@ $('#editCast').onclick=()=>{
   pendingCast=cast.map(p=>({...p})); $('#castEditor').replaceChildren();
   pendingCast.forEach((p,i)=>{
     const row=document.createElement('div'),name=document.createElement('input'),file=document.createElement('input');
+    row.className='cast-edit-row';
+    name.className='cast-edit-name'; file.className='cast-edit-file';
     name.value=p.name;name.maxLength=16;name.setAttribute('aria-label','演員 '+(i+1)+' 姓名');name.oninput=()=>p.name=name.value;
     file.type='file';file.accept='image/*';file.setAttribute('aria-label','演員 '+(i+1)+' 照片');
     file.onchange=async()=>{
       if(!file.files[0])return;
       $('#saveCast').disabled=true;
-      try{p.image=await compressImage(file.files[0],900);text('#castSaveStatus',p.name+' 照片已選取');}
+      try{p.image=await compressImage(file.files[0],900);text('#castSaveStatus',p.name+' 照片已選取');applyCrop(preview,p);}
       catch(_){text('#castSaveStatus','照片無法讀取，請選 JPEG / PNG');}
       finally{$('#saveCast').disabled=false;}
     };
-    row.append(name,file);$('#castEditor').append(row);
+    const preview=document.createElement('div'); preview.className='cast-edit-preview';
+    if(p.image){const img=new Image();img.alt=p.name;img.src=p.image;preview.append(img);}
+    else preview.textContent=p.name.slice(0,1);
+    applyCrop(preview,p);
+    const controls=document.createElement('div'); controls.className='crop-controls';
+    [['左右','x',0,100,1,'%'],['上下','y',0,100,1,'%'],['大小','zoom',100,180,1,'%']].forEach(([label,key,min,max,step,suffix])=>{
+      const group=document.createElement('label'); group.className='crop-control';
+      const heading=document.createElement('span'); const output=document.createElement('output');
+      const slider=document.createElement('input'); slider.type='range'; slider.min=min;slider.max=max;slider.step=step;
+      const crop=cropOf(p); slider.value=key==='zoom'?Math.round(crop.zoom*100):crop[key];
+      heading.textContent=label; output.textContent=slider.value+suffix; group.append(heading,slider,output);
+      slider.oninput=()=>{p.crop={...cropOf(p),[key]:key==='zoom'?Number(slider.value)/100:Number(slider.value)};output.textContent=slider.value+suffix;applyCrop(preview,p);};
+      controls.append(group);
+    });
+    row.append(name,file,preview,controls);$('#castEditor').append(row);
   });$('#castDialog').showModal();
 };
 $('#saveCast').onclick=()=>{

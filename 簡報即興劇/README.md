@@ -22,7 +22,7 @@ python3 -m http.server 8766 --bind 127.0.0.1
 ## 檔案關係
 
 - **共用資料**：`firebase-config.js` 指定 Firebase 與場次，`store.js` 處理讀寫，`core.js` 負責答案驗證及抽選。
-- **演員**：`cast-config.js` 定義名字、照片路徑；`profiles/` 放演員照片及限動頭像。
+- **演員**：`cast-config.js` 定義名字、照片路徑；`profiles/` 放演員照片及限動頭像。選角頁的「設定演員」可調整每位角色照片的左右、上下裁切位置與大小，設定保存在目前瀏覽器。
 - **試玩**：`trial-data.js` 搭配 `trial-photos/`，控制台切換試玩來源。
 - **其他素材**：`音效/` 放音效，`vendor/` 放本機 QR Code 程式。
 - **文件**：`docs/` 放 Firebase 管理設定、公開發布說明與協作紀錄。

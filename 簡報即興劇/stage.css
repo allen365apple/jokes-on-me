@@ -53,6 +53,40 @@
 #memberTags{flex-basis:19%}
 @media(max-width:700px){.cast-portrait{height:17vh}.lock-scene .notification{width:90%}.profile-copy{padding:2vh 2vw}.prompt-card{padding:4vh 4vw}.prompt-card .answer{font-size:9vw}}
 
+/* 2026-09-18：角色照片裁切可調整；預設保留頭部，不再用固定 1.65 倍放大。 */
+#selection .cast-portrait img,
+.pair-portrait img,
+#titlePair .cast-portrait img,
+.portrait-panel img,
+.cast-edit-preview img{
+  object-position:var(--crop-x,50%) var(--crop-y,8%);
+  transform:scale(var(--crop-zoom,1.08));
+  transform-origin:50% 50%;
+}
+#castEditor{margin-top:1.5vh}
+#castEditor .cast-edit-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) 88px;
+  grid-template-areas:"name file preview" "controls controls controls";
+  gap:10px 12px;
+  align-items:center;
+  padding:14px 0;
+  border-bottom:1px solid #ffffff18;
+}
+#castEditor .cast-edit-name{grid-area:name}
+#castEditor .cast-edit-file{grid-area:file;width:100%;padding:7px;font-size:13px}
+#castEditor .cast-edit-preview{grid-area:preview;width:78px;aspect-ratio:1;overflow:hidden;display:grid;place-items:center;border-radius:12px;background:#36313d;color:#fff;font-size:26px}
+#castEditor .cast-edit-preview img{width:100%;height:100%;object-fit:cover;display:block}
+#castEditor .crop-controls{grid-area:controls;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#castEditor .crop-control{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;margin:0;color:#c6c8d2;font-size:13px}
+#castEditor .crop-control input{width:100%;padding:0;background:transparent;border:0}
+#castEditor .crop-control output{min-width:42px;text-align:right;color:#ffb3c7;font-variant-numeric:tabular-nums}
+#castDialog>form>p{color:#b9bbc6;font-size:14px;line-height:1.55}
+@media(max-width:600px){
+  #castEditor .cast-edit-row{grid-template-columns:minmax(0,1fr) 76px;grid-template-areas:"name preview" "file preview" "controls controls"}
+  #castEditor .crop-controls{grid-template-columns:1fr}
+}
+
 /* ── 2026-09-16 Claude 依柏文回饋調整（覆寫前面的規則，原規則保留未刪）── */
 
 /* 1. 投稿 QR 頁：開場時觀眾還不知道這是《看我戀愛》，畫面上不放劇名。
