@@ -1,0 +1,226 @@
+:root{--accent:#ff4458;--yoff:0vh;--font-scale:1;--bar-h:9vh;--credit-h:7vh}
+[hidden]{display:none!important}body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Microsoft JhengHei",sans-serif;background:#101114;color:#f8f8fa}button,a,input{touch-action:manipulation}button{cursor:pointer;border:1px solid #42434a;border-radius:10px;background:#24252b;color:#f8f8fa;padding:10px 14px;font:inherit}button:hover{filter:brightness(1.14)}button:disabled{opacity:.35;cursor:default}button:focus-visible,a:focus-visible{outline:3px solid #ff6d82;outline-offset:3px}a{color:#ff8598}#top{height:7vh;display:flex;align-items:center;justify-content:space-between;padding:0 2vw;border-bottom:1px solid #2e3036;font-size:clamp(14px,1.8vh,22px)}.brand{font-weight:900;letter-spacing:.1em}.edition{font-size:11px;background:#303138;padding:4px 7px;margin-left:12px;border-radius:4px;color:#b4b6c0}#credit{color:#b7b9c3}#viewport{height:84vh;transform:translateY(var(--yoff));position:relative}#stage{height:100%;background:#101114}.scene{height:100%}.scene.active{animation:scene-in .18s ease}.answer{font-size:calc(clamp(48px,9.5vh,116px) * var(--font-scale));line-height:1.22;letter-spacing:0;overflow-wrap:anywhere;font-weight:850;max-width:100%}.primary{border:0;background:linear-gradient(110deg,#ff735c,#fd2875);color:#fff;font-weight:800;padding:16px 28px}.eyebrow{font-size:clamp(16px,2.2vh,26px);color:#ff8092;letter-spacing:.15em}#selection{padding:4vh 5vw;height:100%;overflow:auto}.selection-heading{display:flex;justify-content:space-between;align-items:center}h1{margin:0;font-size:clamp(34px,5.5vh,72px);letter-spacing:-.04em}.selection-heading h1 span{display:block;font-size:.52em;font-weight:450;color:#a3a5af;margin-top:1vh}.selection-actions{text-align:right;color:#a3a5af}#castGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:1.5vh 1.3vw;margin:3vh 0} .cast-card{position:relative;padding:0;overflow:hidden;border:2px solid #303138;background:#1a1b21;text-align:left;min-height:17vh;border-radius:15px}.cast-card.selected{border-color:#ff5772;box-shadow:0 0 0 3px #ff57721f}.cast-portrait{height:12vh;display:grid;place-items:center;background:linear-gradient(130deg,#363945,#242630);font-size:6vh;color:#a8acba;overflow:hidden}.cast-portrait img{width:100%;height:100%;object-fit:cover}.cast-card strong{display:block;padding:1.1vh;font-size:clamp(16px,2.3vh,30px)}.order{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:30px;height:30px;background:#ff4268;border-radius:50%;font-size:18px}#selection footer{display:flex;align-items:center;justify-content:space-between;color:#999ca8}#standby{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:radial-gradient(ellipse at center,#34202b,#101114 70%)}#standby h1{font-size:8vh}#standbyNames{font-size:4vh}#nextIntro{margin-top:3vh}#nextIntro small{margin-left:2em;opacity:.7}
+.tinder-top{height:8vh;display:flex;align-items:center;justify-content:space-between;padding:1vh 3vw;border-bottom:1px solid #e8e8ed;color:#6a6c79;font-size:2.8vh}.tinder-logo{font-size:4.5vh;font-weight:900;letter-spacing:-.055em;background:linear-gradient(100deg,#ff735b,#fd2877);color:transparent;background-clip:text}.profile-scene,.prompt-scene,.swipe-scene{background:#fafafb;color:#21232b}.profile-layout{display:grid;grid-template-columns:38% 1fr;gap:4vw;padding:3vh 5vw;height:calc(100% - 8vh)}.portrait-panel{position:relative;border-radius:22px;overflow:hidden;min-height:0;background:linear-gradient(140deg,#302c3c,#625767)}.portrait-panel img{width:100%;height:100%;object-fit:cover}#actorFallback{display:grid;place-items:center;height:100%;font-size:18vh;color:#fff5}.photo-bars{position:absolute;top:1.4vh;left:1vw;right:1vw;display:flex;gap:5px}.photo-bars i{height:5px;background:#fff6;flex:1;border-radius:6px}.photo-bars i:first-child{background:#fff}.portrait-caption{position:absolute;bottom:0;left:0;right:0;padding:3vh 2vw;background:linear-gradient(transparent,#000b);color:#fff;font-size:3vh}.profile-copy{align-self:center;min-width:0}.profile-copy h1{font-size:clamp(50px,9.5vh,130px);overflow-wrap:anywhere}.verified{display:inline-grid;place-items:center;font-size:.32em;background:#258ff5;color:white;width:1.8em;height:1.8em;border-radius:50%;vertical-align:middle;margin-left:.4em}.profile-meta,.small-label{color:#767985;font-size:2.8vh}.divider{height:1px;background:#dddde4;margin:3vh 0}#tags{display:flex;flex-wrap:wrap;gap:1.3vh}#tags span{padding:1vh 1.3vw;border:2px solid #fd6780;border-radius:100px;color:#dd3358;font-size:calc(clamp(24px,4.9vh,64px) * var(--font-scale));font-weight:800;overflow-wrap:anywhere;max-width:100%}.swipe-actions{display:flex;align-items:center;justify-content:center;gap:2vw;margin-top:3vh}.swipe-actions span{display:grid;place-items:center;width:6vh;height:6vh;box-shadow:0 5px 16px #0001;border:1px solid #eee;border-radius:50%;color:#f7ae34;font-size:3.6vh;background:#fff}.swipe-actions span:nth-child(2){color:#ff426b;width:8vh;height:8vh;font-size:6vh}.swipe-actions span:nth-child(3){color:#20b7ef}.swipe-actions span:nth-child(4){color:#24cd9b;width:8vh;height:8vh}.swipe-actions span:nth-child(5){color:#9670ed}.prompt-card{position:relative;margin:4vh 6vw;padding:3vh 4vw;background:#fff;border:1px solid #e1e1e8;border-radius:22px;box-shadow:0 20px 50px #20203009;height:calc(100% - 16vh);overflow:auto}.prompt-card p{font-size:2.5vh;color:#868893}.prompt-card h2{font-size:4.5vh;font-weight:650;margin:2vh 0}.prompt-card .answer{color:#e2355e;padding-right:3vw}.prompt-heart{position:absolute;right:2vw;bottom:1vh;font-size:9vh;color:#fd426c33}.swipe-photo{height:55vh;max-width:78vw;margin:2vh auto 0;position:relative;background:#20222a;border-radius:20px;overflow:hidden}.swipe-photo img{width:100%;height:100%;object-fit:contain}.swipe-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,#000c);color:white;padding:4vh 2vw 1vh}.swipe-caption strong{font-size:5vh}.swipe-caption p{font-size:2vh;margin:1vh 0}.swipe-scene .swipe-actions{margin:1vh}
+.chat-scene{background:white;color:#262832}.chat-head{height:12vh;display:flex;align-items:center;gap:2vw;border-bottom:1px solid #e2e4e9;padding:0 4vw;font-size:4vh}.chat-head>span:first-child{font-size:7vh;color:#ff4268}.chat-head>span:last-child{margin-left:auto}.mini-avatar{width:7vh;height:7vh;display:grid;place-items:center;background:linear-gradient(140deg,#ff8a79,#fa5279);color:#fff;border-radius:50%;font-size:3vh;flex:none}.chat-date{text-align:center;color:#8f929a;font-size:2.2vh}.chat-bubble{margin:3vh 6vw;padding:3vh 3vw;border-radius:0 4vh 4vh;background:#eeeef2;width:fit-content;max-width:85%;color:#2d3039}.typing{background:linear-gradient(120deg,#ff725c,#ff367a);border-radius:4vh 0 4vh 4vh;padding:3vh;display:flex;gap:1.2vh;width:fit-content;margin:2vh 6vw 0 auto}.typing i{background:white;width:1.5vh;height:1.5vh;border-radius:50%;animation:dots 1.3s infinite}.typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}@keyframes dots{50%{opacity:.25;transform:translateY(-.5vh)}}.compose{position:absolute;bottom:3vh;left:6vw;right:6vw;border:1px solid #d9dbe2;border-radius:30px;color:#a1a4ad;font-size:2.5vh;padding:2vh 2vw;display:flex;justify-content:space-between}
+.lock-scene{background:radial-gradient(ellipse at 15% 80%,#c18bb8,transparent 60%),radial-gradient(ellipse at 85% 65%,#5753aa,transparent 70%),linear-gradient(170deg,#222747,#454974);color:#fff;text-align:center}.lock-symbol{font-size:3vh;margin:2vh 0 0}.lock-date{font-size:3.2vh;margin:1vh}.lock-time{font-size:16vh;line-height:1.1;font-weight:650;letter-spacing:-.06em}.notification{text-align:left;width:86%;margin:3vh auto;padding:2vh 2.5vw;background:#eeeff5de;color:#252735;border-radius:3vh;box-shadow:0 15px 60px #14173522}.notice-head{display:flex;align-items:center;gap:1vw;font-size:2vh;color:#6b6c78}.notice-head>span:last-child{margin-left:auto}.message-icon{display:grid;place-items:center;border-radius:8px;width:3vh;height:3vh;background:#39c85e;color:white}.notification>strong{display:block;font-size:3vh;margin:1.2vh 0}.notification .answer{font-size:calc(clamp(40px,7.5vh,100px) * var(--font-scale));font-weight:650}.lock-bottom{position:absolute;bottom:3vh;left:5vw;right:5vw;display:flex;justify-content:space-between;font-size:2vh;align-items:center}.lock-bottom>span:first-child,.lock-bottom>span:last-child{font-size:3vh;background:#ffffff20;padding:1.5vh;border-radius:50%}.home-indicator{position:absolute;bottom:1vh;left:43%;width:14%;height:5px;background:white;border-radius:5px}
+.story-scene{background:#030303;color:#fff;padding:1.5vh 3vw}.story-progress{display:flex;gap:5px}.story-progress i{height:4px;border-radius:4px;background:#555;flex:1}.story-progress i:first-child{background:white}.story-head{display:flex;align-items:center;gap:1.3vw;padding:2vh 0;font-size:2.5vh}.story-head>span{color:#aaa}.story-head .close-friends{margin-left:auto;background:#28a44b;color:white;padding:.7vh 1vw;border-radius:7px;font-size:2vh}.story-answer{position:absolute;top:50%;left:8%;width:84%;transform:translateY(-50%);text-align:center;font-weight:650;white-space:pre-wrap}.story-reply{position:absolute;bottom:3vh;left:4vw;right:4vw;border:1px solid #666;border-radius:99px;padding:2vh 2vw;color:#ccc;font-size:2.5vh}.story-reply span{float:right}.quote-inner{align-items:center;padding:5vh 7vw}.quote-answer{font-size:calc(clamp(56px,12vh,160px) * var(--font-scale))}.map-answer{font-size:calc(clamp(44px,9vh,120px) * var(--font-scale))}
+#cueBar{position:fixed;bottom:0;left:0;right:0;height:9vh;display:flex;padding:1vh 1vw;gap:.5vw;z-index:50}#cueButtons{display:flex;flex:1;gap:.5vw}#cueBar button{flex:1;font-size:clamp(12px,1.7vh,22px);padding:5px;white-space:nowrap;background:#191a20;color:#babcc6}#cueBar>button{flex:0 0 10%}#cueBar button.active{border-color:#ff5273;color:#ff8599;background:#34202c}#cueBar kbd{display:block;color:#626672;font-size:1.4vh}#controlPanel{position:fixed;top:8vh;right:1vw;bottom:10vh;width:min(520px,94vw);padding:24px;overflow:auto;z-index:70;border:1px solid #555;background:#191a21f5;box-shadow:0 20px 80px #0008;border-radius:16px;font-size:16px}#controlPanel:not(.open){display:none}.panel-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#controlPanel p{line-height:1.8;color:#aaa}#controlPanel label{display:block;margin-top:24px}#toast{position:fixed;bottom:11vh;left:50%;transform:translateX(-50%);padding:12px 22px;background:#252731;color:white;border:1px solid #676a7a;border-radius:99px;z-index:90;display:none;font-size:18px}#toast.visible{display:block}#qrScreen{inset:0;transform:none;background:#131419;padding:7vh;text-align:center}#qrScreen.show{display:flex;flex-direction:column;align-items:center;gap:2vh}#qrScreen img{height:38vh}#qrScreen p,#qrScreen a{font-size:3vh}dialog{max-height:85vh;width:min(760px,90vw);background:#202129;color:#fff;border:1px solid #555;border-radius:18px;padding:24px}dialog::backdrop{background:#000b}#castEditor>div{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}input{font:inherit;color:inherit;background:#30323e;border:1px solid #555;border-radius:7px;padding:9px;min-width:0}input[type=file]{font-size:14px}#castSaveStatus{color:#ffbdcd}
+@media(max-width:700px){#castGrid{grid-template-columns:repeat(3,1fr)}#selection{padding:2vh 4vw}.selection-heading h1{font-size:28px}.selection-heading h1 span{font-size:18px}.cast-card strong{font-size:15px}#credit{display:none}#cueBar{overflow-x:auto}#cueButtons{min-width:650px}#cueBar>button{min-width:100px}.profile-layout{grid-template-columns:35% 1fr;gap:3vw;padding:3vh 3vw}.profile-copy h1{font-size:7vw}#tags span{font-size:5vw}.profile-copy .eyebrow{font-size:14px}.profile-meta{font-size:16px}.answer{font-size:8vw}.story-answer{font-size:9vw}.notification .answer{font-size:8vw}.selection-actions button{font-size:14px}#selection footer>span{font-size:13px;max-width:40%}.primary{padding:12px;font-size:16px}.swipe-photo{max-width:94vw}.prompt-card .answer{font-size:9vw}.scene .map-answer{font-size:8vw}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+.ambient-notice{margin:1.4vh auto 0;background:rgba(237,240,250,.32);box-shadow:none;padding:1.3vh 2.5vw;color:#fff;max-height:15vh;overflow:hidden}.ambient-notice .notice-head{color:#fff9;font-size:1.8vh}.ambient-notice #ambientText{font-size:clamp(16px,2.8vh,36px);line-height:1.4;color:#fffd;margin-top:.5vh}#ambientIcon{width:3vh;height:3vh;display:grid;place-items:center;background:#ffffff25;border-radius:7px;font-weight:800}.lock-scene>.notification:not(.ambient-notice){margin-bottom:0}.notification .answer{margin-top:1vh;font-size:calc(clamp(36px,6.7vh,92px) * var(--font-scale))}.story-answer{left:12%;width:76%;transform:translateY(-50%) rotate(var(--story-angle,-4deg));transform-origin:center;line-height:1.35;font-weight:750}#memberTags{display:flex;gap:.5vw;flex:0 0 24%}#memberTags button{white-space:normal;min-width:0}#cueBar #cueButtons button[hidden]{display:none}#cueBar>button{flex-basis:8%}.cast-portrait img{object-position:center 25%}.portrait-panel img{object-position:center 25%}@media(max-width:700px){#memberTags{min-width:220px}.ambient-notice #ambientText{font-size:17px}.story-answer{font-size:8vw}}
+.tinder-logo{display:flex;align-items:center;gap:.6vw}.tinder-logo svg{height:4vh;width:4vh;color:#ff5469}.lock-symbol svg{width:3vh;height:3vh}.message-icon svg{width:2.2vh;height:2.2vh}.lock-bottom svg{width:3vh;height:3vh;display:block}
+.swipe-scene{background:#101114;padding:0 max(0px,calc((100% - 62vh)/2))}
+.swipe-scene .tinder-top{height:5vh;padding:.5vh 1.6vh;background:#fafafb;border:0}
+.swipe-scene .tinder-logo{font-size:3vh}
+.swipe-scene .tinder-logo svg{width:2.8vh;height:2.8vh}
+.swipe-scene .tinder-top>span:last-child{font-size:1.8vh}
+.swipe-scene .swipe-photo{height:69vh;max-width:100%;margin:0;border-radius:0;background:#20222a}
+.swipe-scene .swipe-actions{height:10vh;margin:0;gap:2.3vh;background:#fafafb}
+.swipe-scene .swipe-actions span{width:4.5vh;height:4.5vh;font-size:2.7vh}
+.swipe-scene .swipe-actions span:nth-child(2),.swipe-scene .swipe-actions span:nth-child(4){width:6vh;height:6vh;font-size:3.8vh}
+.anonymous-avatar svg{width:65%;height:65%;opacity:.85}
+.story-head .anonymous-avatar{background:#54565c;color:#aaa}
+.cast-portrait{height:19vh;background:#ede7e9}
+.cast-portrait img{object-fit:contain;object-position:center;display:block;min-height:0}
+.profile-scene,.prompt-scene{background:linear-gradient(125deg,#ff795c 0%,#ff3275 55%,#e90b60 100%)}
+.profile-scene .tinder-top,.prompt-scene .tinder-top{border:0;color:white}
+.profile-scene .tinder-logo,.prompt-scene .tinder-logo{background:none;color:white}
+.profile-scene .tinder-logo svg,.prompt-scene .tinder-logo svg{color:white}
+.profile-copy{background:#fffafa;border-radius:28px;padding:3vh 2.5vw;box-shadow:0 2vh 6vh #a4003730}
+.profile-layout{gap:3vw}
+.prompt-card{position:absolute;top:50%;left:5.5%;width:89%;height:auto;max-height:64vh;transform:translateY(-50%);margin:0;padding:5vh 5vw;border:0;border-radius:32px;box-shadow:0 3vh 6vh #9d003f44}
+.prompt-card h2{font-size:clamp(24px,4.3vh,56px);color:#ee1261;margin:0 0 3vh;font-weight:800}
+.prompt-card .answer{color:#141416;font-size:calc(clamp(48px,12vh,150px) * var(--font-scale));padding:0}
+.prompt-heart{display:none}
+.swipe-scene{padding:0;background:linear-gradient(130deg,#fff8fa,#ffe6ed)}
+.swipe-scene .tinder-top{padding-left:3vw;padding-right:3vw;background:transparent}
+.swipe-scene .swipe-photo{width:min(62vh,90vw);margin:0 auto;border-radius:18px}
+.swipe-scene .swipe-actions{background:transparent}
+.lock-time{font-size:11vh}
+.lock-scene .notification{width:72%;max-width:1200px}
+.lock-scene .notification .answer{font-size:calc(clamp(44px,8.5vh,112px) * var(--font-scale));max-height:35vh;overflow:auto}
+.story-head .story-avatar{width:8vh;height:8vh;object-fit:contain;flex:none}
+#titleScreen{position:absolute;inset:0;z-index:20;display:grid;place-items:center;background:linear-gradient(125deg,#ff795c,#ff3275 55%,#e90b60);color:white}
+#titleScreen h1{font-size:clamp(64px,17vw,260px);font-weight:900;letter-spacing:-.06em}
+#qrScreen{position:absolute;inset:0;z-index:21;height:100%;padding:4vh;background:linear-gradient(125deg,#ff795c,#ff3275 55%,#e90b60);color:white}
+#qrScreen.show{justify-content:center;gap:1.5vh}
+#qrScreen img{height:43vh;width:43vh;max-width:80vw;object-fit:contain;border-radius:16px;background:white}
+#qrScreen p,#qrScreen a{font-size:2.5vh;margin:0;color:white}
+#cueBar>button{flex:0 0 5%}
+#memberTags{flex-basis:19%}
+@media(max-width:700px){.cast-portrait{height:17vh}.lock-scene .notification{width:90%}.profile-copy{padding:2vh 2vw}.prompt-card{padding:4vh 4vw}.prompt-card .answer{font-size:9vw}}
+
+/* ── 2026-09-16 Claude 依柏文回饋調整（覆寫前面的規則，原規則保留未刪）── */
+
+/* 1. 投稿 QR 頁：開場時觀眾還不知道這是《看我戀愛》，畫面上不放劇名。
+      深色底＋左右兩張 QR，中間只留中性問句。 */
+#qrScreen{background:#050506;padding:0}
+#qrScreen.show{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh}
+#qrScreen .qr-row{display:flex;justify-content:center;align-items:center;gap:3vw}
+#qrScreen .qr-tile{flex:none;padding:1.6vh;border-radius:1.8vh;background:#fff;box-shadow:0 1.5vh 5vh rgba(0,0,0,.55)}
+#qrScreen .qr-tile img{display:block;width:min(30vh,20vw);height:auto;border-radius:0;background:#fff;image-rendering:pixelated}
+#qrHeading{color:#f4f1e9;font-size:clamp(26px,4.8vh,62px);font-weight:900;letter-spacing:.05em;line-height:1.6;text-align:center;white-space:nowrap}
+#qrScreen #qrStatus{color:#6a6c78;font-size:2vh}
+
+/* 2. 選角縮圖：原本 object-fit:contain 會把整張棚拍縮成一小條，人看不清楚。
+      改成正方形裁切、裁切重心偏上，讓臉留在框裡。 */
+.cast-portrait{height:auto;aspect-ratio:1;background:#16171c}
+.cast-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}
+
+/* 3. Cue 3 交友照片：底色改成 Tinder 粉紅漸層（原本是很淡的粉白）。
+      logo 原本是漸層文字，在粉紅底上看不見，改成純白。 */
+.swipe-scene{background:linear-gradient(165deg,#FF7854 0%,#FD267A 52%,#D9145C 100%)}
+.swipe-scene .tinder-top{color:#fff;border-bottom-color:rgba(255,255,255,.22)}
+.swipe-scene .tinder-logo{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:#fff;-webkit-text-fill-color:#fff}
+.swipe-scene .swipe-photo{box-shadow:0 3vh 8vh rgba(90,8,40,.45)}
+.swipe-scene .swipe-actions span{box-shadow:0 5px 16px rgba(90,8,40,.25)}
+
+/* 4. 掃碼頁播出時，頂端那條「看我戀愛」要收起來——開場的梗就是觀眾還不知道這是什麼節目。 */
+body.qr-open #top .brand,
+body.qr-open #credit{visibility:hidden}
+
+/* 5. 限動的「摯友」標籤放大，讓投影畫面更容易辨認。 */
+.story-head .close-friends{font-size:clamp(18px,3.2vh,38px);padding:1vh 1.3vw}
+
+/* 2026-09-16：選角頁初版；最新角色選擇版面在檔尾。 */
+#selection{padding:2.2vh 4vw 1vh;overflow:hidden;display:flex;flex-direction:column}
+.selection-heading{flex:none;min-height:7vh}
+.selection-heading h1{font-size:clamp(30px,4.5vh,58px)}
+.selection-actions{display:flex;align-items:center;justify-content:flex-end;gap:1vw}
+.selection-actions p{margin:0;white-space:nowrap}
+#selection #start{margin:0;padding:1.2vh 2vw}
+#castGrid{flex:0 0 auto;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(2,auto);gap:1vh 1vw;margin:1.4vh 0 1vh;align-content:start}
+.cast-card{min-height:0;height:14vh}
+.cast-portrait{height:9vh;aspect-ratio:auto}
+.cast-card strong{padding:.6vh .8vw;font-size:clamp(14px,1.8vh,24px)}
+#selection footer{flex:none;justify-content:flex-start;font-size:clamp(12px,1.5vh,18px)}
+
+/* 操作面板：狀態、工作流程與進階操作分層；不影響舞台字級。 */
+#controlPanel{width:min(610px,96vw);padding:24px;top:8vh;right:1vw;bottom:10vh;background:#181a22;border:1px solid #414452;border-radius:20px;box-shadow:0 18px 70px #0009;font-size:15px;scrollbar-gutter:stable;color:#f3f3f7}
+#controlPanel .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:16px}
+#controlPanel h2{margin:4px 0 0;font-size:27px;letter-spacing:.02em}
+#controlPanel .panel-kicker{color:#ff9bb4;font-size:12px;letter-spacing:.12em}
+#controlPanel p{line-height:1.65;margin:10px 0;color:#bec1d0}
+#controlPanel .panel-lead{font-size:14px;margin:14px 0 18px}
+#controlPanel kbd{display:inline-block;font:12px ui-monospace,monospace;color:#d0d2de;border:1px solid #555969;border-radius:5px;padding:2px 5px;margin-left:3px;white-space:nowrap;background:#ffffff08}
+#controlPanel button{font-size:14px;line-height:1.45;padding:11px 12px;border-color:#444858;border-radius:10px;background:#292d3a;font-weight:600}
+#controlPanel button:hover{background:#343a4a}
+#controlPanel .panel-status{margin-top:18px;padding:12px 15px;background:#202d2b;border:1px solid #3b655b;border-radius:12px}
+#controlPanel .panel-status strong{font-size:17px;color:#acedd7}
+#controlPanel .panel-status p{font-size:13px;margin:5px 0}
+#controlPanel .panel-status>span{font-size:13px;color:#dde8e3}
+#controlPanel.trial-mode .panel-status{background:#302737;border-color:#704663}
+#controlPanel.trial-mode .panel-status strong{color:#ffb6d0}
+#controlPanel .panel-section{padding:14px 0;border-bottom:1px solid #343746}
+#controlPanel h3{display:flex;align-items:center;gap:10px;font-size:18px;margin:0 0 10px}
+#controlPanel h3>span{font:12px ui-monospace,monospace;color:#ff9bb4;background:#ff709019;padding:5px 7px;border-radius:6px}
+#controlPanel .panel-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#controlPanel .panel-note{font-size:12px;color:#aeb3c3;margin:10px 0 0}
+#controlPanel #trialBtn{background:#473043;border-color:#8c506e;color:#ffd9e6}
+#controlPanel .panel-links{display:flex;flex-wrap:wrap;gap:10px 20px;margin:10px 0;font-size:13px}
+#controlPanel .panel-links a{text-underline-offset:4px;color:#e9b5c8}
+#controlPanel .panel-setting{display:flex;align-items:center;gap:18px;padding:14px;background:#11141c;border-radius:10px}
+#controlPanel .panel-setting>div{flex:1}
+#controlPanel .panel-setting strong{font-size:14px}
+#controlPanel .panel-setting small{display:block;color:#aeb3c3;font-size:12px;line-height:1.6;margin-top:4px}
+#controlPanel .panel-setting button{flex-shrink:0}
+#controlPanel .panel-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:12px 8px;padding:16px;margin-top:14px;background:#11141c;border-radius:10px;font-size:13px}
+#controlPanel .panel-range{display:grid;grid-template-columns:1fr auto;gap:12px;margin-top:18px;font-size:14px}
+#controlPanel .panel-range output{font-variant-numeric:tabular-nums;color:#ffabc3}
+#controlPanel .panel-range input{grid-column:1 / -1;width:100%;padding:0;accent-color:#ff729c;cursor:pointer}
+#controlPanel .panel-advanced summary{cursor:pointer;color:#c9cddd;font-size:14px;padding:4px 0}
+#controlPanel .panel-advanced p{font-size:13px}
+#controlPanel .panel-advanced button{color:#ffceaf;border-color:#745343}
+#controlPanel .panel-footer{font-size:12px;color:#9ca3b7;padding-top:16px;line-height:1.6}
+@media(max-width:480px){#controlPanel{padding:18px}#controlPanel .panel-actions,#controlPanel .panel-shortcuts{grid-template-columns:1fr}#controlPanel .panel-setting{flex-wrap:wrap}}
+
+/* 浪漫卡片稍微往上，限動頭像放大，手機相簿維持比例放大約 30%。 */
+.prompt-card{margin-top:2.2vh}
+.story-head .story-avatar{width:10vh;height:10vh}
+.album-scene .phone{transform:translateX(-50%) scale(1.3);transform-origin:top center}
+/* 扣除上下操作列、手機頂部與工具列，再換算回放大前的可見高度。 */
+.album-scene .photo-wrap{height:calc((100vh - var(--credit-h) - var(--bar-h) - 4vh) / 1.3 - 12.3vh);min-height:0;align-items:flex-start}
+.album-scene #albumImage{width:100%;height:100%;object-fit:contain;object-position:center top}
+.story-head .story-avatar{display:grid;place-items:center;padding:.45vh;border-radius:50%;background:conic-gradient(from 210deg,#ffbf65,#ff496f,#c628a1,#772ab8,#ffbf65);aspect-ratio:1}
+.story-avatar-inner{position:relative;display:block;width:100%;height:100%;border:.4vh solid #030303;border-radius:50%;background:#292a2f;overflow:hidden}
+.story-avatar-inner::before{content:'';position:absolute;width:29%;height:29%;left:35.5%;top:20%;border-radius:50%;background:#666770}
+.story-avatar-inner::after{content:'';position:absolute;width:58%;height:40%;left:21%;top:55%;border-radius:50% 50% 15% 15%;background:#666770}
+
+@media(max-width:700px){
+  #selection{padding:1.5vh 4vw .8vh;overflow:hidden}
+  .selection-heading{min-height:8vh}
+  .selection-heading h1{font-size:28px}
+  .selection-actions{gap:1.5vw}
+  .selection-actions button{font-size:14px}
+  #selection #start{padding:1vh 2.5vw}
+  #castGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:.8vh 1.5vw;margin:1vh 0}
+  .cast-card{height:14vh}
+  .cast-portrait{height:9vh}
+  .cast-card strong{font-size:15px}
+  #selection footer>span{font-size:12px;max-width:none}
+  .story-head .story-avatar{width:10vh;height:10vh}
+}
+
+/* 開場主視覺：保留四字標題，以光暈、軌道與小星芒營造戀愛感。 */
+#titleScreen{isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#ff91b1 0%,#f74081 42%,#b91962 78%,#7c174d 100%)}
+#titleScreen::before{content:'';position:absolute;inset:3vh 2vw;border:1px solid #ffe8d966;border-radius:3vh;pointer-events:none}
+#titleScreen::after{content:'';position:absolute;width:65vw;height:26vh;border-radius:50%;background:#ffd9c8;filter:blur(7vh);opacity:.22;transform:rotate(-12deg);z-index:-1}
+#titleScreen h1{position:relative;z-index:2;font-size:clamp(64px,16vw,280px);font-family:'Songti TC','Noto Serif TC','PMingLiU',serif;font-weight:900;letter-spacing:.055em;line-height:1.25;color:#fff3df;transform:rotate(-5deg);text-shadow:0 2px 0 #ffe2c7,0 .7vh 0 #b52360,0 1.6vh 2.5vh #74124266;margin:0;padding:.1em .15em}
+.title-orbit{position:absolute;width:78vw;height:43vh;border:1px solid #ffe8c988;border-radius:50%;transform:rotate(-15deg);pointer-events:none}
+.orbit-two{width:83vw;height:48vh;transform:rotate(-15deg);opacity:.35}
+.title-spark{position:absolute;color:#fff2d4;text-shadow:0 0 3vh #ffecbb;font-size:7vh;line-height:1}
+.spark-one{left:13%;top:22%}.spark-two{right:12%;bottom:19%;font-size:10vh}
+.title-heart{position:absolute;right:20%;top:12%;font-size:11vh;line-height:1;color:#ffd3df;transform:rotate(17deg);text-shadow:0 1vh 2vh #8e1e5233}
+/* 配對開場：一段式進場，結束後靜止；任何時候都能切 Cue。 */
+#titleScreen.has-pair{display:flex;flex-direction:column;justify-content:center;gap:4vh}
+#titleScreen.has-pair h1{font-size:clamp(48px,10vw,18vh);flex:none}
+#titlePair{display:flex;justify-content:center;gap:3vw;position:relative;z-index:2}
+#titlePair:empty{display:none}
+.title-pair-card{--entry-x:-18vw;--tilt:-8deg;--entry-tilt:-20deg;width:min(32vh,31vw);aspect-ratio:1;padding:1vh;background:#fff3e8;border-radius:2vh;box-shadow:0 2vh 4vh #71103e55;transform:rotate(var(--tilt));animation:pair-arrive 1.2s cubic-bezier(.16,1,.3,1) both}
+.title-pair-card:nth-child(2){--entry-x:18vw;--tilt:8deg;--entry-tilt:20deg;animation-delay:.12s}
+#titlePair .cast-portrait{height:100%;width:100%;border-radius:1.2vh;aspect-ratio:1;overflow:hidden;background:#d39cae}
+#titlePair .cast-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 35%}
+#titlePair [data-actor="rabbit"] img{transform:scale(1.95);transform-origin:50% 42%}
+#titlePair [data-actor="lin-jing"] img{transform:scale(1.12);transform-origin:50% 45%}
+#titlePair .photo-unavailable::after{content:'';width:45%;height:45%;border-radius:50%;background:#fff5;box-shadow:0 11vh 0 4vh #fff5}
+@keyframes pair-arrive{from{opacity:0;transform:translateX(var(--entry-x)) translateY(3vh) rotate(var(--entry-tilt)) scale(.85)}to{opacity:1;transform:translateX(0) translateY(0) rotate(var(--tilt)) scale(1)}}
+
+/* 2026-09-17：觀眾選角，正方形清晰人像與雙人配對預覽。 */
+#selection{padding:3vh 3vw 2vh;background:radial-gradient(ellipse at 90% 45%,#74224055,transparent 60%),linear-gradient(125deg,#21131f,#17121c 60%,#2b1424);gap:2vh}
+#selection .selection-heading{min-height:6vh}
+#selection h1{color:#fff3f7;font-size:4.8vh;letter-spacing:.04em}
+#selection #editCast{font-size:1.8vh;border-color:#895068;background:#ffffff0a}
+.selection-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(210px,24%);gap:3vw;flex:1;min-height:0;align-items:center}
+#selection #castGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:auto auto;gap:2.2vh 1.2vw;width:100%;max-width:142vh;margin:0;align-content:center}
+#selection .cast-card{height:auto;min-height:0;border:2px solid #795065;border-radius:16px;background:#392331;overflow:visible;box-shadow:0 1vh 2vh #0003;transition:transform .15s,border-color .15s}
+#selection .cast-portrait{width:100%;height:auto;aspect-ratio:1;overflow:hidden;border-radius:13px 13px 0 0;background:#b6afbd}
+#selection .cast-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 22%;display:block}
+#selection .cast-card strong{display:block;padding:.8vh .2vw;font-size:clamp(18px,2.7vh,36px);line-height:1.25;text-align:center;color:#fff5f8}
+#selection .cast-card:hover{transform:translateY(-3px);border-color:#ffbed2}
+#selection .cast-card.selected{border-color:#ff6094;background:#ad2856;box-shadow:0 0 0 3px #ff87ad,0 0 3vh #ff428e66}
+#selection .order{top:.8vh;right:.6vw;width:3.8vh;height:3.8vh;font-size:2.4vh;background:#ff387c;border:2px solid #fff;color:white}
+.pair-panel{border:1px solid #da77904d;background:linear-gradient(150deg,#ffffff0d,#fc50800b);border-radius:24px;padding:3vh 1.4vw;text-align:center;box-shadow:0 2vh 5vh #0002}
+.pair-heart{font-size:7vh;color:#ff82ae;line-height:1;margin-bottom:3vh}
+#pairPreview{display:grid;grid-template-columns:1fr 1fr;gap:1vw}
+.pair-portrait{aspect-ratio:1;overflow:hidden;border:2px dashed #ae6c87;border-radius:16px;display:grid;place-items:center;color:#e19db7;font-size:5vh;background:#ffffff05}
+.pair-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
+.filled .pair-portrait{border-style:solid;border-color:#ff8ab0}
+#selection .cast-portrait img,.pair-portrait img{transform:scale(1.65);transform-origin:50% 32%}
+#selection [data-actor="rabbit"] img{transform:scale(1.95);transform-origin:50% 42%}
+#selection [data-actor="lin-jing"] img{transform:scale(1.12);transform-origin:50% 45%}
+.pair-slot strong{display:block;font-size:2.6vh;margin-top:1vh;color:#ffe5ee}
+#selectionCount{font-size:2.3vh;color:#f4b4cc;margin:3vh 0 2vh}
+#selection #start{width:100%;font-size:3vh;padding:1.8vh 1vw;border-radius:14px;box-shadow:0 1vh 3vh #fc286333}
+.pair-panel small{display:block;color:#d6a3b5;margin-top:1.5vh;font-size:1.7vh}
+#selection footer{color:#d4a6b9;font-size:1.8vh}
+@media(max-width:700px){
+ #selection{padding:2vh 3vw;gap:1vh}
+ #selection h1{font-size:3.2vh}
+ .selection-layout{grid-template-columns:1fr;grid-template-rows:1fr auto;gap:1vh}
+ #selection #castGrid{grid-template-columns:repeat(3,minmax(0,1fr));max-width:55vh;justify-self:center;gap:1vh 2vw}
+ #selection .cast-card strong{font-size:2vh;padding:.3vh}
+ .pair-panel{display:flex;align-items:center;gap:2vw;padding:1vh 2vw;border-radius:14px}
+ .pair-heart,.pair-panel small,#pairPreview{display:none}
+ #selectionCount{margin:0;font-size:2vh;white-space:nowrap}
+ #selection #start{font-size:2.5vh;padding:1vh}
+}

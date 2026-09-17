@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {valid,createDeck,fields}=require('../core.js');
+assert.equal(valid('tags',['a','b','c']),true);
+assert.equal(valid('tags',['a','','c']),false);
+assert.equal(valid('awkwardLine','哈'.repeat(25)),false);
+assert.equal(valid('photo','javascript:alert(1)'),false);
+assert.equal(fields[3],fields[7]);
+const deck=createDeck(()=>0),rows=[{id:'a'},{id:'b'},{id:'c'}];
+assert.deepEqual([deck.draw('x',rows).id,deck.draw('x',rows).id,deck.draw('x',rows).id],['a','b','c']);
+assert.equal(deck.draw('x',rows).id,'a');
+assert.equal(deck.draw('x',[{id:'d'}]).id,'d');
+assert.equal(deck.draw('empty',[]),null);
+console.log('PASS：欄位驗證、共用欄位、抽選不重複、動態答案池');

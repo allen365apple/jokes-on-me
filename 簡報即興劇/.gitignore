@@ -1,0 +1,5 @@
+.DS_Store
+_archive/
+.env*
+*.local.js
+profiles/*新圖*

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看我戀愛 · Astra</title><link rel="stylesheet" href="original-scenes.css"><link rel="stylesheet" href="stage.css"></head>
+<body>
+<header id="top"><span class="brand">看我戀愛<span class="edition">ASTRA</span></span><span id="credit">選擇今天的兩位主角</span><button id="consoleBtn">控制台 C</button></header>
+<main id="viewport">
+<section id="selection"><div class="selection-heading"><h1>選擇兩位主角</h1><button id="editCast">設定演員</button></div><div class="selection-layout"><div id="castGrid"></div><aside class="pair-panel"><div id="pairPreview" aria-live="polite"></div><p id="selectionCount">已選 0 / 2</p><button id="start" class="primary" disabled>開始 →</button><small>Enter 開始</small></aside></div><footer><span>點選兩位角色 · 再次點選取消</span></footer></section>
+<section id="standby" hidden><p class="eyebrow">看我戀愛</p><h1>準備登場</h1><p id="standbyNames"></p><button id="nextIntro" class="primary">登場 → <small>Space / Enter</small></button></section>
+<section id="stage" hidden>
+<article class="scene profile-scene" data-scene="1"><div class="tinder-top"><span class="tinder-logo">♥ jinder</span><span class="top-icon">✦</span></div><div class="profile-layout"><div class="portrait-panel"><img id="actorPhoto" hidden alt="主角照片"><div id="actorFallback"></div><div class="photo-bars"><i></i><i></i><i></i></div><div class="portrait-caption">我的個人檔案</div></div><div class="profile-copy"><h1><span id="actorName"></span><span class="verified">✓</span></h1><div class="divider"></div><p class="small-label">關於我</p><div id="tags"></div><div class="swipe-actions"><span>↶</span><span>×</span><span>★</span><span>♥</span><span>ϟ</span></div></div></div></article>
+<article class="scene prompt-scene" data-scene="2"><div class="tinder-top"><span class="tinder-logo">♥ jinder</span></div><div class="prompt-card"><h2>♥ 最能打動我的浪漫舉動是⋯</h2><div class="answer" data-answer="2"></div><span class="prompt-heart">♡</span></div></article>
+<article class="scene chat-scene" data-scene="3"><div class="chat-head"><span>‹</span><div class="mini-avatar anonymous-avatar"></div><span>⋯</span></div><div class="chat-bubble answer" data-answer="3"></div><div class="typing"><i></i><i></i><i></i></div><div class="compose"><span>輸入訊息⋯</span><span>GIF　☺　➤</span></div></article>
+<article class="scene map-scene" data-scene="4" aria-label="地圖畫面">
+        <svg class="map-bg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect x="-600" y="-600" width="2800" height="2100" fill="#eae8df"/>
+          <g transform="rotate(-7 800 450)">
+            <rect x="140" y="80" width="310" height="220" rx="70" fill="#c7e6b4"/>
+            <rect x="1120" y="540" width="340" height="250" rx="80" fill="#c7e6b4"/>
+            <rect x="590" y="680" width="190" height="140" rx="50" fill="#d4ecc4"/>
+            <g fill="#e0ddd2" stroke="#d5d1c6" stroke-width="2">
+              <rect x="500" y="205" width="88" height="58"/><rect x="620" y="195" width="66" height="70"/><rect x="708" y="212" width="80" height="52"/>
+              <rect x="486" y="330" width="70" height="64"/><rect x="590" y="325" width="96" height="56"/><rect x="1010" y="200" width="82" height="62"/>
+              <rect x="1100" y="330" width="66" height="60"/><rect x="1190" y="196" width="92" height="58"/><rect x="300" y="470" width="84" height="60"/>
+              <rect x="420" y="600" width="72" height="64"/><rect x="950" y="480" width="90" height="58"/><rect x="820" y="600" width="78" height="62"/>
+            </g>
+            <path d="M-600 40H2200M-600 170H2200M-600 300H2200M-600 560H2200M-600 700H2200M-600 830H2200M60 -600V1500M240 -600V1500M440 -600V1500M620 -600V1500M800 -600V1500M1080 -600V1500M1260 -600V1500M1450 -600V1500" fill="none" stroke="#d8d5ca" stroke-width="18"/>
+            <path d="M-600 40H2200M-600 170H2200M-600 300H2200M-600 560H2200M-600 700H2200M-600 830H2200M60 -600V1500M240 -600V1500M440 -600V1500M620 -600V1500M800 -600V1500M1080 -600V1500M1260 -600V1500M1450 -600V1500" fill="none" stroke="#ffffff" stroke-width="12"/>
+            <path d="M-300 980L2000 90" fill="none" stroke="#d8d5ca" stroke-width="24"/>
+            <path d="M-300 980L2000 90" fill="none" stroke="#ffffff" stroke-width="17"/>
+            <path d="M-600 430H2200M940 -600V1500" fill="none" stroke="#eec45f" stroke-width="30"/>
+            <path d="M-600 430H2200M940 -600V1500" fill="none" stroke="#fbdc84" stroke-width="21"/>
+            <path d="M-600 1080 C 100 980 420 1090 780 1010 C 1120 930 1350 950 2200 830 L2200 1500 L-600 1500 Z" fill="#a9d3f0"/>
+            <text x="300" y="415" fill="#9aa0a6" font-size="26" font-weight="600">民生東路</text>
+            <text x="1150" y="545" fill="#9aa0a6" font-size="24" font-weight="600">和平街</text>
+            <text x="990" y="120" fill="#9aa0a6" font-size="24" font-weight="600">中華路一段</text>
+            <text x="205" y="200" fill="#5f8f57" font-size="26" font-weight="700">中央公園</text>
+            <text x="1200" y="670" fill="#5f8f57" font-size="24" font-weight="700">河濱公園</text>
+            <text x="1400" y="905" fill="#5a92c2" font-size="26" font-weight="700" font-style="italic">淡水河</text>
+          </g>
+        </svg>
+        <svg class="map-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+        <div class="map-search"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><div class="answer map-answer" data-answer="4"></div></div>
+      </article>
+<article class="scene story-scene" data-scene="5"><div class="story-progress"><i></i><i></i><i></i></div><div class="story-head"><div class="story-avatar" role="img" aria-label="匿名限動頭像"><span class="story-avatar-inner"></span></div><span>1 分鐘</span><span class="close-friends">★ 摯友</span><span>⋯　×</span></div><div class="story-answer answer" data-answer="5"></div><div class="story-reply">傳送訊息⋯<span>♡　➤</span></div></article>
+<article class="scene album-scene" data-scene="6" aria-label="手機相簿畫面">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-island"></div>
+            <div class="phone-status"><span>9:41</span><span>●●●　▰</span></div>
+            <div class="album-head"><span>‹ 相簿</span><strong>最近項目</strong><span>選取</span></div>
+            <div class="photo-wrap"><img id="albumImage" alt="觀眾提供的最新照片"></div>
+          </div>
+        </div>
+      </article>
+<article class="scene quote-scene" data-scene="7"><div class="quote-inner"><div class="answer quote-answer" data-answer="7"></div></div></article>
+</section>
+<section id="titleScreen" hidden><div class="title-orbit orbit-one" aria-hidden="true"></div><div class="title-orbit orbit-two" aria-hidden="true"></div><span class="title-spark spark-one" aria-hidden="true">✦</span><span class="title-spark spark-two" aria-hidden="true">✧</span><span class="title-heart" aria-hidden="true">♡</span><h1>看我戀愛</h1></section>
+<section id="qrScreen"><div class="qr-row"><div class="qr-tile"><img class="qr-code" alt="投稿入口 QR Code" hidden></div><div id="qrHeading">回答這些問題，讓我們更了解你吧！<br>請掃 QR Code</div><div class="qr-tile"><img class="qr-code" alt="投稿入口 QR Code" hidden></div></div><p id="qrStatus"></p><a id="submitLink" href="submit.html" target="_blank" hidden>開啟觀眾投稿頁 ↗</a></section>
+</main>
+<nav id="cueBar" aria-label="演出控制"><button id="qrNavBtn"><kbd>Q</kbd>投稿</button><button id="homeBtn"><kbd>H</kbd>首頁</button><button id="profileBtn"><kbd>S</kbd>選角</button><div id="memberTags" hidden><button data-member="0">成員一標籤</button><button data-member="1">成員二標籤</button></div><div id="cueButtons"></div></nav>
+<div id="toast" role="status"></div>
+<aside id="controlPanel" aria-labelledby="panelTitle">
+  <header class="panel-heading"><h2 id="panelTitle">控制台</h2><button id="closePanel" aria-label="關閉控制台">收起 <kbd>C</kbd></button></header>
+  <div class="panel-status" aria-live="polite"><strong id="poolStatus">目前：現場題庫</strong><p id="status"></p><span id="submissionStatus">正在確認投稿狀態…</span></div>
+  <section class="panel-section"><h3>題庫與投稿</h3>
+    <button id="trialBtn">切換至試玩題庫</button>
+    <p class="panel-note">切換會重設抽題進度，投稿保留。</p>
+    <div class="panel-links"><a href="submit.html?edit=1" target="_blank" rel="noopener">編輯題目 ↗</a><a href="peek-k7x2.html" target="_blank" rel="noopener">查看答案 ↗</a></div>
+    <div class="panel-setting"><div><strong>現場投稿</strong><small>試玩時也會影響現場。</small></div><button id="toggleOpen" disabled>讀取中…</button></div>
+  </section>
+  <section class="panel-section"><h3>聲音與字級</h3><div class="panel-actions"><button id="soundBtn">抽題音效：開</button><button id="bgmBtn">播放懸疑音樂 · B</button><button id="endingBtn">播放結尾音樂 · E</button></div>
+    <label class="panel-range" for="fontScale">答案字級 <output id="fontScaleValue" for="fontScale">100%</output><input id="fontScale" type="range" min="85" max="130" value="100"></label>
+  </section>
+  <details class="panel-section panel-advanced"><summary>重設抽題</summary><p>已抽答案可再出現，投稿保留。</p><button id="resetDeck">重設抽題進度</button></details>
+</aside>
+<dialog id="castDialog"><form method="dialog"><h2>設定演員</h2><p>姓名與照片儲存在這台瀏覽器。正式固定素材可編輯 cast-config.js。</p><div id="castEditor"></div><p id="castSaveStatus"></p><button value="cancel">取消</button><button type="button" id="saveCast" class="primary">儲存設定</button></form></dialog>
+<script src="firebase-config.js"></script><script src="cast-config.js"></script><script src="core.js"></script><script src="store.js"></script><script src="trial-data.js"></script><script src="vendor/qrcode.js"></script><script src="stage.js"></script>
+</body></html>
