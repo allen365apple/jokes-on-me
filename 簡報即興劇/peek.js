@@ -3,7 +3,7 @@ const managementStyle=document.createElement('link');
 managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260917-backoffice2';document.head.append(managementStyle);
 const $=s=>document.querySelector(s);
 const sections=[['tags','標籤'],['romanticGesture','浪漫舉動'],['photo','照片'],['awkwardLine','聊天／金句'],['location','地點'],['igStory','限時動態']];
-let records=[],field='tags',revealed=false,sample=[],filter='active',canManage=false,busy=false;
+let records=[],field='tags',sample=[],filter='active',canManage=false,busy=false;
 const filters=['active','ignored','archived'];
 function text(selector,value){const element=$(selector);if(element)element.textContent=String(value);}
 function updateCounts(){
@@ -22,7 +22,6 @@ function showEmpty(title,detail=''){
 const deck=ShowCore.createDeck();
 function render(reset=false){
   text('#answerPanelTitle',(sections.find(([key])=>key===field)||[])[1]||'答案');
-  $('#photos').hidden=field!=='photo';
   updateCounts();
   if(SHOW_CONFIG.mode==='firebase'&&!canManage){showEmpty('登入後查看');return;}
   const pool=records.filter(r=>r.moderation===filter&&ShowCore.valid(field,r[field]));
@@ -30,7 +29,6 @@ function render(reset=false){
   sample=sample.filter(id=>pool.some(r=>r.id===id));
   const available=pool.filter(r=>!sample.includes(r.id));
   while(sample.length<Math.min(30,pool.length)&&available.length)sample.push(available.splice(Math.floor(Math.random()*available.length),1)[0].id);
-  if(field==='photo'&&!revealed){showEmpty('照片已隱藏','按「照片」顯示');return;}
   $('#answers').replaceChildren();
   sample.forEach((id,index)=>{
     const r=pool.find(item=>item.id===id),row=document.createElement('article');row.className='answer-row'+(field==='photo'?' photo-row':'');
@@ -50,7 +48,7 @@ function render(reset=false){
 sections.forEach(([key,label])=>{const b=document.createElement('button');b.textContent=label;b.dataset.field=key;b.setAttribute('role','tab');b.setAttribute('aria-selected','false');b.onclick=()=>{field=key;document.querySelectorAll('#tabs button').forEach(x=>{const active=x===b;x.classList.toggle('active',active);x.setAttribute('aria-selected',String(active));});render(true);};$('#tabs').append(b);});
 $('#tabs button').classList.add('active');$('#tabs button').setAttribute('aria-selected','true');
 document.querySelectorAll('.status-filter').forEach(button=>button.onclick=()=>{filter=button.dataset.filter;document.querySelectorAll('.status-filter').forEach(item=>{const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));});render(true);});
-$('#refresh').onclick=()=>render(true);$('#photos').onclick=()=>{revealed=!revealed;$('#photos').textContent=revealed?'隱藏照片':'顯示照片';render();};
+$('#refresh').onclick=()=>render(true);
 /** 管理操作保留原始 responses，只更新 moderation 標記。 */
 async function manage(action){
   busy=true;render();
