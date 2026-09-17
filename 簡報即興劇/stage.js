@@ -25,7 +25,9 @@ const storyStyles = [
 const sting = new Audio('音效/換頁閃亮音效.mp3');
 const bgm = new Audio('音效/開頭戀愛音樂.mp3');
 const ending = new Audio('音效/結尾戀愛音樂.mp3');
-bgm.loop = true; bgm.volume = .3; ending.volume = .5;
+const OPENING_VOLUME = .3, OPENING_FADE_DELAY = 5000, OPENING_FADE_DURATION = 2000;
+let openingMusicMode = 'idle', openingFadeTimer = 0, openingFadeFrame = 0;
+bgm.loop = true; bgm.volume = OPENING_VOLUME; ending.volume = .5;
 [sting,bgm,ending].forEach(a => a.preload = 'none');
 /** 將使用者提供的文字安全放入 DOM。 */
 function text(selector, value) { const el = $(selector); if (el) el.textContent = value; }
@@ -103,6 +105,7 @@ function hideQR() {
   document.body.classList.remove('qr-open');
 }
 function switchScene(cue) {
+  const leavingTitle = !$('#titleScreen').hidden;
   $('#selection').hidden = true; $('#standby').hidden = true; $('#stage').hidden = false;
   hideQR();$('#titleScreen').hidden=true;
   $$('.scene').forEach(el => el.classList.toggle('active', Number(el.dataset.scene) === cue));
@@ -111,6 +114,7 @@ function switchScene(cue) {
     const active = cue === 1 && Number(b.dataset.member) === focus;
     b.classList.toggle('active', active); b.setAttribute('aria-pressed', String(active));
   });
+  if (leavingTitle) scheduleOpeningFade();
 }
 
 function credit(r) { text('#credit', r ? '感謝 ' + (r.table || '') + ' ' + r.nick + ' 提供答案' : '今晚的主角 · ' + person().name); }
@@ -144,6 +148,7 @@ function begin() {
   $('#selection').hidden=true; $('#standby').hidden=false; $('#stage').hidden=true;
   text('#standbyNames',selected.map(id=>cast.find(p=>p.id===id).name).join(' × '));
   showTitle();
+  startOpeningMusic();
   text('#credit','按 1／2 選擇主角，或 Space 依序登場');
 }
 function advance() {
@@ -181,6 +186,33 @@ function memberTag(index) {
 }
 function playSting() {
   if(sound){sting.currentTime=0;sting.play().catch(()=>notice('音效無法播放'));}
+}
+function clearOpeningFade() {
+  clearTimeout(openingFadeTimer); openingFadeTimer = 0;
+  cancelAnimationFrame(openingFadeFrame); openingFadeFrame = 0;
+}
+function startOpeningMusic() {
+  clearOpeningFade(); openingMusicMode = 'auto';
+  bgm.currentTime = 0; bgm.volume = OPENING_VOLUME;
+  bgm.play().catch(()=>notice('開頭音樂無法自動播放，請按 O 播放'));
+}
+function scheduleOpeningFade() {
+  if (openingMusicMode !== 'auto' || openingFadeTimer || openingFadeFrame) return;
+  openingFadeTimer = setTimeout(() => {
+    openingFadeTimer = 0;
+    const startedAt = performance.now(), startVolume = bgm.volume;
+    if (bgm.paused) { openingMusicMode = 'idle'; return; }
+    const fade = now => {
+      const progress = Math.min(1, (now - startedAt) / OPENING_FADE_DURATION);
+      bgm.volume = Math.max(0, startVolume * (1 - progress));
+      if (progress < 1) openingFadeFrame = requestAnimationFrame(fade);
+      else { openingFadeFrame = 0; bgm.pause(); bgm.currentTime = 0; bgm.volume = OPENING_VOLUME; openingMusicMode = 'idle'; }
+    };
+    openingFadeFrame = requestAnimationFrame(fade);
+  }, OPENING_FADE_DELAY);
+}
+function stopOpeningMusic() {
+  clearOpeningFade(); openingMusicMode = 'idle'; bgm.pause(); bgm.currentTime = 0; bgm.volume = OPENING_VOLUME;
 }
 function styleStory() {
   const choices=storyStyles.map((s,i)=>i).filter(i=>i!==lastStoryStyle);
@@ -221,6 +253,8 @@ function fit() {
   });
 }
 function playback(audio, otherAudio) {
+  if (audio === bgm) { clearOpeningFade(); openingMusicMode = 'manual'; bgm.volume = OPENING_VOLUME; }
+  if (otherAudio === bgm) { clearOpeningFade(); openingMusicMode = 'idle'; }
   otherAudio.pause();
   if(!audio.paused) { audio.pause(); notice('音樂已暫停'); }
   else audio.play().then(()=>notice(audio===bgm?'開頭音樂播放中':'結尾音樂播放中')).catch(()=>notice('音樂載入失敗'));
@@ -283,7 +317,7 @@ function goHome() {
   $('#memberTags').hidden=true;hideQR();
   $('#controlPanel').classList.remove('open');$('#toast').classList.remove('visible');
   $$('.scene.active, #cueBar button.active').forEach(el=>el.classList.remove('active'));
-  [sting,bgm,ending].forEach(audio=>audio.pause());
+  sting.pause(); stopOpeningMusic(); ending.pause();
   text('#credit','選擇今天的兩位主角');renderSelection();
 }
 $('#profileBtn').onclick=goHome;
