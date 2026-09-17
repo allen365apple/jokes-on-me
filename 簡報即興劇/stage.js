@@ -21,9 +21,9 @@ const storyStyles = [
   {color:'#aee9ff', angle:-3}, {color:'#c6ffce', angle:4},
   {color:'#dec5ff', angle:-5}, {color:'#ffffff', angle:2}
 ];
-const sting = new Audio('音效/威嚇音效.mp3');
-const bgm = new Audio('音效/企劃懸疑背景.m4a');
-const ending = new Audio('音效/企劃結尾音樂.mp3');
+const sting = new Audio('音效/換頁閃亮音效.mp3');
+const bgm = new Audio('音效/開頭戀愛音樂.mp3');
+const ending = new Audio('音效/結尾戀愛音樂.mp3');
 bgm.loop = true; bgm.volume = .3; ending.volume = .5;
 [sting,bgm,ending].forEach(a => a.preload = 'none');
 /** 將使用者提供的文字安全放入 DOM。 */
@@ -198,7 +198,7 @@ function fit() {
 function playback(audio, otherAudio) {
   otherAudio.pause();
   if(!audio.paused) { audio.pause(); notice('音樂已暫停'); }
-  else audio.play().then(()=>notice(audio===bgm?'懸疑襯底播放中':'結尾音樂播放中')).catch(()=>notice('音樂載入失敗'));
+  else audio.play().then(()=>notice(audio===bgm?'開頭音樂播放中':'結尾音樂播放中')).catch(()=>notice('音樂載入失敗'));
 }
 function fullscreen() { if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.().catch(()=>notice('請用瀏覽器全螢幕')); }
 /** 顯示開場標題，不清除已選主角或抽題狀態。 */
@@ -293,7 +293,7 @@ $('#soundBtn').onclick=()=>{sound=!sound;text('#soundBtn','抽題音效：'+(sou
 $('#bgmBtn').onclick=()=>playback(bgm,ending); $('#endingBtn').onclick=()=>playback(ending,bgm);
 /** 音樂事件同步按鈕，包含快捷鍵播放與更換角色時的暫停。 */
 function updateAudioControls() {
-  text('#bgmBtn',(bgm.paused?'播放':'暫停')+'懸疑音樂 · B');
+  text('#bgmBtn',(bgm.paused?'播放':'暫停')+'開頭音樂 · O');
   text('#endingBtn',(ending.paused?'播放':'暫停')+'結尾音樂 · E');
 }
 [bgm,ending].forEach(audio=>['play','pause','ended'].forEach(event=>audio.addEventListener(event,updateAudioControls)));
@@ -314,7 +314,7 @@ addEventListener('keydown',e=>{
   else if(key==='h')showTitle();
   else if(key==='f')fullscreen();else if(key==='q')showQR();
   else if(key==='r')$('#resetDeck').click();
-  else if(key==='b')playback(bgm,ending);else if(key==='e')playback(ending,bgm);
+  else if(key==='o')playback(bgm,ending);else if(key==='e')playback(ending,bgm);
   else if(key==='escape'){$('#controlPanel').classList.remove('open');hideQR();}
   else if(key==='arrowup'||key==='arrowdown'){e.preventDefault();offset=Math.max(-30,Math.min(30,offset+(key==='arrowup'?-1:1)*(e.shiftKey?5:1)));document.documentElement.style.setProperty('--yoff',offset+'vh');}
 });

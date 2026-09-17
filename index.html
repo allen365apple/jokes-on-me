@@ -265,6 +265,10 @@ a.ebtn { text-decoration: none; display: inline-block; }
 
   <div class="section-title">現場演出工具</div>
   <div class="cards">
+    <a class="card" href="簡報即興劇/index.html">
+      <h2><span class="emj">💗</span>看我戀愛</h2>
+      <p>現場即興劇投影、選角、觀眾投稿與答案抽選工具。</p>
+    </a>
     <a class="card" href="mahjong-draw.html">
       <h2><span class="emj">🀄</span>看我摸牌</h2>
       <p>即興劇麻將抽牌機。空白鍵抽一張臺灣麻將，顯示牌面與唸法。</p>
@@ -340,6 +344,9 @@ function renderCards() {
     if (!map[g]) { map[g] = []; groups.push(g); }
     map[g].push(r);
   });
+  const localTool = { idx: 'local-love-show', cells: ['現場演出工具', '看我戀愛', '現場即興劇投影、選角、觀眾投稿與答案抽選工具。', '簡報即興劇/index.html', '💗', '否'] };
+  if (!map['現場演出工具']) { groups.push('現場演出工具'); map['現場演出工具'] = []; }
+  if (!map['現場演出工具'].some(r => (r.cells[3] || '').trim() === localTool.cells[3])) map['現場演出工具'].unshift(localTool);
   let html = '';
   groups.forEach(g => {
     html += `<div class="section-title">${esc(g)}</div><div class="cards">`;
