@@ -8,15 +8,15 @@
 /* 答案後台：先看狀態，再做批次管理，最後才看單筆答案。 */
 body.peek{background:#0e1016;color:#f3f4f8;font-size:16px}
 body.peek main.admin-shell{max-width:1280px;padding:clamp(28px,5vw,72px) clamp(20px,4vw,64px) 80px}
-.admin-header{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:30px}
+.admin-header{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:22px}
 .admin-kicker,.section-kicker,.summary-label{display:block;color:#ff9bb5;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-.admin-header h1{margin:7px 0 5px;font-size:clamp(32px,4vw,54px);letter-spacing:-.045em}
+.admin-header h1{margin:7px 0 0;font-size:clamp(30px,4vw,46px);letter-spacing:-.045em}
 .admin-header p{margin:0;color:#aeb2c2}
 .admin-header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .admin-link,.admin-login{border:1px solid #464a59;border-radius:10px;padding:10px 15px;background:#20232d;color:#f6f6fa;text-decoration:none;font-weight:700;font-size:14px}
 .admin-login{cursor:pointer}
 .admin-login:hover,.admin-link:hover{border-color:#ff7898;color:#ffd5df}
-.admin-summary{display:grid;grid-template-columns:minmax(260px,2fr) repeat(3,minmax(110px,1fr));gap:10px;margin-bottom:34px}
+.admin-summary{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(96px,1fr));gap:10px;margin-bottom:26px}
 .summary-connection,.summary-stat{min-height:104px;border:1px solid #303541;border-radius:14px;background:#191c25;padding:16px 18px}
 .summary-connection{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(120deg,#202a2a,#1a2025)}
 .summary-connection strong{margin:4px 0;color:#dff8ed;font-size:18px}
@@ -24,8 +24,8 @@ body.peek main.admin-shell{max-width:1280px;padding:clamp(28px,5vw,72px) clamp(2
 .summary-stat{display:flex;flex-direction:column;justify-content:center}
 .summary-stat strong{font-size:32px;line-height:1;color:#fff}
 .summary-stat span{margin-top:8px;color:#aeb2c2;font-size:13px}
-.admin-management{display:grid;grid-template-columns:minmax(220px,1fr) auto auto;align-items:end;gap:22px;padding-bottom:16px;border-bottom:1px solid #2a2e39}
-.section-heading h2,.answer-panel-header h2{margin:5px 0 0;font-size:24px;letter-spacing:-.025em}
+.admin-management{display:grid;grid-template-columns:minmax(80px,1fr) auto auto;align-items:end;gap:16px;padding-bottom:14px;border-bottom:1px solid #2a2e39}
+.section-heading h2,.answer-panel-header h2{margin:0;font-size:21px;letter-spacing:-.025em}
 .status-filters{display:flex;gap:6px;padding:4px;border:1px solid #333745;border-radius:12px;background:#171920}
 .status-filter{border:0;border-radius:8px;background:transparent;color:#aeb2c2;padding:10px 13px;cursor:pointer;font-size:14px;font-weight:700;white-space:nowrap}
 .status-filter:hover{color:#fff;background:#252936}
@@ -33,9 +33,9 @@ body.peek main.admin-shell{max-width:1280px;padding:clamp(28px,5vw,72px) clamp(2
 .status-filter b{margin-left:5px;font-variant-numeric:tabular-nums;opacity:.8}
 .management-actions button{border-color:#9b5868;background:#38252e;color:#ffd2dc;white-space:nowrap}
 .management-actions button:disabled{border-color:#424652;background:#252832;color:#858a9b}
-.admin-hint{margin:12px 0 28px;color:#969bab;font-size:13px}
+.admin-hint{display:none}
 .answer-panel{border:1px solid #2f3340;border-radius:16px;background:#15171f;overflow:hidden}
-.answer-panel-header{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:20px 22px 16px}
+.answer-panel-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 22px 14px}
 .answer-actions{display:flex;gap:8px}.answer-actions button{padding:9px 13px;font-size:13px}
 .answer-tabs{display:flex;gap:8px;overflow:auto;padding:0 22px 16px;border-bottom:1px solid #2a2e39}
 .answer-tabs button{flex:0 0 auto;border:1px solid #3d414d;border-radius:8px;background:#20232d;color:#c3c6d1;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer}
@@ -43,13 +43,16 @@ body.peek main.admin-shell{max-width:1280px;padding:clamp(28px,5vw,72px) clamp(2
 #answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;padding:20px 22px 24px}
 .answer-row{position:relative;display:flex;flex-direction:column;min-height:176px;padding:18px;border:1px solid #333744;border-radius:12px;background:#1c1f29;overflow:hidden}
 .answer-row:hover{border-color:#555b6d}
+.answer-row:focus-within{border-color:#ff7898}
 .answer-value{display:flex;align-items:center;flex:1;min-height:70px;color:#fff;font-size:clamp(20px,2vw,29px);font-weight:750;line-height:1.35;overflow-wrap:anywhere}
 .answer-meta{display:flex;align-items:center;gap:9px;margin-top:18px;color:#aeb2c2;font-size:13px}
 .answer-number{color:#ff94ad;font:700 12px ui-monospace,monospace;letter-spacing:.08em}
-.row-action{align-self:flex-start;margin-top:12px;border:1px solid #4b4f5d;border-radius:7px;background:#252934;color:#d6d8e1;padding:7px 11px;font-size:13px;cursor:pointer}
-.row-action:hover{border-color:#ff7898;color:#ffd5df}.row-action:disabled{opacity:.4;cursor:default}
+.row-action{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:32px;height:32px;margin:0;border:1px solid #4b4f5d;border-radius:50%;background:#252934;color:#d6d8e1;padding:0;font-size:23px;line-height:1;cursor:pointer;opacity:0;transform:scale(.82);transition:opacity .16s ease,transform .16s ease,border-color .16s ease,color .16s ease}
+.answer-row:hover .row-action,.answer-row:focus-within .row-action,.row-action:focus-visible{opacity:1;transform:scale(1)}
+.row-action:hover{border-color:#ff7898;background:#482532;color:#ffd5df}.row-action:disabled{opacity:.3;cursor:default}
 .photo-row{min-height:270px}.photo-row .answer-value{justify-content:center}.photo-row img{max-width:100%;max-height:220px;border-radius:8px;object-fit:contain}
 .admin-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:190px;border:1px dashed #3a3f4d;border-radius:12px;color:#d2d5df;text-align:center}
 .admin-empty strong{font-size:18px}.admin-empty span{margin-top:5px;color:#9297a8;font-size:13px}
 @media(max-width:860px){.admin-management{grid-template-columns:1fr}.status-filters{width:max-content;max-width:100%;overflow:auto}.management-actions{justify-self:start}}
 @media(max-width:600px){body.peek main.admin-shell{padding:24px 14px 48px}.admin-header{align-items:flex-start;flex-direction:column;margin-bottom:22px}.admin-header-actions{width:100%}.admin-link,.admin-login{flex:1;text-align:center}.admin-summary{grid-template-columns:repeat(3,1fr)}.summary-connection{grid-column:1/-1}.summary-stat{min-height:82px;padding:12px}.summary-stat strong{font-size:25px}.answer-panel-header{align-items:flex-start;flex-direction:column}.answer-actions{width:100%}.answer-actions button{flex:1}.answer-tabs{padding-left:14px;padding-right:14px}#answers{padding:14px}.answer-row{min-height:150px}}
+@media(hover:none){.row-action{opacity:1;transform:scale(1)}}

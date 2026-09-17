@@ -6,7 +6,7 @@ window.ShowStore = (() => {
   let moderation = {}, auth = null, authSdk = null, user = null, canManage = !config || config.mode !== 'firebase';
   let stopPrivate = [];
   const listeners = new Set();
-  let status = '本機彩排';
+  let status = '本機';
   const live = config.mode === 'firebase';
   function publish() {
     const allRecords = records.map(r => ({ ...r, moderation: moderation[r.id]?.state || 'active' }));
@@ -23,12 +23,12 @@ window.ShowStore = (() => {
   function subscribePrivate(nextUser) {
     stopPrivate.forEach(stop => stop()); stopPrivate = [];
     user = nextUser; records = []; moderation = {}; canManage = false;
-    status = user ? '確認管理權限中' : '請登入管理員'; publish();
+    status = user ? '確認中' : '請登入'; publish();
     if (!user) return;
-    const denied = () => { status = '無管理權限，請確認規則與管理員 UID'; canManage = false; records = []; moderation = {}; publish(); };
+    const denied = () => { status = '無權限'; canManage = false; records = []; moderation = {}; publish(); };
     const sharedAdmin = String(user.email || '').toLowerCase() === String(config.adminEmail || '').toLowerCase();
     if (sharedAdmin) {
-      canManage = true; status = '已登入管理員'; publish();
+      canManage = true; status = '已登入'; publish();
       subscribeManaged();
       return;
     }
@@ -36,7 +36,7 @@ window.ShowStore = (() => {
       // 權限異動時取消舊訂閱，避免登出或撤權後繼續顯示舊答案。
       stopPrivate.splice(1).forEach(stop => stop()); records = []; moderation = {};
       canManage = snap.val() === true;
-      status = canManage ? '已連線' : '此帳號尚未授權 · UID：' + user.uid; publish();
+      status = canManage ? '已連線' : '未授權'; publish();
       if (!canManage) return;
       if (!canManage) return;
       subscribeManaged();
@@ -67,12 +67,12 @@ window.ShowStore = (() => {
   /** 初始化本機彩排或獨立 Firebase；不會連到原始專案。 */
   async function init() {
     if (!live) {
-      try { readLocal(); } catch (_) { status = '本機儲存不可用'; }
+      try { readLocal(); } catch (_) { status = '儲存錯誤'; }
       publish(); return;
     }
     const f = config.firebase;
     if (!f.databaseURL || f.projectId === 'conte-affair') {
-      status = '請設定獨立 Firebase 專案'; publish(); return;
+      status = '未設定'; publish(); return;
     }
     try {
       const app = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
@@ -83,8 +83,8 @@ window.ShowStore = (() => {
       auth = authSdk.getAuth(instance);
       authSdk.onAuthStateChanged(auth, subscribePrivate);
       sdk.onValue(sdk.ref(db, 'rooms/' + config.room + '/control/submitOpen'), snap => { open = snap.val() === true; publish(); });
-      sdk.onValue(sdk.ref(db, '.info/connected'), snap => { if(canManage)status = snap.val() ? '已連線' : '離線：使用已載入答案'; publish(); });
-    } catch (_) { status = '連線失敗：使用已載入答案'; publish(); }
+      sdk.onValue(sdk.ref(db, '.info/connected'), snap => { if(canManage)status = snap.val() ? '已連線' : '離線'; publish(); });
+    } catch (_) { status = '連線失敗'; publish(); }
   }
   addEventListener('storage', e => {
     if (e.key !== key) return;
