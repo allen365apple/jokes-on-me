@@ -41,6 +41,5 @@ $('#form').onsubmit=async e=>{
   catch(e){$('#error').textContent=e.message;}
   finally{$('#submitBtn').disabled=false;}
 };
-// 正式投稿只走 REST，不啟動 Firebase SDK 常駐連線。
-$('#status').textContent=ShowStore.live?'觀眾投稿':'本機彩排：只會同步到同一瀏覽器的投影頁。';
+// 投稿頁不顯示後台／彩排狀態文字，避免讓觀眾看到技術資訊。
 if(!ShowStore.live)ShowStore.init();
