@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>看我戀愛｜投稿答案後台</title>
+  <link rel="stylesheet" href="forms.css">
+</head>
+<body class="peek">
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <span class="admin-kicker">看我戀愛 · 後台</span>
+        <h1>後台</h1>
+      </div>
+      <div class="admin-header-actions">
+        <a class="admin-link" href="stage.html">投影</a>
+        <button id="adminLogin" class="admin-login" hidden>登入</button>
+      </div>
+    </header>
+
+    <section class="admin-summary" aria-label="後台狀態">
+      <div class="summary-connection">
+        <span class="summary-label">連線</span>
+        <strong id="status">準備中</strong>
+        <span id="manageNotice" role="status">確認中…</span>
+      </div>
+      <div class="summary-stat"><strong id="activeCount">0</strong><span>可用</span></div>
+      <div class="summary-stat"><strong id="ignoredCount">0</strong><span>略過</span></div>
+      <div class="summary-stat"><strong id="archivedCount">0</strong><span>封存</span></div>
+    </section>
+
+    <section class="admin-management">
+      <div class="section-heading">
+        <h2>投稿</h2>
+      </div>
+      <div class="status-filters" role="tablist" aria-label="投稿狀態">
+        <button class="status-filter active" data-filter="active" role="tab" aria-selected="true">可用 <b>0</b></button>
+        <button class="status-filter" data-filter="ignored" role="tab" aria-selected="false">略過 <b>0</b></button>
+        <button class="status-filter" data-filter="archived" role="tab" aria-selected="false">封存 <b>0</b></button>
+      </div>
+      <div class="management-actions">
+        <button id="archiveAll" disabled>封存全部</button>
+      </div>
+    </section>
+
+    <section class="answer-panel" aria-labelledby="answerPanelTitle">
+      <header class="answer-panel-header">
+        <div>
+          <h2 id="answerPanelTitle">答案</h2>
+        </div>
+        <div class="answer-actions"><button id="refresh">換一批</button></div>
+      </header>
+      <nav id="tabs" class="answer-tabs" aria-label="答案類型"></nav>
+      <div id="answers" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="firebase-config.js?v=20260917-auth1"></script>
+  <script src="core.js"></script>
+  <script src="store.js?v=20260917-auth1"></script>
+  <script src="peek.js"></script>
+</body>
+</html>

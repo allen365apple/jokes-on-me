@@ -4,6 +4,6 @@ window.SHOW_CONFIG = {
   room: 'jokes-on-me-public-demo',
   adminEmail: '',
   firebase: {},
-  submitUrl: '',
-  qrImage: '',
+  submitUrl: 'https://allen365apple.github.io/jokes-on-me/love-improv/submit.html',
+  qrImage: 'qr-code/看我戀愛投稿QR-高清.png',
 };

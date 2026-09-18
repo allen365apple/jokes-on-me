@@ -3,9 +3,9 @@
 ## 一次性設定
 
 1. Authentication → Sign-in method 啟用 **Email/Password**。
-2. Authentication → Users → Add user，建立共用帳號：`stage-admin@jokes-on-me-3437e.firebaseapp.com`。密碼只在 Firebase Console 輸入，不寫進程式；夥伴在網站只需輸入密碼。
+2. Authentication → Users → Add user，建立你自己的共用帳號。帳號與密碼只放在 Firebase Console，不寫進公開程式；夥伴在網站只需輸入密碼。
 3. 本機舞台控制台或答案後台按「管理員登入」。Firebase 會記住這台瀏覽器的登入狀態；共用演出電腦不必每場重登。
-4. `allen365apple@gmail.com` 或其他 Google 帳號仍可走 operators UID 授權，但共用密碼帳號不需要另外建立 UID 名單。
+4. 需要個別權限時，可用 Google 帳號走 operators UID 授權；共用密碼帳號不需要另外建立 UID 名單。
 5. **先檢查現有 Rules 是否供其他應用使用**，備份現行規則；將本專案 `database.rules.json` 貼入 Realtime Database → 規則並發布。範本僅開放本專案場次，其餘路徑封鎖；若有其他應用，需合併規則而非整份覆蓋。
 6. 正式公開連線前確認：未登入無法讀取 responses；未授權帳號不能修改 moderation／control；登入管理員能讀取答案。觀眾僅能在開放時新增合規回答，不能讀取、覆寫或刪除既有投稿。
 

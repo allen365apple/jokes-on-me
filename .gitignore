@@ -21,3 +21,9 @@ fwb-quiz/live-quiz-spec.md
 fwb-quiz/.claude/
 fwb-quiz/supabase-questions-backup.sql
 fwb-quiz/supabase-questions-tryout-backup.sql
+
+# 看我戀愛的私有工作副本與封存資料，不公開推送
+/簡報即興劇/
+/_archive/
+love-improv/firebase-config.public.js
+love-improv/database.rules.json

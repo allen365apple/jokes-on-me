@@ -10,14 +10,14 @@
         "control": {
           "submitOpen": {
             ".read": true,
-            ".write": "auth != null && (auth.token.email === 'stage-admin@jokes-on-me-3437e.firebaseapp.com' || root.child('operators').child(auth.uid).val() === true) && newData.exists()",
+            ".write": "auth != null && (auth.token.email === 'REPLACE_WITH_ADMIN_EMAIL' || root.child('operators').child(auth.uid).val() === true) && newData.exists()",
             ".validate": "newData.isBoolean()"
           }
         },
         "moderation": {
-          ".read": "auth != null && (auth.token.email === 'stage-admin@jokes-on-me-3437e.firebaseapp.com' || root.child('operators').child(auth.uid).val() === true)",
+          ".read": "auth != null && (auth.token.email === 'REPLACE_WITH_ADMIN_EMAIL' || root.child('operators').child(auth.uid).val() === true)",
           "$id": {
-            ".write": "auth != null && (auth.token.email === 'stage-admin@jokes-on-me-3437e.firebaseapp.com' || root.child('operators').child(auth.uid).val() === true) && root.child('rooms/jokes-on-me-live-2026/responses').child($id).exists() && newData.exists()",
+            ".write": "auth != null && (auth.token.email === 'REPLACE_WITH_ADMIN_EMAIL' || root.child('operators').child(auth.uid).val() === true) && root.child('rooms/jokes-on-me-live-2026/responses').child($id).exists() && newData.exists()",
             ".validate": "newData.hasChildren(['state','at','by'])",
             "state": { ".validate": "newData.val() === 'active' || newData.val() === 'ignored' || newData.val() === 'archived'" },
             "at": { ".validate": "newData.isNumber() && newData.val() === now" },
@@ -26,7 +26,7 @@
           }
         },
         "responses": {
-          ".read": "auth != null && (auth.token.email === 'stage-admin@jokes-on-me-3437e.firebaseapp.com' || root.child('operators').child(auth.uid).val() === true)",
+          ".read": "auth != null && (auth.token.email === 'REPLACE_WITH_ADMIN_EMAIL' || root.child('operators').child(auth.uid).val() === true)",
           "$id": {
             ".write": "!data.exists() && newData.exists() && root.child('rooms/jokes-on-me-live-2026/control/submitOpen').val() === true",
             ".validate": "newData.hasChildren(['table','nick','tags','photo','romanticGesture','awkwardLine','location','igStory','ts'])",
