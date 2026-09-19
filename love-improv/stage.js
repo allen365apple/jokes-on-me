@@ -27,7 +27,7 @@ try {
 let selected = [], phase = 'selection', intro = -1, focus = 0, currentCue = 0;
 let liveRecords = [], records = [], actorTags = {}, trialMode = false, toastTimer, offset = 0;
 let profileImagesReady = false, profilePreloadRun = 0;
-let profileImageTotal = 0, profileImageLoaded = 0;
+let profileImageTotal = 0, profileImageLoaded = 0, profileImageFailed = 0;
 trialMode = savedShow?.trialMode === true;
 deck = trialMode ? decks.trial : decks.live;
 selected = session.pair.filter(id => cast.some(p => p.id === id));
@@ -117,7 +117,7 @@ function updateLoadStatus() {
   const el = $('#loadStatus');
   if (!el) return;
   const profileDone = profileImageTotal === 0 || profileImageLoaded >= profileImageTotal;
-  const profileText = profileDone ? '角色圖片：' + profileImageTotal + ' 張已載入' : '角色圖片：正在載入 ' + profileImageLoaded + ' / ' + profileImageTotal + ' 張';
+  const profileText = profileDone && profileImageFailed ? '角色圖片：' + profileImageLoaded + ' / ' + profileImageTotal + ' 張已載入（' + profileImageFailed + ' 張失敗）' : profileDone ? '角色圖片：' + profileImageTotal + ' 張已載入' : '角色圖片：正在載入 ' + profileImageLoaded + ' / ' + profileImageTotal + ' 張';
   const sources = [...submissionImageSources];
   const loaded = sources.filter(source => submissionImageStates.get(source) === 'loaded').length;
   const failed = sources.filter(source => submissionImageStates.get(source) === 'error').length;
@@ -135,25 +135,27 @@ function preloadCastImages() {
   const profileSourceSet = new Set(profileSources);
   profileImageTotal = profileSources.length;
   profileImageLoaded = 0;
+  profileImageFailed = 0;
   updateLoadStatus();
   const sources = [...new Set(cast.flatMap(p => [profileImageSource(p), selectionImageSource(p)]).filter(Boolean))];
   const jobs = sources.map(source => new Promise(resolve => {
     let finished = false;
-    const finish = () => {
+    const finish = state => {
       if (finished) return;
       finished = true;
       if (run === profilePreloadRun && profileSourceSet.has(source)) {
-        profileImageLoaded += 1;
+        if (state === 'error') profileImageFailed += 1;
+        else profileImageLoaded += 1;
         updateLoadStatus();
       }
       resolve();
     };
     const image = new Image(); image.decoding = 'async'; image.loading = 'eager'; image.fetchPriority = 'high';
     image.onload = () => {
-      if (typeof image.decode === 'function') image.decode().catch(() => {}).finally(finish);
-      else finish();
+      if (typeof image.decode === 'function') image.decode().catch(() => {}).finally(() => finish('loaded'));
+      else finish('loaded');
     };
-    image.onerror = finish;
+    image.onerror = () => finish('error');
     image.src = source;
   }));
   Promise.all(jobs).then(() => {
