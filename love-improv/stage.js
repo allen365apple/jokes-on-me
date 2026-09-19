@@ -60,18 +60,18 @@ function loadAudioVolumes() {
   } catch (_) { return {...DEFAULT_AUDIO_VOLUMES}; }
 }
 let audioVolumes = loadAudioVolumes();
-const OPENING_FADE_KEY = 'jinder-opening-fade-seconds';
+const OPENING_FADE_KEY = 'jinder-opening-fade-seconds-v2';
 const OPENING_FADE_DURATION = 2000;
 function loadOpeningFadeSeconds() {
   const saved = localStorage.getItem(OPENING_FADE_KEY);
-  if (saved === null) return 3;
+  if (saved === null) return 1;
   const value = Number(saved);
-  return Number.isFinite(value) ? Math.max(0, Math.min(10, value)) : 3;
+  return Number.isFinite(value) ? Math.max(0, Math.min(10, value)) : 1;
 }
 let openingFadeSeconds = loadOpeningFadeSeconds();
 let openingMusicMode = 'idle', openingFadeTimer = 0, openingFadeFrame = 0;
 bgm.loop = true; sting.volume = audioVolumes.sting; bgm.volume = audioVolumes.bgm; ending.volume = audioVolumes.ending;
-[sting,bgm,ending].forEach(a => a.preload = 'none');
+sting.preload = 'auto'; bgm.preload = 'none'; ending.preload = 'none';
 /** 將使用者提供的文字安全放入 DOM。 */
 function text(selector, value) { const el = $(selector); if (el) el.textContent = value; }
 function notice(message) { text('#toast', message); $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 2800); }
@@ -276,10 +276,12 @@ function memberTag(index) {
   if(phase==='selection'){notice('請先選擇兩位主角並開始');return;}
   phase='free';
   if(focus===index && currentCue===1 && !$('#qrScreen').classList.contains('show') && $('#titleScreen').hidden) drawCue(1);
-  else {focus=index;renderProfile();playSting();}
+  else {playSting();focus=index;renderProfile();}
 }
 function playSting() {
-  if(sound){sting.currentTime=0;sting.play().catch(()=>notice('音效無法播放'));}
+  if(!sound)return;
+  sting.pause(); sting.currentTime=0;
+  sting.play().catch(()=>notice('音效無法播放'));
 }
 function clearOpeningFade() {
   clearTimeout(openingFadeTimer); openingFadeTimer = 0;
