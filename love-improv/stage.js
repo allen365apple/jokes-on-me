@@ -139,6 +139,7 @@ function renderSelection() {
   text('#start', editingPair ? '確認人選' : playing ? '繼續本回合' : '開始 →');
   $('#nextRound').hidden = !playing || editingPair;
   text('#nextRound', session.round === 3 ? '結束本場' : '下一回合 →');
+  $('#endShow').hidden = !(session.status === 'playing' || session.history.length > 0);
   $('#newShow').hidden = session.status !== 'finished';
 }
 function resetMemberTags() {
@@ -239,8 +240,8 @@ function nextRound() {
   saveShow(); goHome();
 }
 /** 新一場只重設演出進度，保留觀眾投稿。 */
-function newShow() {
-  if (!confirm('開始新一場？將重設角色與抽題進度，觀眾投稿保留。')) return;
+function newShow(message='開始新一場？將重設角色與抽題進度，觀眾投稿保留。') {
+  if (!confirm(message)) return;
   session={round:1,status:'choosing',history:[],pair:[]}; selected=[]; actorTags={}; editingPair=false;
   decks.live.reset(); decks.trial.reset(); saveShow(); goHome();
 }
@@ -375,8 +376,9 @@ function renderTitlePair() {
     card.className = 'title-pair-card'; card.dataset.actor = id;
     const portrait = document.createElement('div'); portrait.className = 'cast-portrait';
     portrait.dataset.actor = id;
-    if (actor.image) {
-      const img = new Image(); img.alt = actor.name; img.src = actor.image;
+    const image = actor.image?.startsWith('data:') ? actor.image : (actor.selectionImage || actor.image);
+    if (image) {
+      const img = new Image(); img.alt = actor.name; img.decoding = 'async'; img.loading = 'eager'; img.fetchPriority = 'high'; img.src = image;
       img.onerror = () => { img.hidden = true; portrait.classList.add('photo-unavailable'); };
       portrait.append(img); applyCrop(portrait, actor);
     } else portrait.classList.add('photo-unavailable');
@@ -415,6 +417,7 @@ function goHome() {
   text('#credit','');renderSelection();saveShow();
 }
 $('#nextRound').onclick=nextRound;
+$('#endShow').onclick=()=>newShow('結束本場並重新開始？將重設角色與抽題進度，觀眾投稿保留。');
 $('#newShow').onclick=newShow;
 $('#correctPair').onclick=()=>{
   if(session.status!=='playing'){notice('請先開始本回合');return;}

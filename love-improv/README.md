@@ -1,6 +1,6 @@
 # 看我戀愛
 
-這是公開展示版本。公開 repository 不放正式 Firebase 設定，因此 GitHub Pages 版本使用本機試玩模式；正式演出請在私有工作資料夾使用正式設定。
+這是正式投稿版本。GitHub Pages 的舞台、投稿頁與答案後台共用 Firebase Realtime Database；密碼只在登入時輸入，不放在程式或 Git。
 
 ## 開啟網站
 
@@ -21,7 +21,7 @@ python3 -m http.server 8766 --bind 127.0.0.1
 
 ## 檔案關係
 
-- **共用資料**：`firebase-config.js` 指定公開展示模式，`store.js` 處理讀寫，`core.js` 負責答案驗證及抽選。
+- **共用資料**：`firebase-config.js` 指定正式 Firebase room，`store.js` 處理讀寫，`core.js` 負責答案驗證及抽選。
 - **演員**：`cast-config.js` 定義名字、照片路徑；`profiles/` 放演員照片及限動頭像。選角頁的「設定演員」可調整每位角色照片的左右、上下裁切位置與大小，設定保存在目前瀏覽器。
 - **試玩**：`trial-data.js` 搭配 `trial-photos/`，控制台切換試玩來源。
 - **其他素材**：`音效/` 放音效，`vendor/` 放本機 QR Code 程式。
