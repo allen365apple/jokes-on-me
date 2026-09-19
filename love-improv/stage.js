@@ -27,6 +27,7 @@ try {
 let selected = [], phase = 'selection', intro = -1, focus = 0, currentCue = 0;
 let liveRecords = [], records = [], actorTags = {}, trialMode = false, toastTimer, offset = 0;
 let profileImagesReady = false, profilePreloadRun = 0;
+let profileImageTotal = 0, profileImageLoaded = 0;
 trialMode = savedShow?.trialMode === true;
 deck = trialMode ? decks.trial : decks.live;
 selected = session.pair.filter(id => cast.some(p => p.id === id));
@@ -40,6 +41,8 @@ function saveShow() {
 }
 addEventListener('pagehide', saveShow);
 const photos = new Map(), loading = new Set();
+let submissionImageSources = new Set();
+let submissionImageStates = new Map();
 let sound = true;
 let lastStoryStyle = -1;
 const DEFAULT_CROP = { x: 50, y: 8, zoom: 1.08 };
@@ -110,22 +113,53 @@ function avatar(container, p) {
 }
 function profileImageSource(p) { return p?.image || ''; }
 function selectionImageSource(p) { return p?.image?.startsWith('data:') ? p.image : (p?.selectionImage || p?.image || ''); }
+function updateLoadStatus() {
+  const el = $('#loadStatus');
+  if (!el) return;
+  const profileDone = profileImageTotal === 0 || profileImageLoaded >= profileImageTotal;
+  const profileText = profileDone ? '角色圖片：' + profileImageTotal + ' 張已載入' : '角色圖片：正在載入 ' + profileImageLoaded + ' / ' + profileImageTotal + ' 張';
+  const sources = [...submissionImageSources];
+  const loaded = sources.filter(source => submissionImageStates.get(source) === 'loaded').length;
+  const failed = sources.filter(source => submissionImageStates.get(source) === 'error').length;
+  const imageLabel = trialMode ? '試玩圖片' : '投稿圖片';
+  let submissionText = imageLabel + '：0 張';
+  if (sources.length && loaded + failed < sources.length) submissionText = imageLabel + '：正在載入 ' + loaded + ' / ' + sources.length + ' 張';
+  else if (sources.length && failed) submissionText = imageLabel + '：' + loaded + ' / ' + sources.length + ' 張已載入（' + failed + ' 張失敗）';
+  else if (sources.length) submissionText = imageLabel + '：' + sources.length + ' 張已載入';
+  el.textContent = profileText + ' · ' + submissionText;
+}
 function preloadCastImages() {
   const run = ++profilePreloadRun;
   profileImagesReady = false;
+  const profileSources = [...new Set(cast.map(profileImageSource).filter(Boolean))];
+  const profileSourceSet = new Set(profileSources);
+  profileImageTotal = profileSources.length;
+  profileImageLoaded = 0;
+  updateLoadStatus();
   const sources = [...new Set(cast.flatMap(p => [profileImageSource(p), selectionImageSource(p)]).filter(Boolean))];
   const jobs = sources.map(source => new Promise(resolve => {
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      if (run === profilePreloadRun && profileSourceSet.has(source)) {
+        profileImageLoaded += 1;
+        updateLoadStatus();
+      }
+      resolve();
+    };
     const image = new Image(); image.decoding = 'async'; image.loading = 'eager'; image.fetchPriority = 'high';
     image.onload = () => {
-      if (typeof image.decode === 'function') image.decode().catch(() => {}).finally(() => resolve());
-      else resolve();
+      if (typeof image.decode === 'function') image.decode().catch(() => {}).finally(finish);
+      else finish();
     };
-    image.onerror = () => resolve();
+    image.onerror = finish;
     image.src = source;
   }));
   Promise.all(jobs).then(() => {
     if (run !== profilePreloadRun) return;
     profileImagesReady = true;
+    updateLoadStatus();
     renderSelection();
   });
 }
@@ -340,12 +374,22 @@ function styleStory() {
 }
 /** 收到圖片後先解碼；未成功載入的照片不進入抽選池。 */
 function preload(records) {
+  submissionImageSources = new Set(records.filter(r => valid('photo', r.photo)).map(r => r.photo));
   records.forEach(r => {
     if (!valid('photo',r.photo)||photos.has(r.photo)||loading.has(r.photo)) return;
-    loading.add(r.photo); const img=new Image();
-    img.onload=()=>{ photos.set(r.photo,{w:img.naturalWidth,h:img.naturalHeight}); loading.delete(r.photo); };
-    img.onerror=()=>loading.delete(r.photo); img.src=r.photo;
+    if (submissionImageStates.get(r.photo) === 'error') return;
+    loading.add(r.photo); submissionImageStates.set(r.photo, 'loading');
+    const img=new Image();
+    const finish = state => {
+      if (state === 'loaded') photos.set(r.photo,{w:img.naturalWidth,h:img.naturalHeight});
+      submissionImageStates.set(r.photo, state);
+      loading.delete(r.photo);
+      updateLoadStatus();
+    };
+    img.onload=()=>finish('loaded');
+    img.onerror=()=>finish('error'); img.src=r.photo;
   });
+  updateLoadStatus();
 }
 /** 在過長答案時縮字，保留一般答案的大字尺寸。 */
 function fit() {
@@ -458,7 +502,7 @@ function setPool(useTrial) {
   deck=trialMode ? decks.trial : decks.live;
   actorTags={};
   if (session.status === 'playing') selected.forEach(id => { actorTags[id]=drawTags(); });
-  photos.clear();loading.clear();preload(records);
+  photos.clear();loading.clear();submissionImageStates = new Map();preload(records);
   text('#poolToggle',trialMode?'試玩題庫 T':'現場題庫 T');
   text('#panelPoolToggle',trialMode?'切到現場':'切到試玩');
   $('#poolToggle').setAttribute('aria-pressed',String(trialMode));

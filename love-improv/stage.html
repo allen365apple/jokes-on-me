@@ -1,7 +1,7 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看我戀愛</title><link rel="stylesheet" href="original-scenes.css"><link rel="stylesheet" href="stage.css?v=20260919-rounds1"></head>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>看我戀愛</title><link rel="stylesheet" href="original-scenes.css"><link rel="stylesheet" href="stage.css?v=20260919-load-status1"></head>
 <body>
-<header id="top"><span class="brand">看我戀愛</span><span id="credit">選擇今天的兩位主角</span><div class="top-actions"><button id="consoleBtn">控制台 C</button><button id="poolToggle" aria-pressed="false" title="切換至試玩題庫">現場題庫 T</button></div></header>
+<header id="top"><span class="brand">看我戀愛</span><span id="credit">選擇今天的兩位主角</span><span id="loadStatus" class="load-status" aria-live="polite">圖片正在載入…</span><div class="top-actions"><button id="consoleBtn">控制台 C</button><button id="poolToggle" aria-pressed="false" title="切換至試玩題庫">現場題庫 T</button></div></header>
 <main id="viewport">
 <section id="selection"><div class="selection-heading"><h1>選擇兩位主角</h1><button id="editCast">設定演員</button></div><div class="selection-layout"><div id="castGrid"></div><aside class="pair-panel"><div id="pairPreview" aria-live="polite"></div><p id="selectionCount">已選 0 / 2</p><button id="start" class="primary" disabled>開始 →</button><button id="nextRound" hidden>下一回合 →</button><button id="endShow" class="quiet-action" hidden>結束本場</button><button id="newShow" hidden>開始新一場</button><small>Enter 開始</small></aside></div><footer><span>點選兩位角色 · 再次點選取消</span></footer></section>
 <section id="standby" hidden><p class="eyebrow">看我戀愛</p><h1>準備登場</h1><p id="standbyNames"></p><button id="nextIntro" class="primary">登場 → <small>Space / Enter</small></button></section>
@@ -71,5 +71,5 @@
   <details class="panel-section panel-advanced"><summary>演出設定</summary><button id="correctPair">修正本回合人選</button><button id="resetDeck">開始新一場</button></details>
 </aside>
 <dialog id="castDialog"><form method="dialog"><h2>設定演員</h2><p>姓名、照片與裁切位置儲存在這台瀏覽器。調整「左右／上下／大小」時，上方縮圖會立即預覽。</p><div id="castEditor"></div><p id="castSaveStatus"></p><button value="cancel">取消</button><button type="button" id="saveCast" class="primary">儲存設定</button></form></dialog>
-<script src="firebase-config.js?v=20260919-firebase-live1"></script><script src="cast-config.js?v=20260919-thumbs2"></script><script src="core.js?v=20260919-rounds1"></script><script src="store.js?v=20260919-cache2"></script><script src="trial-data.js"></script><script src="vendor/qrcode.js"></script><script src="stage.js?v=20260919-preload1"></script>
+<script src="firebase-config.js?v=20260919-firebase-live1"></script><script src="cast-config.js?v=20260919-thumbs2"></script><script src="core.js?v=20260919-rounds1"></script><script src="store.js?v=20260919-cache2"></script><script src="trial-data.js"></script><script src="vendor/qrcode.js"></script><script src="stage.js?v=20260919-load-status1"></script>
 </body></html>
