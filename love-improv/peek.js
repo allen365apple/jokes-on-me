@@ -1,6 +1,6 @@
 'use strict';
 const managementStyle=document.createElement('link');
-managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260919-sort1';document.head.append(managementStyle);
+managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260919-sort2';document.head.append(managementStyle);
 const $=s=>document.querySelector(s);
 const sections=[['tags','標籤'],['romanticGesture','浪漫舉動'],['photo','照片'],['awkwardLine','聊天／金句'],['location','地點'],['igStory','限時動態']];
 let records=[],field='tags',page=1,filter='active',sortOrder='newest',canManage=false,busy=false;
@@ -76,7 +76,7 @@ function render(reset=false){
     const source=document.createElement('span');source.textContent=(r.table||'未填桌號')+' · '+(r.nick||'未填暱稱');meta.append(number,source);
     const action=document.createElement('button');action.type='button';action.className='row-action';
     const active=filter==='active';action.setAttribute('aria-label',active?'忽略':'恢復');action.title=active?'忽略':'恢復';action.textContent=active?'×':'↺';
-    action.disabled=!canManage||busy;action.onclick=()=>manage(()=>ShowStore.setIgnored(r.id,active));
+    action.disabled=!canManage||busy;action.onclick=()=>manage(()=>active?ShowStore.setIgnored(r.id,true):ShowStore.restore(r.id));
     row.append(value,meta,action);$('#answers').append(row);
   });
   if(!pool.length)showEmpty('沒有投稿');
