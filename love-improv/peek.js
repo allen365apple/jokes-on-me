@@ -1,6 +1,6 @@
 'use strict';
 const managementStyle=document.createElement('link');
-managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260917-backoffice2';document.head.append(managementStyle);
+managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260919-pagination1';document.head.append(managementStyle);
 const $=s=>document.querySelector(s);
 const sections=[['tags','標籤'],['romanticGesture','浪漫舉動'],['photo','照片'],['awkwardLine','聊天／金句'],['location','地點'],['igStory','限時動態']];
 let records=[],field='tags',page=1,filter='active',canManage=false,busy=false;

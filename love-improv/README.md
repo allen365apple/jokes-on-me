@@ -35,7 +35,7 @@ python3 -m http.server 8766 --bind 127.0.0.1
 
 `S` 選角、`C` 控制台、`H` 開場、`Q` 投稿 QR、`T` 切換現場／試玩題庫。底部固定保留 `1／2` 兩個主角按鈕，尚未選角時顯示「待定」；選滿兩人後按 Enter 開始。`3` 浪漫、`4` 聊天、`5` 地圖、`6` 限動、`7` 相簿、`8` 金句。
 
-同來源答案抽完一輪才重抽；`R` 重設抽選進度，`F` 全螢幕，`O／E` 開頭／結尾音樂。選角按開始後會自動播放開頭音樂；第一次離開配對開場頁後 5 秒開始淡出。
+每場三回合；下一回合會鎖定前面已登場的角色。同來源答案跨回合抽完一輪才重抽，聊天／金句共用答案紀錄；`F` 全螢幕，`O／E` 開頭／結尾音樂。選角按開始後會自動播放開頭音樂，淡出秒數可在控制台調整。
 
 ## 維護
 
@@ -48,4 +48,4 @@ node tests/browser.test.cjs
 
 瀏覽器測試需要 Playwright、本機 Chrome 與 8766 伺服器；可設定 `PLAYWRIGHT_PATH` 指向既有套件。
 
-正式 Firebase 連線使用 `jokes-on-me-live-2026` room；觀眾可在開放時投稿，管理員以 Firebase Email／Password 共用帳號登入後台。後台以 moderation 標記忽略或封存投稿，不刪除原始 responses。Rules 請依 `database.rules.json` 發布；密碼不放入程式或 Git。
+正式 Firebase 連線的 room、管理員帳號與密碼請放在私有工作設定，不要放入公開 repository。觀眾可在開放時投稿，管理員以 Firebase Email／Password 登入後台；後台以 moderation 標記忽略或封存投稿，不刪除原始 responses。公開的 `database.rules.json` 是通用範本，正式發布前請在私有環境套用實際設定。

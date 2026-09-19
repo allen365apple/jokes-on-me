@@ -2,7 +2,18 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const { fields, names, valid, createDeck } = ShowCore;
-let deck = createDeck();
+let deck;
+const SESSION_KEY = 'jinder-show-v1:' + (SHOW_CONFIG.room || 'default');
+let session = { round: 1, status: 'choosing', history: [], pair: [] };
+let editingPair = false;
+let savedShow = null;
+try { savedShow = JSON.parse(localStorage.getItem(SESSION_KEY)); } catch (_) {}
+if (savedShow?.session && [1,2,3].includes(savedShow.session.round)) session = savedShow.session;
+const decks = {
+  live: createDeck(Math.random, savedShow?.decks?.live || {}, () => queueMicrotask(saveShow)),
+  trial: createDeck(Math.random, savedShow?.decks?.trial || {}, () => queueMicrotask(saveShow))
+};
+deck = decks.live;
 let cast = CAST_PROFILES.map(p => ({...p}));
 try {
   const saved = JSON.parse(localStorage.getItem('astra-cast') || 'null');
@@ -15,6 +26,18 @@ try {
 } catch (_) {}
 let selected = [], phase = 'selection', intro = -1, focus = 0, currentCue = 0;
 let liveRecords = [], records = [], actorTags = {}, trialMode = false, toastTimer, offset = 0;
+trialMode = savedShow?.trialMode === true;
+deck = trialMode ? decks.trial : decks.live;
+selected = session.pair.filter(id => cast.some(p => p.id === id));
+actorTags = savedShow?.actorTags || {};
+if (trialMode) records = window.TRIAL_RESPONSES || [];
+/** 保存本場回合與兩份題庫進度；不修改投稿資料。 */
+function saveShow() {
+  session.pair = [...selected];
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify({session, actorTags, trialMode, decks: {live: decks.live.snapshot(), trial: decks.trial.snapshot()}})); }
+  catch (_) { notice('進度無法儲存，請勿重新整理頁面'); }
+}
+addEventListener('pagehide', saveShow);
 const photos = new Map(), loading = new Set();
 let sound = true;
 let lastStoryStyle = -1;
@@ -79,31 +102,44 @@ function avatar(container, p) {
   container.dataset.actor = p.id;
   applyCrop(container, p);
   container.textContent = p.name.slice(0,1);
-  if (!p.image) return;
-  const img = new Image(); img.alt = p.name; img.src = p.image;
+  const image = p.image?.startsWith('data:') ? p.image : (p.selectionImage || p.image);
+  if (!image) return;
+  const img = new Image(); img.alt = p.name; img.decoding = 'async'; img.src = image;
   img.onload = () => { container.replaceChildren(img); applyCrop(container, p); };
 }
 function renderSelection() {
+  const locked = new Set(session.history.flat());
+  const playing = session.status === 'playing';
+  text('.selection-heading h1', session.status === 'finished' ? '三回合完成' : ['第一','第二','第三'][session.round-1] + '回合：' + (playing && !editingPair ? '本回合主角' : '請選擇兩位主角'));
   $('#castGrid').replaceChildren();
   cast.forEach(p => {
     const button = document.createElement('button'); button.className = 'cast-card';
     const order = selected.indexOf(p.id);
+    button.disabled = locked.has(p.id) || session.status === 'finished' || (playing && !editingPair);
+    button.classList.toggle('played', locked.has(p.id));
     button.classList.toggle('selected', order >= 0); button.setAttribute('aria-pressed', String(order >= 0));
     const pic = document.createElement('div'); pic.className = 'cast-portrait'; avatar(pic,p);
     const name = document.createElement('strong'); name.textContent = p.name;
     button.append(pic, name);
+    if (locked.has(p.id)) { const label = document.createElement('span'); label.className='played-label'; label.textContent='已登場'; button.append(label); }
     if (order >= 0) { const n = document.createElement('span'); n.className = 'order'; n.textContent = order+1; button.append(n); }
     button.onclick = () => {
       if (selected.includes(p.id)) selected = selected.filter(id => id !== p.id);
       else if (selected.length < 2) selected.push(p.id);
       else { notice('已選兩位，請先取消其中一位'); return; }
       renderSelection();
+      saveShow();
     };
     $('#castGrid').append(button);
   });
   text('#selectionCount', '已選 ' + selected.length + ' / 2');
   renderPairPreview();
+  $('#start').hidden = session.status === 'finished';
   $('#start').disabled = selected.length !== 2;
+  text('#start', editingPair ? '確認人選' : playing ? '繼續本回合' : '開始 →');
+  $('#nextRound').hidden = !playing || editingPair;
+  text('#nextRound', session.round === 3 ? '結束本場' : '下一回合 →');
+  $('#newShow').hidden = session.status !== 'finished';
 }
 function resetMemberTags() {
   $$('#memberTags button').forEach((button, index) => {
@@ -161,6 +197,15 @@ function renderProfile() {
 }
 function begin() {
   if (selected.length !== 2) return;
+  if (session.status === 'finished') return;
+  if (session.status === 'playing') {
+    editingPair=false; phase='free'; focus=0;
+    selected.forEach(id => { if (!actorTags[id]) actorTags[id]=drawTags(); });
+    syncMemberButtons(); saveShow(); showTitle();
+    $('#selection').hidden=true;
+    return;
+  }
+  session.status='playing';
   document.activeElement?.blur();
   phase='intro'; intro=-1; focus=0; currentCue=0; actorTags={};
   selected.forEach(id => { actorTags[id] = drawTags(); });
@@ -176,6 +221,28 @@ function begin() {
   showTitle();
   startOpeningMusic();
   text('#credit','按 1／2 選擇主角，或 Space 依序登場');
+  saveShow();
+}
+/** 同步底部兩位主角按鈕。 */
+function syncMemberButtons() {
+  $$('#memberTags button').forEach((b,i) => {
+    const key=document.createElement('kbd'); key.textContent=i+1;
+    b.replaceChildren(key,document.createTextNode(cast.find(p=>p.id===selected[i])?.name || '待定'));
+  });
+}
+/** 明確結束本回合，才鎖定人選並進入下一回合。 */
+function nextRound() {
+  if (session.status !== 'playing' || editingPair) return;
+  session.history.push([...selected]); selected=[]; actorTags={};
+  if (session.round === 3) session.status='finished';
+  else { session.round++; session.status='choosing'; }
+  saveShow(); goHome();
+}
+/** 新一場只重設演出進度，保留觀眾投稿。 */
+function newShow() {
+  if (!confirm('開始新一場？將重設角色與抽題進度，觀眾投稿保留。')) return;
+  session={round:1,status:'choosing',history:[],pair:[]}; selected=[]; actorTags={}; editingPair=false;
+  decks.live.reset(); decks.trial.reset(); saveShow(); goHome();
 }
 function advance() {
   document.activeElement?.blur();
@@ -338,15 +405,21 @@ $('#closePanel').onclick=()=>$('#controlPanel').classList.remove('open');
 /** 回到選角首頁，保留投稿與演員素材，重新選擇兩位主角。 */
 function goHome() {
   $('#titleScreen').hidden=true;
-  phase='selection';selected=[];intro=-1;focus=0;currentCue=0;actorTags={};
-  resetMemberTags();
+  phase='selection';intro=-1;focus=0;currentCue=0;
+  syncMemberButtons();
   $('#stage').hidden=true;$('#standby').hidden=true;$('#selection').hidden=false;
   hideQR();
   $('#controlPanel').classList.remove('open');$('#toast').classList.remove('visible');
   $$('.scene.active, #cueBar button.active').forEach(el=>el.classList.remove('active'));
   sting.pause(); stopOpeningMusic(); ending.pause();
-  text('#credit','選擇今天的兩位主角');renderSelection();
+  text('#credit','');renderSelection();saveShow();
 }
+$('#nextRound').onclick=nextRound;
+$('#newShow').onclick=newShow;
+$('#correctPair').onclick=()=>{
+  if(session.status!=='playing'){notice('請先開始本回合');return;}
+  editingPair=true;goHome();
+};
 $('#profileBtn').onclick=goHome;
 $('#homeBtn').onclick=showTitle;
 $('#qrNavBtn').onclick=showQR;
@@ -355,9 +428,9 @@ $$('#memberTags button').forEach(b=>b.onclick=()=>memberTag(Number(b.dataset.mem
 function setPool(useTrial) {
   trialMode=useTrial;
   records=trialMode ? (Array.isArray(window.TRIAL_RESPONSES) ? window.TRIAL_RESPONSES : []) : liveRecords;
-  deck=createDeck();
+  deck=trialMode ? decks.trial : decks.live;
   actorTags={};
-  selected.forEach(id => { actorTags[id]=drawTags(); });
+  if (session.status === 'playing') selected.forEach(id => { actorTags[id]=drawTags(); });
   photos.clear();loading.clear();preload(records);
   text('#poolToggle',trialMode?'試玩題庫 T':'現場題庫 T');
   text('#panelPoolToggle',trialMode?'切到現場':'切到試玩');
@@ -365,7 +438,7 @@ function setPool(useTrial) {
   $('#poolToggle').title=trialMode?'切回現場題庫':'切換至試玩題庫';
   $('#controlPanel').classList.toggle('trial-mode',trialMode);
   text('#poolStatus',trialMode ? '試玩題庫 · '+records.length+' 筆' : '現場題庫 · '+liveRecords.length+' 筆');
-  notice(trialMode ? '已切換試玩題庫，抽選進度已重設' : '已切回現場題庫，抽選進度已重設');
+  saveShow();notice(trialMode ? '試玩題庫 · 保留抽題進度' : '現場題庫 · 保留抽題進度');
 }
 $('#poolToggle').onclick=()=>setPool(!trialMode);
 $('#panelPoolToggle').onclick=()=>setPool(!trialMode);
@@ -375,7 +448,7 @@ $('#adminLogin').onclick=async()=>{
   if(password===null)return;
   ShowStore.login(password).catch(e=>notice(e.message));
 };
-$('#resetDeck').onclick=()=>{deck.reset();notice('已重設目前題庫的抽選進度');};
+$('#resetDeck').onclick=newShow;
 $('#toggleOpen').onclick=()=>ShowStore.toggle().catch(e=>notice(e.message));
 $('#soundBtn').onclick=()=>{sound=!sound;text('#soundBtn','抽題：'+(sound?'開':'關'));};
 $('#bgmBtn').onclick=()=>playback(bgm,ending); $('#endingBtn').onclick=()=>playback(ending,bgm);
@@ -408,8 +481,8 @@ bindOpeningFadeControl();
 $('#fontScale').oninput=e=>{document.documentElement.style.setProperty('--font-scale',e.target.value/100);text('#fontScaleValue',e.target.value+'%');fit();};
 for(let i=2;i<=7;i++){const b=document.createElement('button');b.dataset.cue=i;const k=document.createElement('kbd');k.textContent=i+1;b.append(k,document.createTextNode(names[i]));b.onclick=()=>drawCue(i);$('#cueButtons').append(b);}
 addEventListener('keydown',e=>{
-  if(e.code==='Enter' && phase==='selection'){e.preventDefault();begin();return;}
   if($('#castDialog').open || e.target.matches('input,textarea,select,button,a') || e.repeat) return;
+  if(e.code==='Enter' && phase==='selection'){e.preventDefault();begin();return;}
   const key=e.key.toLowerCase();
   if(e.code==='Space'||key==='enter'){e.preventDefault();advance();}
   else if(e.shiftKey&&e.code==='Digit0'){offset=0;document.documentElement.style.setProperty('--yoff','0vh');}
@@ -511,6 +584,10 @@ ShowStore.subscribe(s=>{
   text('#adminLogin',s.user?'登出管理員':'管理員登入');
 });
 renderSelection();
+syncMemberButtons();
+text('#poolToggle',trialMode?'試玩題庫 T':'現場題庫 T');
+$('#poolToggle').setAttribute('aria-pressed',String(trialMode));
+$('#controlPanel').classList.toggle('trial-mode',trialMode);
 ShowStore.init().then(()=>{if(!ShowStore.live && !liveRecords.length)ShowStore.seed(demo());});
 
 // 本地 SVG 介面圖示，不下載圖示字型或外部套件。
