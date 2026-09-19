@@ -1,9 +1,9 @@
 'use strict';
 const managementStyle=document.createElement('link');
-managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260919-pagination1';document.head.append(managementStyle);
+managementStyle.rel='stylesheet';managementStyle.href='management.css?v=20260919-sort1';document.head.append(managementStyle);
 const $=s=>document.querySelector(s);
 const sections=[['tags','標籤'],['romanticGesture','浪漫舉動'],['photo','照片'],['awkwardLine','聊天／金句'],['location','地點'],['igStory','限時動態']];
-let records=[],field='tags',page=1,filter='active',canManage=false,busy=false;
+let records=[],field='tags',page=1,filter='active',sortOrder='newest',canManage=false,busy=false;
 const PAGE_SIZE=30;
 const filters=['active','ignored','archived'];
 function text(selector,value){const element=$(selector);if(element)element.textContent=String(value);}
@@ -21,7 +21,33 @@ function showEmpty(title,detail=''){
   $('#answers').replaceChildren(empty);
 }
 const deck=ShowCore.createDeck();
-function currentPool(){return records.filter(r=>r.moderation===filter&&ShowCore.valid(field,r[field]));}
+function recordTime(record){
+  const value=record.ts??record.createdAt??record.created_at;
+  if(typeof value==='number'&&Number.isFinite(value))return value;
+  if(typeof value==='string'){
+    const numeric=Number(value);
+    if(Number.isFinite(numeric))return numeric;
+    const parsed=Date.parse(value);
+    return Number.isFinite(parsed)?parsed:0;
+  }
+  return 0;
+}
+function orderedRecords(){
+  return records.map((record,index)=>({record,index,time:recordTime(record)}))
+    .sort((a,b)=>{
+      if(a.time!==b.time)return sortOrder==='newest'?b.time-a.time:a.time-b.time;
+      return sortOrder==='newest'?b.index-a.index:a.index-b.index;
+    }).map(item=>item.record);
+}
+function updateSortButton(){
+  const button=$('#sortToggle');
+  if(!button)return;
+  const label=sortOrder==='newest'?'最新優先':'最舊優先';
+  button.textContent=label;
+  button.title='切換排序：目前為'+label;
+  button.setAttribute('aria-label','切換排序，目前為'+label);
+}
+function currentPool(){return orderedRecords().filter(r=>r.moderation===filter&&ShowCore.valid(field,r[field]));}
 function updatePagination(total){
   const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
   page=Math.min(page,totalPages);
@@ -31,6 +57,7 @@ function updatePagination(total){
 }
 function render(reset=false){
   text('#answerPanelTitle',(sections.find(([key])=>key===field)||[])[1]||'答案');
+  updateSortButton();
   updateCounts();
   if(reset)page=1;
   if(SHOW_CONFIG.mode==='firebase'&&!canManage){updatePagination(0);showEmpty('登入後查看');return;}
@@ -49,7 +76,7 @@ function render(reset=false){
     const source=document.createElement('span');source.textContent=(r.table||'未填桌號')+' · '+(r.nick||'未填暱稱');meta.append(number,source);
     const action=document.createElement('button');action.type='button';action.className='row-action';
     const active=filter==='active';action.setAttribute('aria-label',active?'忽略':'恢復');action.title=active?'忽略':'恢復';action.textContent=active?'×':'↺';
-    action.disabled=!canManage||busy;action.onclick=()=>manage(()=>ShowStore.setIgnored(id,active));
+    action.disabled=!canManage||busy;action.onclick=()=>manage(()=>ShowStore.setIgnored(r.id,active));
     row.append(value,meta,action);$('#answers').append(row);
   });
   if(!pool.length)showEmpty('沒有投稿');
@@ -59,6 +86,7 @@ $('#tabs button').classList.add('active');$('#tabs button').setAttribute('aria-s
 document.querySelectorAll('.status-filter').forEach(button=>button.onclick=()=>{filter=button.dataset.filter;document.querySelectorAll('.status-filter').forEach(item=>{const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));});render(true);});
 $('#prevPage').onclick=()=>{if(page>1){page-=1;render();}};
 $('#nextPage').onclick=()=>{const totalPages=Math.max(1,Math.ceil(currentPool().length/PAGE_SIZE));if(page<totalPages){page+=1;render();}};
+$('#sortToggle').onclick=()=>{sortOrder=sortOrder==='newest'?'oldest':'newest';render(true);};
 /** 管理操作保留原始 responses，只更新 moderation 標記。 */
 async function manage(action){
   busy=true;render();
