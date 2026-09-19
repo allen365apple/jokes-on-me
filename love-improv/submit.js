@@ -1,6 +1,7 @@
 'use strict';
 const $=s=>document.querySelector(s);
 let photo=null,processing=false,request=0;
+const PHOTO_MAX_EDGE=960, PHOTO_MAX_DATA_LENGTH=400000;
 const key=ShowStore.key+':submitted';
 window.ShowQuestions.init();
 function done(){ $('#form').hidden=true;$('#done').hidden=false; }
@@ -20,11 +21,12 @@ $('#photo').onchange=async()=>{
   const url=URL.createObjectURL(file),img=new Image();
   try{
     await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=url;});
-    const scale=Math.min(1,1280/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
+    const scale=Math.min(1,PHOTO_MAX_EDGE/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
     canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
     const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    let data=canvas.toDataURL('image/jpeg',.72);
-    if(data.length>512000)data=canvas.toDataURL('image/jpeg',.45);
+    let data=canvas.toDataURL('image/jpeg',.68);
+    if(data.length>PHOTO_MAX_DATA_LENGTH)data=canvas.toDataURL('image/jpeg',.48);
+    if(data.length>PHOTO_MAX_DATA_LENGTH)data=canvas.toDataURL('image/jpeg',.35);
     if(!ShowCore.valid('photo',data))throw new Error('照片仍然太大，請換一張或先截圖');
     if(token!==request)return;
     photo=data;$('#photoPreview').src=data;$('#photoPreview').hidden=false;$('#error').textContent='';
