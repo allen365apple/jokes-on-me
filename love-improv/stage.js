@@ -26,6 +26,7 @@ try {
 } catch (_) {}
 let selected = [], phase = 'selection', intro = -1, focus = 0, currentCue = 0;
 let liveRecords = [], records = [], actorTags = {}, trialMode = false, toastTimer, offset = 0;
+let profileImagesReady = false, profilePreloadRun = 0;
 trialMode = savedShow?.trialMode === true;
 deck = trialMode ? decks.trial : decks.live;
 selected = session.pair.filter(id => cast.some(p => p.id === id));
@@ -102,10 +103,31 @@ function avatar(container, p) {
   container.dataset.actor = p.id;
   applyCrop(container, p);
   container.textContent = p.name.slice(0,1);
-  const image = p.image?.startsWith('data:') ? p.image : (p.selectionImage || p.image);
+  const image = selectionImageSource(p);
   if (!image) return;
   const img = new Image(); img.alt = p.name; img.decoding = 'async'; img.src = image;
   img.onload = () => { container.replaceChildren(img); applyCrop(container, p); };
+}
+function profileImageSource(p) { return p?.image || ''; }
+function selectionImageSource(p) { return p?.image?.startsWith('data:') ? p.image : (p?.selectionImage || p?.image || ''); }
+function preloadCastImages() {
+  const run = ++profilePreloadRun;
+  profileImagesReady = false;
+  const sources = [...new Set(cast.flatMap(p => [profileImageSource(p), selectionImageSource(p)]).filter(Boolean))];
+  const jobs = sources.map(source => new Promise(resolve => {
+    const image = new Image(); image.decoding = 'async'; image.loading = 'eager'; image.fetchPriority = 'high';
+    image.onload = () => {
+      if (typeof image.decode === 'function') image.decode().catch(() => {}).finally(() => resolve());
+      else resolve();
+    };
+    image.onerror = () => resolve();
+    image.src = source;
+  }));
+  Promise.all(jobs).then(() => {
+    if (run !== profilePreloadRun) return;
+    profileImagesReady = true;
+    renderSelection();
+  });
 }
 function renderSelection() {
   const locked = new Set(session.history.flat());
@@ -135,7 +157,7 @@ function renderSelection() {
   text('#selectionCount', '已選 ' + selected.length + ' / 2');
   renderPairPreview();
   $('#start').hidden = session.status === 'finished';
-  $('#start').disabled = selected.length !== 2;
+  $('#start').disabled = selected.length !== 2 || !profileImagesReady;
   text('#start', editingPair ? '確認人選' : playing ? '繼續本回合' : '開始 →');
   $('#nextRound').hidden = !playing || editingPair;
   text('#nextRound', session.round === 3 ? '結束本場' : '下一回合 →');
@@ -378,7 +400,7 @@ function renderTitlePair() {
     card.className = 'title-pair-card'; card.dataset.actor = id;
     const portrait = document.createElement('div'); portrait.className = 'cast-portrait';
     portrait.dataset.actor = id;
-    const image = actor.image?.startsWith('data:') ? actor.image : (actor.selectionImage || actor.image);
+    const image = selectionImageSource(actor);
     if (image) {
       const img = new Image(); img.alt = actor.name; img.decoding = 'async'; img.loading = 'eager'; img.fetchPriority = 'high'; img.src = image;
       img.onerror = () => { img.hidden = true; portrait.classList.add('photo-unavailable'); };
@@ -545,7 +567,7 @@ $('#editCast').onclick=()=>{
 };
 $('#saveCast').onclick=()=>{
   if(pendingCast.some(p=>!p.name.trim())){text('#castSaveStatus','請填寫每位演員姓名');return;}
-  try{localStorage.setItem('astra-cast',JSON.stringify(pendingCast));cast=pendingCast;renderSelection();$('#castDialog').close();}
+  try{localStorage.setItem('astra-cast',JSON.stringify(pendingCast));cast=pendingCast;preloadCastImages();renderSelection();$('#castDialog').close();}
   catch(_){text('#castSaveStatus','儲存空間不足，請縮小照片，或使用 cast-config.js 設定照片路徑');}
 };
 /** 壓縮本機選取照片，不傳送至外部服務。 */
@@ -588,6 +610,7 @@ ShowStore.subscribe(s=>{
   $('#adminLogin').hidden=!s.live;
   text('#adminLogin',s.user?'登出管理員':'管理員登入');
 });
+preloadCastImages();
 renderSelection();
 syncMemberButtons();
 text('#poolToggle',trialMode?'試玩題庫 T':'現場題庫 T');
