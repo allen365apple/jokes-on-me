@@ -4,6 +4,12 @@
 看我笑話網頁製作 Learning.md
 tools-editor-local.gs
 
+# 看我戀愛的私有工作副本與封存資料，不公開推送
+/簡報即興劇/
+/_archive/
+love-improv/firebase-config.public.js
+love-improv/database.rules.json
+
 # 付費會員專屬內容，禁止公開（工作檔、原始電子報、成員個人照、產生器…）
 member-only-content/*
 # 例外：只有「預覽頁」要公開上線（設了 noindex），其餘一律私密

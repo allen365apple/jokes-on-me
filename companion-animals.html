@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b0e">
+  <title>陪伴動物圖鑑｜你是哪一隻？</title>
+  <style>
+    :root {
+      --bg: #090b0e;
+      --bg-soft: #11161a;
+      --panel: rgba(19, 24, 28, .86);
+      --panel-strong: #171e23;
+      --ink: #fff8eb;
+      --muted: #a9aaa5;
+      --quiet: #6f7776;
+      --line: rgba(255, 248, 235, .13);
+      --accent: #ffb454;
+      --accent-2: #ff785d;
+      --mint: #8dd7c2;
+      --scale: 1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      background: var(--bg);
+      color-scheme: dark;
+      scrollbar-color: #39434a var(--bg);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(800px 520px at 84% 0%, rgba(255, 142, 78, .16), transparent 65%),
+        radial-gradient(760px 540px at -10% 35%, rgba(111, 213, 194, .1), transparent 62%),
+        var(--bg);
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+      letter-spacing: .01em;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: clamp(38px, 9vh, 112px) clamp(18px, 4vw, 64px) 0;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: clamp(54px, 10vh, 120px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 180, 84, .5);
+      border-radius: 50%;
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .top-actions { display: flex; gap: 8px; }
+
+    .icon-button,
+    .text-button {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, .03);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+
+    .text-button {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .icon-button:hover,
+    .text-button:hover { border-color: rgba(255, 180, 84, .65); color: var(--ink); }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: var(--accent);
+      font-size: clamp(12px, 1.4vw, 15px);
+      font-weight: 900;
+      letter-spacing: .24em;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      max-width: 880px;
+      margin-bottom: 22px;
+      font-size: clamp(calc(46px * var(--scale)), calc(9vw * var(--scale)), calc(108px * var(--scale)));
+      line-height: .98;
+      letter-spacing: -.06em;
+      font-weight: 900;
+      text-wrap: balance;
+    }
+
+    .hero-copy {
+      max-width: 680px;
+      margin-bottom: 34px;
+      color: var(--muted);
+      font-size: clamp(16px, 2vw, 22px);
+      line-height: 1.8;
+      text-wrap: balance;
+    }
+
+    .hero-copy strong { color: var(--ink); font-weight: 800; }
+
+    .intro-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .intro-card,
+    .field-card,
+    .question-card,
+    .result-shell {
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: linear-gradient(145deg, rgba(26, 33, 38, .94), rgba(12, 16, 19, .88));
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .2);
+    }
+
+    .intro-card { padding: clamp(24px, 4vw, 44px); }
+
+    .intro-card h2 {
+      margin-bottom: 13px;
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.25;
+      letter-spacing: -.04em;
+    }
+
+    .intro-card p {
+      max-width: 580px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.85;
+    }
+
+    .nickname-label {
+      display: block;
+      margin: 24px 0 8px;
+      color: var(--quiet);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    .nickname-input {
+      width: min(100%, 340px);
+      min-height: 48px;
+      padding: 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      outline: none;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .nickname-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 180, 84, .13); }
+    .nickname-input::placeholder { color: #68716f; }
+
+    .button-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+
+    .primary-button,
+    .secondary-button {
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .2s ease, filter .2s ease, background .2s ease;
+    }
+
+    .primary-button {
+      border: 0;
+      color: #24180c;
+      background: linear-gradient(135deg, #ffc56d, #ff8965);
+      box-shadow: 0 12px 30px rgba(255, 137, 101, .18);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: rgba(255, 255, 255, .05);
+    }
+
+    .primary-button:hover,
+    .secondary-button:hover { transform: translateY(-2px); filter: brightness(1.08); }
+
+    .intro-notes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 22px;
+      border: 1px solid rgba(141, 215, 194, .2);
+      border-radius: 26px;
+      background: linear-gradient(160deg, rgba(39, 69, 67, .72), rgba(19, 29, 31, .78));
+    }
+
+    .note {
+      padding: 15px 14px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, .18);
+    }
+
+    .note-number { display: block; margin-bottom: 8px; color: var(--mint); font-size: 11px; font-weight: 900; letter-spacing: .13em; }
+    .note-text { margin: 0; color: #d9ece4; font-size: 13px; line-height: 1.7; }
+
+    .quiz-section { display: none; }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .section-kicker { margin: 0 0 8px; color: var(--accent); font-size: 12px; font-weight: 900; letter-spacing: .14em; }
+    .section-head h2 { margin: 0; font-size: clamp(24px, 4vw, 44px); letter-spacing: -.04em; }
+    .progress-copy { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
+
+    .progress-track { height: 6px; margin-bottom: 26px; overflow: hidden; border-radius: 999px; background: rgba(255, 255, 255, .08); }
+    .progress-value { width: 12.5%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .35s ease; }
+
+    .question-card { padding: clamp(22px, 4vw, 44px); }
+    .question-card h2 { max-width: 950px; margin-bottom: 30px; font-size: clamp(25px, 4vw, 48px); line-height: 1.25; letter-spacing: -.045em; text-wrap: balance; }
+    .question-help { margin-bottom: 26px; color: var(--quiet); font-size: 13px; }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .option {
+      position: relative;
+      min-height: 128px;
+      padding: 22px 22px 22px 56px;
+      border: 1px solid var(--line);
+      border-radius: 19px;
+      color: var(--ink);
+      text-align: left;
+      background: rgba(255, 255, 255, .035);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .option::before {
+      content: attr(data-number);
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: grid;
+      place-items: center;
+      width: 23px;
+      height: 23px;
+      border: 1px solid rgba(255, 180, 84, .45);
+      border-radius: 50%;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .option:hover,
+    .option:focus-visible { border-color: rgba(255, 180, 84, .7); background: rgba(255, 180, 84, .09); transform: translateY(-2px); outline: none; }
+    .option:active { transform: translateY(0); }
+    .option-text { display: block; font-size: clamp(15px, 1.7vw, 19px); line-height: 1.7; }
+
+    .quiz-footer { display: flex; justify-content: space-between; align-items: center; gap: 14px; margin-top: 18px; }
+    .keyboard-hint { color: var(--quiet); font-size: 12px; }
+    .back-button { border: 0; padding: 8px 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 13px; }
+    .back-button:hover { color: var(--ink); }
+
+    .analysis {
+      display: none;
+      min-height: 460px;
+      place-items: center;
+      text-align: center;
+    }
+
+    .analysis-inner { animation: float-in .6s ease both; }
+    .analysis-animal { display: block; margin-bottom: 18px; font-size: 86px; filter: drop-shadow(0 10px 25px rgba(255, 180, 84, .18)); animation: bob 1.5s ease-in-out infinite; }
+    .analysis h2 { margin-bottom: 10px; font-size: clamp(26px, 4vw, 46px); }
+    .analysis p { color: var(--muted); }
+
+    .result-section { display: none; }
+    .result-shell { overflow: hidden; }
+    .result-hero { position: relative; padding: clamp(26px, 5vw, 60px); border-bottom: 1px solid var(--line); background: radial-gradient(500px 260px at 78% 30%, color-mix(in srgb, var(--result-accent) 24%, transparent), transparent 70%), linear-gradient(140deg, rgba(29, 38, 42, .96), rgba(13, 17, 20, .92)); }
+    .result-hero-grid { display: grid; grid-template-columns: minmax(140px, 230px) minmax(0, 1fr); gap: clamp(24px, 5vw, 64px); align-items: center; }
+
+    .animal-orb { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--result-accent) 62%, white 0%); border-radius: 50%; background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, .22), color-mix(in srgb, var(--result-accent) 16%, transparent) 42%, rgba(0, 0, 0, .22) 78%); box-shadow: inset 0 0 40px rgba(255, 255, 255, .05), 0 20px 60px color-mix(in srgb, var(--result-accent) 15%, transparent); }
+    .animal-emoji { font-size: clamp(76px, 13vw, 158px); line-height: 1; filter: drop-shadow(0 14px 14px rgba(0,0,0,.24)); }
+    .result-number { margin: 0 0 16px; color: var(--result-accent); font-size: 12px; font-weight: 900; letter-spacing: .18em; }
+    .result-name { margin-bottom: 10px; font-size: clamp(43px, 7vw, 88px); line-height: .98; letter-spacing: -.08em; }
+    .result-type { margin-bottom: 18px; color: var(--result-accent); font-size: clamp(18px, 2.8vw, 28px); font-weight: 900; }
+    .family-tag { display: inline-flex; padding: 8px 12px; border: 1px solid rgba(255,255,255,.15); border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .result-summary { max-width: 720px; margin: 26px 0 0; color: #e8e3d9; font-size: clamp(17px, 2vw, 24px); line-height: 1.75; }
+
+    .result-body { padding: clamp(24px, 5vw, 60px); }
+    .score-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 34px; }
+    .score-item { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.035); }
+    .score-label { display: block; margin-bottom: 8px; color: var(--quiet); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    .score-value { display: block; color: var(--ink); font-size: 15px; font-weight: 900; line-height: 1.45; }
+    .score-value em { color: var(--result-accent); font-style: normal; }
+
+    .personal-hook { margin: 0 0 34px; padding: 20px 22px; border-left: 3px solid var(--result-accent); border-radius: 0 16px 16px 0; color: #fff4de; background: rgba(255,255,255,.045); font-size: clamp(17px, 2.1vw, 24px); line-height: 1.7; }
+
+    .result-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 14px; }
+    .result-block { padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.03); }
+    .result-block.wide { margin-bottom: 14px; }
+    .result-block h3 { margin-bottom: 12px; color: var(--result-accent); font-size: 13px; letter-spacing: .08em; }
+    .result-block p { margin-bottom: 0; color: #dad8d0; font-size: 15px; line-height: 1.85; }
+    .quote { color: var(--ink) !important; font-size: clamp(20px, 3vw, 31px) !important; font-weight: 900; line-height: 1.45 !important; }
+    .pair-list { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .pair-list li { padding: 7px 10px; border-radius: 999px; color: var(--ink); background: rgba(255,255,255,.08); font-size: 13px; font-weight: 800; }
+    .pair-list.conflict li { color: #ffd1bc; background: rgba(255, 120, 93, .1); }
+
+    .discussion { border-color: color-mix(in srgb, var(--result-accent) 38%, var(--line)); background: linear-gradient(145deg, color-mix(in srgb, var(--result-accent) 9%, transparent), rgba(255,255,255,.025)); }
+    .discussion p { color: var(--ink); font-size: 18px; font-weight: 800; }
+    .result-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .result-actions .primary-button, .result-actions .secondary-button { min-height: 46px; }
+
+    .control-panel {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 10;
+      display: none;
+      width: min(330px, calc(100vw - 36px));
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(19, 24, 28, .96);
+      box-shadow: 0 24px 70px rgba(0,0,0,.4);
+    }
+
+    .control-panel.open { display: block; animation: float-in .2s ease both; }
+    .control-panel h2 { margin-bottom: 15px; font-size: 18px; }
+    .control-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 42px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .control-row input[type="range"] { width: 130px; accent-color: var(--accent); }
+    .control-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    .control-caption { margin: 14px 0 0; color: var(--quiet); font-size: 11px; line-height: 1.6; }
+
+    .toast { position: fixed; left: 50%; bottom: 26px; z-index: 20; display: none; transform: translateX(-50%); padding: 11px 16px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: rgba(26, 33, 38, .96); box-shadow: 0 15px 40px rgba(0,0,0,.3); font-size: 13px; font-weight: 800; }
+    .toast.show { display: block; animation: toast-in 2.3s ease both; }
+
+    .bottom-space { height: 100vh; min-height: 420px; }
+
+    .stage-mode .page { max-width: 1400px; }
+    .stage-mode .option { min-height: 158px; }
+    .stage-mode .option-text { font-size: clamp(17px, 2.1vw, 25px); }
+    .stage-mode .question-card h2 { font-size: clamp(30px, 4.8vw, 62px); }
+    .stage-mode .keyboard-hint { font-size: 14px; }
+
+    @keyframes float-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+    @keyframes toast-in { 0%, 100% { opacity: 0; transform: translate(-50%, 12px); } 12%, 85% { opacity: 1; transform: translate(-50%, 0); } }
+
+    @media (max-width: 760px) {
+      .page { padding-top: 28px; }
+      .topbar { margin-bottom: 64px; }
+      .intro-layout, .result-hero-grid { grid-template-columns: 1fr; }
+      .intro-notes { grid-template-columns: 1fr 1fr; }
+      .options, .result-columns { grid-template-columns: 1fr; }
+      .option { min-height: 104px; }
+      .result-hero-grid { text-align: center; }
+      .animal-orb { width: min(45vw, 190px); margin: 0 auto; }
+      .family-tag { justify-content: center; }
+      .result-summary { text-align: left; }
+      .score-grid { grid-template-columns: repeat(2, 1fr); }
+      .quiz-footer { align-items: flex-start; flex-direction: column-reverse; }
+      .quiz-footer .back-button { align-self: flex-start; }
+    }
+
+    @media (max-width: 430px) {
+      .topbar { align-items: flex-start; }
+      .brand { max-width: 180px; line-height: 1.5; }
+      .intro-notes { grid-template-columns: 1fr; }
+      .result-name { font-size: 52px; }
+      .score-grid { gap: 7px; }
+      .score-item { padding: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+  <style id="vertical-editorial-style">
+    /* 直式圖鑑版：以參考頁的閱讀節奏為靈感，保留自己的紙張、印章與色彩系統。 */
+    :root {
+      --bg: #efe5d3;
+      --bg-soft: #f6efe4;
+      --panel: rgba(255, 251, 243, .78);
+      --panel-strong: #fffaf0;
+      --ink: #3f3931;
+      --muted: #756c60;
+      --quiet: #9b8e7d;
+      --line: rgba(74, 62, 47, .18);
+      --accent: #df704c;
+      --accent-2: #ee9c5e;
+      --mint: #678f80;
+    }
+
+    body {
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 13% 17%, rgba(255,255,255,.42) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 78% 62%, rgba(92,72,42,.08) 0 1px, transparent 1.8px),
+        radial-gradient(700px 500px at 90% -10%, rgba(255, 182, 115, .28), transparent 72%),
+        linear-gradient(135deg, #eee3cf 0%, #f5ecdf 48%, #e9dcc8 100%);
+      background-size: 19px 19px, 27px 27px, auto, auto;
+    }
+
+    .page { width: min(760px, 100%); padding: 24px 20px 0; }
+    .topbar { margin-bottom: 18px; }
+    .brand { color: #897d6c; letter-spacing: .14em; }
+    .brand-mark { border-color: rgba(223, 112, 76, .55); color: var(--accent); background: rgba(255,255,255,.22); }
+    .icon-button, .text-button { border-color: rgba(74, 62, 47, .16); color: #786d5e; background: rgba(255,255,255,.28); }
+    .icon-button:hover, .text-button:hover { border-color: var(--accent); color: var(--ink); }
+
+    .intro-section { min-height: calc(100vh - 70px); display: flex; flex-direction: column; justify-content: center; padding: 6vh 0 9vh; text-align: center; }
+    .eyebrow { color: var(--accent); letter-spacing: .18em; }
+    h1 { margin-right: auto; margin-left: auto; color: var(--ink); background: none; -webkit-text-fill-color: currentColor; letter-spacing: -.08em; }
+    .cover-art { position: relative; width: min(62vw, 250px); height: min(62vw, 250px); margin: 2px auto 28px; border: 1px solid rgba(74, 62, 47, .16); border-radius: 48% 52% 49% 51% / 54% 45% 55% 46%; background: rgba(255, 251, 243, .55); box-shadow: 0 9px 0 rgba(114, 88, 49, .08), inset 0 0 0 12px rgba(255,255,255,.2); transform: rotate(-2deg); }
+    .cover-art::before, .cover-art::after { position: absolute; color: var(--accent); font-size: 20px; }
+    .cover-art::before { content: '✦'; top: 27px; left: 35px; transform: rotate(13deg); }
+    .cover-art::after { content: '♡'; right: 33px; bottom: 34px; color: var(--mint); transform: rotate(12deg); }
+    .cover-animal { position: absolute; z-index: 1; display: grid; place-items: center; width: 102px; height: 102px; border: 1px solid rgba(223, 112, 76, .28); border-radius: 50%; background: rgba(255, 255, 255, .35); font-size: 70px; box-shadow: 0 8px 0 rgba(114, 88, 49, .08); }
+    .cover-animal.main { top: 62px; left: 50%; transform: translateX(-50%) rotate(3deg); }
+    .cover-animal.small { width: 54px; height: 54px; font-size: 31px; }
+    .cover-animal.left { left: 25px; bottom: 36px; transform: rotate(-12deg); }
+    .cover-animal.right { top: 28px; right: 23px; transform: rotate(11deg); }
+    .hero-copy { margin-right: auto; margin-left: auto; color: var(--muted); line-height: 1.85; }
+    .hero-copy strong { color: var(--accent); }
+    .intro-layout { grid-template-columns: 1fr; gap: 18px; }
+    .intro-card { padding: 0; border: 0; background: transparent; box-shadow: none; }
+    .intro-card h2 { max-width: 560px; margin-right: auto; margin-left: auto; color: #51483c; }
+    .intro-card p { margin-right: auto; margin-left: auto; }
+    .nickname-label { color: #978975; text-align: left; }
+    .nickname-input { border-color: rgba(74, 62, 47, .2); color: var(--ink); background: rgba(255,255,255,.45); }
+    .nickname-input::placeholder { color: #a99d8b; }
+    .primary-button { color: #fff9ed; background: var(--accent); box-shadow: 0 7px 0 rgba(177, 79, 49, .2); }
+    .secondary-button { border-color: rgba(74, 62, 47, .2); color: var(--ink); background: rgba(255,255,255,.35); }
+    .intro-card .button-row { justify-content: center; }
+    .intro-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; border: 0; background: transparent; }
+    .note { min-height: 106px; border: 1px solid rgba(74, 62, 47, .14); border-radius: 16px; background: rgba(255, 251, 243, .44); box-shadow: 0 5px 0 rgba(114, 88, 49, .07); text-align: left; }
+    .note-number { color: var(--mint); }
+    .note-text { color: #6d6254; }
+
+    .quiz-section, .result-section { max-width: 660px; margin: 0 auto; }
+    .section-head { display: block; text-align: center; }
+    .section-kicker { color: var(--accent); }
+    .section-head h2 { color: #51483c; }
+    .progress-copy { margin-top: 8px; color: var(--quiet); }
+    .progress-track { height: 5px; margin: 0 auto 24px; max-width: 260px; background: rgba(75, 60, 42, .11); }
+    .progress-value { background: var(--accent); }
+    .question-card { padding: 28px 20px 22px; border-color: rgba(74, 62, 47, .15); background: rgba(255, 251, 243, .65); box-shadow: 0 10px 0 rgba(114, 88, 49, .07), 0 22px 50px rgba(118, 88, 46, .09); }
+    .question-card h2 { margin-right: auto; margin-left: auto; color: #40382f; text-align: center; }
+    .question-help { color: var(--quiet); text-align: center; }
+    .options { grid-template-columns: 1fr; gap: 11px; }
+    .option { min-height: 84px; padding: 18px 18px 18px 52px; border-color: rgba(74, 62, 47, .17); color: var(--ink); background: rgba(255, 252, 246, .76); box-shadow: 0 4px 0 rgba(114, 88, 49, .09); }
+    .option::before { border-color: rgba(223, 112, 76, .52); color: var(--accent); }
+    .option:hover, .option:focus-visible { border-color: var(--accent); background: #fff8ea; box-shadow: 0 5px 0 rgba(177, 79, 49, .12); }
+    .option-text { font-size: 15px; line-height: 1.65; }
+    .quiz-footer { color: var(--quiet); }
+    .back-button { color: #877b6c; }
+    .keyboard-hint { color: #a09585; }
+
+    .analysis { min-height: 560px; }
+    .analysis h2 { color: #51483c; }
+    .analysis p { color: var(--muted); }
+    .analysis-animal { filter: drop-shadow(0 10px 12px rgba(133, 89, 37, .18)); }
+
+    .result-shell { border-color: rgba(74, 62, 47, .15); background: rgba(255, 251, 243, .57); box-shadow: 0 10px 0 rgba(114, 88, 49, .07), 0 22px 50px rgba(118, 88, 46, .09); }
+    .result-hero { padding: 32px 22px 30px; border-bottom-color: rgba(74, 62, 47, .14); background: radial-gradient(260px 170px at 76% 12%, rgba(255, 196, 133, .4), transparent 72%), transparent; text-align: center; }
+    .result-hero-grid { grid-template-columns: 1fr; gap: 22px; }
+    .animal-orb { width: min(58vw, 250px); margin: 0 auto; border-color: rgba(223, 112, 76, .38); border-radius: 47% 53% 52% 48% / 54% 45% 55% 46%; background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.64), rgba(223, 112, 76, .16) 47%, rgba(223, 112, 76, .04) 78%); box-shadow: inset 0 0 40px rgba(255,255,255,.24), 0 16px 35px rgba(118, 88, 46, .12); }
+    .result-number { color: var(--accent); }
+    .result-name { color: var(--ink); }
+    .result-type { color: var(--accent); }
+    .family-tag { border-color: rgba(74, 62, 47, .15); color: #827664; background: rgba(255,255,255,.3); }
+    .result-summary { margin-right: auto; margin-left: auto; color: #6d6254; text-align: left; }
+    .result-body { padding: 24px 20px 30px; }
+    .score-item, .result-block { border-color: rgba(74, 62, 47, .14); background: rgba(255, 252, 246, .54); }
+    .score-label, .result-block h3 { color: var(--mint); }
+    .score-value { color: #51483c; }
+    .score-value em { color: var(--accent); }
+    .personal-hook { border-left-color: var(--accent); color: #5a4937; background: rgba(223, 112, 76, .08); }
+    .result-block p { color: #6d6254; }
+    .quote { color: #51483c !important; }
+    .pair-list li { color: #5a4937; background: rgba(103, 143, 128, .14); }
+    .pair-list.conflict li { color: #99513d; background: rgba(223, 112, 76, .12); }
+    .discussion { border-color: rgba(223, 112, 76, .34); background: rgba(223, 112, 76, .08); }
+    .discussion p { color: #51483c; }
+    .control-panel { border-color: rgba(74, 62, 47, .16); background: rgba(255, 251, 243, .97); box-shadow: 0 20px 60px rgba(92, 65, 29, .2); }
+    .control-panel h2 { color: #51483c; }
+    .control-row { border-top-color: rgba(74, 62, 47, .13); color: #756c60; }
+    .control-caption { color: #9b8e7d; }
+    .toast { border-color: rgba(74, 62, 47, .16); color: #51483c; background: rgba(255, 251, 243, .97); }
+
+    body.stage-mode {
+      --bg: #090b0e;
+      --panel: rgba(19, 24, 28, .86);
+      --panel-strong: #171e23;
+      --ink: #fff8eb;
+      --muted: #a9aaa5;
+      --quiet: #6f7776;
+      --line: rgba(255, 248, 235, .13);
+      --accent: #ffb454;
+      --accent-2: #ff785d;
+      --mint: #8dd7c2;
+      background: radial-gradient(800px 520px at 84% 0%, rgba(255, 142, 78, .16), transparent 65%), radial-gradient(760px 540px at -10% 35%, rgba(111, 213, 194, .1), transparent 62%), var(--bg);
+    }
+
+    body.stage-mode h1, body.stage-mode .intro-card h2, body.stage-mode .section-head h2, body.stage-mode .question-card h2, body.stage-mode .analysis h2, body.stage-mode .result-name, body.stage-mode .quote, body.stage-mode .discussion p { color: var(--ink) !important; }
+    body.stage-mode .cover-art, body.stage-mode .cover-animal { border-color: var(--line); background: rgba(255,255,255,.035); box-shadow: none; }
+    body.stage-mode .intro-card, body.stage-mode .question-card, body.stage-mode .result-shell { background: linear-gradient(145deg, rgba(26, 33, 38, .94), rgba(12, 16, 19, .88)); border-color: var(--line); box-shadow: 0 24px 80px rgba(0,0,0,.2); }
+    body.stage-mode .intro-notes { background: transparent; }
+    body.stage-mode .note, body.stage-mode .option, body.stage-mode .score-item, body.stage-mode .result-block { border-color: var(--line); color: var(--ink); background: rgba(255,255,255,.035); box-shadow: none; }
+    body.stage-mode .note-text, body.stage-mode .hero-copy, body.stage-mode .intro-card p, body.stage-mode .question-help, body.stage-mode .result-summary, body.stage-mode .result-block p { color: var(--muted); }
+    body.stage-mode .secondary-button, body.stage-mode .nickname-input, body.stage-mode .family-tag { border-color: var(--line); color: var(--ink); background: rgba(255,255,255,.05); }
+    body.stage-mode .result-hero { background: radial-gradient(500px 260px at 78% 30%, rgba(255, 142, 78, .14), transparent 70%), transparent; }
+    body.stage-mode .animal-orb { border-color: color-mix(in srgb, var(--accent) 62%, white 0%); background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.22), rgba(255,180,84,.16) 42%, rgba(0,0,0,.22) 78%); }
+
+    @media (max-width: 760px) {
+      .intro-section { min-height: auto; padding-top: 8vh; }
+      .intro-notes { grid-template-columns: 1fr 1fr; }
+      .result-hero-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 430px) {
+      .intro-notes { grid-template-columns: 1fr; }
+      .topbar { margin-bottom: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page" id="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span>看我笑話工作室・陪伴動物圖鑑</div>
+      <div class="top-actions">
+        <button class="icon-button" id="fullscreen-button" type="button" aria-label="切換全螢幕">⛶</button>
+        <button class="icon-button" id="settings-button" type="button" aria-label="開啟控制台">⚙</button>
+      </div>
+    </header>
+
+    <section class="intro-section" id="intro-section">
+      <p class="eyebrow">RELATIONSHIP TRANSLATOR 01</p>
+      <h1>你是哪一隻？</h1>
+      <div class="cover-art" aria-hidden="true">
+        <span class="cover-animal main">🦦</span>
+        <span class="cover-animal small left">🐈</span>
+        <span class="cover-animal small right">🐻</span>
+      </div>
+      <p class="hero-copy">你說「<strong>都可以</strong>」，是真的都可以嗎？這份測驗不測你愛不愛人，只測你怎麼陪人，以及你希望別人怎麼陪你。</p>
+      <div class="intro-layout">
+        <div class="intro-card">
+          <h2>每個人心裡都有一隻動物，還有一句不敢講的真心話。</h2>
+          <p>8 題、約 2 分鐘。結果會把「你給出去的陪伴」和「你想收到的陪伴」交叉比對，看看你是一起衝、先接住、默默處理，還是需要一點空氣。</p>
+          <label class="nickname-label" for="nickname">想在結果卡上顯示什麼暱稱？（可不填）</label>
+          <input class="nickname-input" id="nickname" maxlength="18" autocomplete="nickname" placeholder="例如：小安、阿明、那個很會說都可以的人">
+          <div class="button-row">
+            <button class="primary-button" id="start-button" type="button">開始測驗　→</button>
+            <button class="secondary-button" id="rules-button" type="button">先看規則</button>
+          </div>
+        </div>
+        <aside class="intro-notes" aria-label="測驗特色">
+          <div class="note"><span class="note-number">01 / 給出去</span><p class="note-text">你習慣用什麼方式陪別人？</p></div>
+          <div class="note"><span class="note-number">02 / 想收到</span><p class="note-text">你真正希望別人怎麼陪你？</p></div>
+          <div class="note"><span class="note-number">03 / 會被說中</span><p class="note-text">「到了傳一下」和「先抱我」都有算。</p></div>
+          <div class="note"><span class="note-number">04 / 可以申訴</span><p class="note-text">結果不是判決，是拿來吵架的起手式。</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="quiz-section" id="quiz-section" aria-live="polite">
+      <div class="section-head">
+        <div><p class="section-kicker" id="question-part">你通常怎麼陪別人？</p><h2 id="question-number">Q1</h2></div>
+        <div class="progress-copy" id="progress-copy">1 / 8</div>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div class="progress-value" id="progress-value"></div></div>
+      <div class="question-card">
+        <h2 id="question-text"></h2>
+        <p class="question-help">不用想太久，第一個讓你「嗯，這個啦」的答案通常最準。</p>
+        <div class="options" id="options"></div>
+        <div class="quiz-footer">
+          <button class="back-button" id="back-button" type="button">← 回上一題</button>
+          <span class="keyboard-hint">鍵盤 1–4 作答　·　F 全螢幕　·　← 回上一題</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="analysis" id="analysis-section" aria-live="polite">
+      <div class="analysis-inner"><span class="analysis-animal" id="analysis-animal">🦦</span><h2>正在翻譯你的陪伴語言……</h2><p>看看你說出口的，和心裡想要的，有沒有差一點點。</p></div>
+    </section>
+
+    <section class="result-section" id="result-section" aria-live="polite"></section>
+    <div class="bottom-space" aria-hidden="true"></div>
+  </main>
+
+  <aside class="control-panel" id="control-panel" aria-label="現場控制台">
+    <h2>現場控制台</h2>
+    <label class="control-row"><span>大字投影模式</span><input id="stage-mode" type="checkbox"></label>
+    <label class="control-row"><span>字體大小</span><input id="font-scale" type="range" min="0.9" max="1.18" step="0.01" value="1"></label>
+    <p class="control-caption">設定會記在這台瀏覽器裡。測驗答案不會上傳，也不會自動保存。</p>
+  </aside>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const questions = [
+      {
+        part: '你通常怎麼陪別人？',
+        text: '伴侶突然迷上一件你完全不懂、卻已經在群組狂丟連結的事，你第一個反應是：',
+        options: [
+          { type: 'A', text: '我陪你去現場看看，至少先知道你到底在嗨什麼。' },
+          { type: 'B', text: '你最喜歡它的哪一點？先講給我聽。' },
+          { type: 'C', text: '票、交通、雨具和行動電源，需要我先處理嗎？' },
+          { type: 'D', text: '你去玩，回來想講的時候我再聽，不硬跟。' }
+        ]
+      },
+      {
+        part: '你通常怎麼陪別人？',
+        text: '伴侶臉臭得像剛被主管 call，卻說「不用陪我」，你會：',
+        options: [
+          { type: 'A', text: '我先不逼你，但要不要一起去買杯飲料或吃點宵夜？' },
+          { type: 'B', text: '我不逼你說，但想知道你現在是委屈、失望，還是單純累。' },
+          { type: 'C', text: '我先把晚餐、回家路線和明早的事處理好。' },
+          { type: 'D', text: '好，我不一直傳；你想找我的時候，我都在。' }
+        ]
+      },
+      {
+        part: '你通常怎麼陪別人？',
+        text: '下列哪一種「有陪等於沒陪」最讓你火大？',
+        options: [
+          { type: 'A', text: '人到了，卻一路嫌夜市好吵、排隊好浪費時間。' },
+          { type: 'B', text: '坐在你旁邊滑手機，卻沒發現你今天安靜得不對勁。' },
+          { type: 'C', text: '說好會到，最後只丟一句：「拍謝，我忘了。」' },
+          { type: 'D', text: '從吃什麼到跟誰見面都要報備，連買珍奶也要問。' }
+        ]
+      },
+      {
+        part: '你通常怎麼陪別人？',
+        text: '伴侶想自己去旅行、回南部或去露營，你會：',
+        options: [
+          { type: 'A', text: '我陪你研究行程，也可以陪你走一小段，不一定全程跟。' },
+          { type: 'B', text: '你是想休息，還是最近有什麼事讓你想換個空氣？' },
+          { type: 'C', text: '我幫你確認車票、住宿、行李和雨備方案。' },
+          { type: 'D', text: '去吧，玩得開心，不用為了配合我改計畫。' }
+        ]
+      },
+      {
+        part: '你真正想被怎麼陪？',
+        text: '你今天低落到連晚餐都不想想，哪一句話最能安慰你？',
+        options: [
+          { type: 'A', text: '走，陪你去吃點東西或吹個風，不用先解釋。' },
+          { type: 'B', text: '我想先聽你說，哪一段最刺、最讓你過不去？' },
+          { type: 'C', text: '先不用撐，我們把最急的事一件件處理。' },
+          { type: 'D', text: '你不用現在回我；想一個人時我不追問，但我會在。' }
+        ]
+      },
+      {
+        part: '你真正想被怎麼陪？',
+        text: '你分享一個只有自己喜歡的冷門東西，你最希望伴侶：',
+        options: [
+          { type: 'A', text: '即使沒興趣，也願意陪你接觸一次，不然怎麼知道你為什麼著迷？' },
+          { type: 'B', text: '願意理解它對你為什麼重要，不只回你一個貼圖。' },
+          { type: 'C', text: '主動把時間空下來，甚至連票都先買好了。' },
+          { type: 'D', text: '不一定要參與，但不要笑你很宅、很冷門或很難懂。' }
+        ]
+      },
+      {
+        part: '你真正想被怎麼陪？',
+        text: '伴侶不能出席你人生中一個重要的日子，你最希望他怎麼做？',
+        options: [
+          { type: 'A', text: '事後陪你重走一次、補拍一張照片，或一起吃那天沒吃到的那頓飯。' },
+          { type: 'B', text: '事前事後都理解你的緊張與在乎，不要只說「放輕鬆啦」。' },
+          { type: 'C', text: '事前幫你把交通、流程和備案安排好，讓你安心面對。' },
+          { type: 'D', text: '誠實說自己做不到，不要求你秒回「沒關係」或演得很大方。' }
+        ]
+      },
+      {
+        part: '你真正想被怎麼陪？',
+        text: '哪一句最接近你心中的愛？',
+        options: [
+          { type: 'A', text: '你不懂展覽、球賽或我迷的樂團，但還是願意陪我一次。' },
+          { type: 'B', text: '你不一定到場，但你真的懂我為什麼那麼在意。' },
+          { type: 'C', text: '你平常可以很忙，但我上台、送醫或遇到大事時一定要出現。' },
+          { type: 'D', text: '你愛我，但不會把已讀、回家和報備變成一場考試。' }
+        ]
+      }
+    ];
+
+    const axisLabels = { A: '參與型', B: '接住型', C: '可靠型', D: '放手型' };
+    const shortLabels = { A: '想一起', B: '想被懂', C: '想被照顧', D: '想要空氣' };
+    const typeNames = { A: '參與', B: '接住', C: '可靠', D: '放手' };
+
+    const results = {
+      AA: { id: '01', animal: '水獺', emoji: '🦦', title: '一起玩才叫愛型', family: '願意走進你的世界', accent: '#ffb454', summary: '你相信愛就是把快樂變成兩個人的事情。對方喜歡什麼，你不一定原本就喜歡，但你想一起體驗。', quote: '你要去？那我也要去！', blind: '你可能把對方沒有參與，解讀成對方沒有把你放在心上。', scene: '看到演唱會、球賽或期間限定快閃，你的第一句通常是：「要不要一起衝？」對方回「你去就好」時，你表面說好，心裡已經開始重播三次。', compatible: ['狗狗', '海豚', '企鵝'], conflict: ['貓咪', '樹懶'], solution: '先把「陪我去」和「你一定要喜歡」拆開，對方比較不會一聽到邀請就緊張。', discussion: '對方陪你去，但全程都很無聊，這算陪伴嗎？' },
+      AB: { id: '02', animal: '狗狗', emoji: '🐶', title: '陪你入坑，但請你理解型', family: '願意走進你的世界', accent: '#f6a66a', summary: '你願意為了靠近對方，參與自己原本沒興趣的事；但你真正渴望的是，對方理解這件事為什麼對你重要。', quote: '我陪你去，但你要知道我為什麼這麼喜歡。', blind: '你可能以為「願意來」和「願意理解」是同一件事，但對方未必這樣想。', scene: '對方願意陪你排很久的名店，卻一路問「到底還要多久」；你在意的不是他變成鐵粉，而是他有沒有知道這件事為什麼值得你排隊。', compatible: ['大象', '海豚', '貓咪'], conflict: ['章魚', '大熊'], solution: '把「我想被理解」說成具體問題，例如「你可以先聽我講完，再幫我想辦法嗎？」', discussion: '你要的是對方陪你，還是對方知道你為什麼需要他陪？' },
+      AC: { id: '03', animal: '企鵝', emoji: '🐧', title: '我陪你走很久，也希望你守約型', family: '願意走進你的世界', accent: '#8dbbd7', summary: '你很能陪，也很重視長期與穩定。只要對方說過會在，你就會把那句話記在心裡。', quote: '我可以等，但你不要讓我不知道你還會不會回來。', blind: '你可能不太計較陪伴的形式，卻很在意對方有沒有做到承諾。', scene: '你可以接受下班晚一點，不能接受對方讓你在捷運站、餐廳門口或活動入口乾等，最後才說：「欸我忘記了。」', compatible: ['螞蟻', '大熊', '鯨魚'], conflict: ['狐狸', '鳥'], solution: '不要只約時間，也約一個變動時的通知底線；晚到可以，消失不行。', discussion: '陪伴最重要的是願意，還是守約？' },
+      AD: { id: '04', animal: '鳥', emoji: '🐦', title: '陪你出發，但不要把我綁住型', family: '給彼此保留空間', accent: '#88d6c0', summary: '你願意走進別人的世界，也希望保有自己的空間。對你來說，陪伴是主動靠近，不是永久綁定。', quote: '我可以陪你去，但回家之後我要自己待一下。', blind: '你給對方的自由，可能被誤會成冷淡或不需要對方。', scene: '你可以一起吃早餐，下午各自跑行程；但「各自生活」不代表完全不用報平安，至少讓對方知道你安全抵達，不是人間蒸發。', compatible: ['貓咪', '狐狸', '海狸'], conflict: ['大象', '章魚'], solution: '主動說出「我需要空間，但不是不要你」，再約定一個低干擾的聯絡方式。', discussion: '願意陪一次，和每次都要陪，差別在哪裡？' },
+      BA: { id: '05', animal: '海豚', emoji: '🐬', title: '先懂你，再陪你玩型', family: '讀懂你的情緒', accent: '#63c6d8', summary: '你很會接住別人的情緒，也希望對方不要只做表面上的陪伴，而是真的理解你。', quote: '你可以不喜歡，但你要知道我為什麼會這麼開心。', blind: '你可能會希望對方先讀懂情緒，才願意接受他的行動。', scene: '對方已經幫你叫好車、買好晚餐，你卻還在想「你有沒有發現我今天其實很難過」。事情有被處理，不代表心情有被接住。', compatible: ['大象', '兔子', '水獺'], conflict: ['大熊', '海狸'], solution: '先告訴對方今天要「陪聽」還是「陪做」，讓行動派有正確的使用說明。', discussion: '如果對方做了很多，但完全不懂你的感受，你會感動嗎？' },
+      BB: { id: '06', animal: '大象', emoji: '🐘', title: '兩個人都要懂彼此型', family: '讀懂你的情緒', accent: '#c4a7e7', summary: '你重視細節、記憶與情緒理解。對你來說，記得你曾經說過的話，就是把你放在心上。', quote: '你記得，代表你真的有在聽。', blind: '你可能期待對方自己察覺，卻忘了直接說出需求。', scene: '你記得對方喝無糖、怕冷、討厭香菜，也記得三年前他在某家早餐店說過的一句話；所以對方忘了你今天的重要簡報，你會覺得那不是「忘記」，而是「你根本沒在聽」。', compatible: ['狗狗', '海豚', '海狸'], conflict: ['章魚', '狐狸'], solution: '把「你應該知道」改成「我希望你記得這件事」，關係會少一場猜謎比賽。', discussion: '真正的理解，是記得細節，還是能說出對方的感受？' },
+      BC: { id: '07', animal: '兔子', emoji: '🐰', title: '我很會察言觀色，也想被照顧型', family: '讀懂你的情緒', accent: '#f28fa5', summary: '你很容易察覺氣氛和情緒，常常在對方開口前就發現他不太對勁。', quote: '你說沒事，但你的臉不是這樣說的。', blind: '你有時候太快替別人解讀，也可能期待別人用同樣的敏感度理解你。', scene: '對方只回一個句點，你就開始猜是不是工作出事、是不是自己講錯話；你很會看臉色，但不一定每次都要立刻把臉色翻譯成結論。', compatible: ['海豚', '海狸', '無尾熊'], conflict: ['鳥', '狐狸'], solution: '先問「你現在想被我陪，還是想自己消化？」給敏感和空間各一個出口。', discussion: '察覺對方情緒，是體貼，還是有時候也會造成壓力？' },
+      BD: { id: '08', animal: '無尾熊', emoji: '🐨', title: '抱一下就好，不要審問型', family: '安靜地待在一起', accent: '#a8c88a', summary: '你低落時不一定想分析問題，只想先被安靜地接住。', quote: '我現在不用答案，我只想先靠一下。', blind: '對方一開始解釋或分析，你可能會覺得自己的情緒被跳過了。', scene: '你低落時不需要一篇三百字分析，只想有人陪你坐在便利商店門口，把熱飲遞過來，先說一句：「今天真的很衰。」', compatible: ['貓咪', '大象', '海豚'], conflict: ['海狸', '章魚'], solution: '在結果頁提供一個可直接使用的暗號：「今天只要抱抱」或「今天可以幫我想辦法」。', discussion: '人在難過的時候，陪伴應該先解決問題，還是先不要解決問題？' },
+      CA: { id: '09', animal: '海狸', emoji: '🦫', title: '行動派約會企劃型', family: '把生活照顧好', accent: '#d9935e', summary: '你習慣用安排與行動表達愛。你不只說「我陪你」，還會直接把票買好、路線查好。', quote: '你只要出門，其他我都處理好了。', blind: '你可能在對方只想被理解時，太快進入解決問題模式。', scene: '下雨先查停車位、訂位先問能不能帶傘、對方要上台先整理流程；你說「我都弄好了」，有時候對方真正想聽的是「我知道你現在很緊張」。', compatible: ['大象', '狗狗', '企鵝'], conflict: ['無尾熊', '海豚'], solution: '動手前先問一句：「你要我陪你處理，還是先陪你抱怨五分鐘？」', discussion: '幫對方把事情做好，對方就一定會感受到愛嗎？' },
+      CB: { id: '10', animal: '螞蟻', emoji: '🐜', title: '我做了很多，請先看見我型', family: '把生活照顧好', accent: '#e7b56d', summary: '你不一定會講浪漫的話，但會每天做一點點讓對方生活變好的事。', quote: '我沒有說，但我每天都有做。', blind: '你可能覺得自己的付出很明顯，但對方根本沒有注意到。', scene: '你默默多買一份早餐、把對方的傘放進包包、記得他不吃香菜；但如果對方只說「喔，謝謝」，你會開始懷疑自己是不是在關係裡兼職做後勤。', compatible: ['企鵝', '大象', '樹懶'], conflict: ['水獺', '鳥'], solution: '把暗中照顧偶爾翻譯成一句話，讓對方有機會接住你的好意。', discussion: '沒有說出口的照顧，對方有義務自己發現嗎？' },
+      CC: { id: '11', animal: '章魚', emoji: '🐙', title: '人形備援系統型', family: '把生活照顧好', accent: '#d985b9', summary: '你可以同時處理八件事，是關係裡最可靠的緊急支援中心。', quote: '沒事，這個我來；那個我也來。', blind: '你很會照顧別人，卻可能忘了問自己是不是也需要被照顧。', scene: '聚餐你訂位、搶票你處理、大家迷路你開導航、下雨你有備用雨衣；所有人都問「還有什麼要弄嗎」，卻沒人問你累不累。', compatible: ['兔子', '大熊', '海狸'], conflict: ['狐狸', '無尾熊'], solution: '每次說「我來」之前，先留一件事給別人做，也把自己的需求放進共同清單。', discussion: '一個人很可靠，是否就代表他不需要被陪？' },
+      CD: { id: '12', animal: '大熊', emoji: '🐻', title: '你自由，我當靠山型', family: '關鍵時刻一定出現', accent: '#b9987d', summary: '你不會限制對方，但在重要時刻一定會出現。你給的是不打擾的保護。', quote: '你去做你想做的事，我會在你身後。', blind: '你平常可能太安靜，讓對方不知道你其實一直都在乎。', scene: '平常你不一定每天報備，但對方要面試、比賽、看醫生或半夜出狀況，你會直接出現。你的愛很像「到了傳一下」：字少，重量很重。', compatible: ['鳥', '企鵝', '鯨魚'], conflict: ['海豚', '兔子'], solution: '除了大事現身，也固定做一個小小的日常確認，讓對方不用靠猜測知道你還在。', discussion: '平常不黏，重要時刻出現，算不算足夠的陪伴？' },
+      DA: { id: '13', animal: '狐狸', emoji: '🦊', title: '嘴上說隨你，心裡想一起型', family: '給彼此保留空間', accent: '#e57e55', summary: '你很尊重對方的選擇，但有時候「你去就好」的背後，也藏著一點「你怎麼沒有問我要不要一起」。', quote: '你去啊，我真的沒關係。', blind: '你希望對方讀懂言外之意，但對方可能只聽見字面上的「沒關係」。', scene: '你說「都可以」，其實想吃那家；你說「你先去」，其實希望對方再問一次。對方真的照字面走，你又會想：「他怎麼那麼不懂？」', compatible: ['狗狗', '鳥', '大象'], conflict: ['企鵝', '螞蟻'], solution: '保留一點浪漫讀心，但重要需求請加一句白話：「其實我想要你問我一次。」', discussion: '「不用陪我」到底要不要相信字面意思？' },
+      DB: { id: '14', animal: '樹懶', emoji: '🦥', title: '慢慢來，但請記得我型', family: '安靜地待在一起', accent: '#b9b27d', summary: '你不需要高密度的聯絡，但希望對方是穩定的，不要忽冷忽熱。', quote: '不用一直找我，但不要突然消失。', blind: '你可能把低需求表現得太徹底，讓對方以為你什麼都不需要。', scene: '你可以一天只傳幾則訊息，但不能接受對方忙到連「晚點回」都沒有；低頻率不是免聯絡，而是不用每十分鐘交作業。', compatible: ['貓咪', '螞蟻', '狐狸'], conflict: ['水獺', '海狸'], solution: '說清楚你要的是「少一點，但穩定一點」，不要只用消失來示範低需求。', discussion: '低頻率的陪伴，怎麼證明它不是冷淡？' },
+      DC: { id: '15', animal: '鯨魚', emoji: '🐋', title: '我不黏你，但關鍵時刻要到型', family: '關鍵時刻一定出現', accent: '#6e9fd5', summary: '你相信兩個人可以各自生活，但重要時刻不能缺席。', quote: '平常各忙各的，但你需要我的時候，我一定會出現。', blind: '你可能低估了日常小事對另一半的重要性。', scene: '你記得重要手術、畢業典禮和家人有事一定到，但對方在意的可能是每天睡前那句「到家了嗎」或週五一起吃的滷味。', compatible: ['大熊', '企鵝', '海狸'], conflict: ['兔子', '無尾熊'], solution: '把「關鍵時刻」拆成幾個日常小時刻，陪伴不必盛大，但要讓人感覺有被記得。', discussion: '陪伴的價值，是由時間累積，還是由關鍵時刻決定？' },
+      DD: { id: '16', animal: '貓咪', emoji: '🐈', title: '兩隻貓共享屋簷型', family: '給彼此保留空間', accent: '#d9c17e', summary: '你相信成熟的陪伴不是 24 小時黏在一起，而是兩個人都能好好生活，卻仍然願意回到彼此身邊。', quote: '你做你的，我做我的，晚點一起吃飯。', blind: '尊重空間和逐漸疏遠，有時候只差一點主動。', scene: '你們可以各自戴耳機、各滑各的手機，晚點一起去巷口買鹽酥雞；最怕的不是安靜，而是安靜到連「要不要加辣」都懶得問。', compatible: ['樹懶', '鳥', '大熊'], conflict: ['水獺', '章魚'], solution: '保留各自時間，但固定創造一個只屬於你們的回來時刻，例如一起吃宵夜或散步。', discussion: '不打擾是體貼，還是有時候只是懶得靠近？' }
+    };
+
+    const settingsKey = 'companionQuizSettings';
+    const state = { mode: 'intro', questionIndex: 0, answers: [], nickname: '', analyzing: false, result: null };
+    let settings = loadSettings();
+
+    const introSection = document.getElementById('intro-section');
+    const quizSection = document.getElementById('quiz-section');
+    const analysisSection = document.getElementById('analysis-section');
+    const resultSection = document.getElementById('result-section');
+    const nicknameInput = document.getElementById('nickname');
+    const toast = document.getElementById('toast');
+
+    function loadSettings() {
+      try { return { stageMode: false, fontScale: 1, ...JSON.parse(localStorage.getItem(settingsKey) || '{}') }; }
+      catch (error) { return { stageMode: false, fontScale: 1 }; }
+    }
+
+    function saveSettings() {
+      try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch (error) { /* 離線或隱私模式不允許儲存時，當次設定仍然有效。 */ }
+      applySettings();
+    }
+
+    function applySettings() {
+      document.documentElement.style.setProperty('--scale', settings.fontScale);
+      document.body.classList.toggle('stage-mode', settings.stageMode);
+      document.getElementById('stage-mode').checked = settings.stageMode;
+      document.getElementById('font-scale').value = settings.fontScale;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.remove('show');
+      void toast.offsetWidth;
+      toast.classList.add('show');
+    }
+
+    function scrollToContent() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startQuiz() {
+      state.mode = 'quiz';
+      state.questionIndex = 0;
+      state.answers = [];
+      state.nickname = nicknameInput.value.trim();
+      state.result = null;
+      introSection.style.display = 'none';
+      resultSection.style.display = 'none';
+      analysisSection.style.display = 'none';
+      quizSection.style.display = 'block';
+      renderQuestion();
+      scrollToContent();
+    }
+
+    function renderQuestion() {
+      const question = questions[state.questionIndex];
+      const number = state.questionIndex + 1;
+      document.getElementById('question-part').textContent = question.part;
+      document.getElementById('question-number').textContent = `Q${number}`;
+      document.getElementById('progress-copy').textContent = `${number} / ${questions.length}`;
+      document.getElementById('progress-value').style.width = `${(number / questions.length) * 100}%`;
+      document.getElementById('question-text').textContent = question.text;
+      const options = document.getElementById('options');
+      options.innerHTML = '';
+      question.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.type = 'button';
+        button.dataset.number = index + 1;
+        button.setAttribute('aria-label', `選項 ${index + 1}：${option.text}`);
+        const text = document.createElement('span');
+        text.className = 'option-text';
+        text.textContent = option.text;
+        button.appendChild(text);
+        button.addEventListener('click', () => chooseOption(index));
+        options.appendChild(button);
+      });
+      document.getElementById('back-button').style.visibility = state.questionIndex > 0 ? 'visible' : 'hidden';
+    }
+
+    function chooseOption(index) {
+      if (state.analyzing) return;
+      state.answers[state.questionIndex] = questions[state.questionIndex].options[index].type;
+      const buttons = [...document.querySelectorAll('.option')];
+      buttons.forEach(button => button.disabled = true);
+      buttons[index].style.borderColor = 'var(--accent)';
+      buttons[index].style.background = 'rgba(255, 180, 84, .15)';
+      window.setTimeout(() => {
+        if (state.questionIndex === questions.length - 1) showAnalysis();
+        else { state.questionIndex += 1; renderQuestion(); }
+      }, 300);
+    }
+
+    function goBack() {
+      if (state.questionIndex === 0 || state.analyzing) return;
+      state.questionIndex -= 1;
+      renderQuestion();
+    }
+
+    function countTypes(answerList) {
+      return answerList.reduce((counts, type) => { if (type) counts[type] += 1; return counts; }, { A: 0, B: 0, C: 0, D: 0 });
+    }
+
+    function pickWinner(counts, tieBreaker) {
+      const max = Math.max(...Object.values(counts));
+      const tied = Object.keys(counts).filter(type => counts[type] === max);
+      return tied.includes(tieBreaker) ? tieBreaker : tied[0];
+    }
+
+    function getIntensity(counts) {
+      const max = Math.max(...Object.values(counts));
+      if (max >= 3) return '明顯傾向';
+      if (max === 2) return '情境型';
+      return '混合型';
+    }
+
+    function getSecondary(counts) {
+      const values = Object.values(counts);
+      const max = Math.max(...values);
+      if (max === 1) return '四種都會';
+      const leaders = Object.keys(counts).filter(type => counts[type] === max);
+      if (leaders.length > 1) return `雙主色：${leaders.map(type => shortLabels[type]).join('／')}`;
+      const second = Math.max(...values.filter(value => value < max));
+      return Object.keys(counts).filter(type => counts[type] === second).map(type => shortLabels[type]).join('／');
+    }
+
+    function scoreText(type, counts) { return `${axisLabels[type]} ${counts[type]}／4`; }
+
+    function makePersonalHook() {
+      const translate = { A: '找個方式一起做', B: '先懂我在意什麼', C: '把事情穩穩接住', D: '給我空間但別消失' };
+      return `我說「不用陪我」時，其實希望你${translate[state.answers[1]]}；遇到重要日子，我希望你${translate[state.answers[6]]}。`;
+    }
+
+    function showAnalysis() {
+      state.analyzing = true;
+      state.mode = 'analysis';
+      quizSection.style.display = 'none';
+      introSection.style.display = 'none';
+      resultSection.style.display = 'none';
+      analysisSection.style.display = 'grid';
+      document.getElementById('analysis-animal').textContent = '🦦';
+      window.setTimeout(showResult, 880);
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' })[character]);
+    }
+
+    function listHTML(items, className = '') { return `<ul class="pair-list ${className}">${items.map(item => `<li>${escapeHTML(item)}</li>`).join('')}</ul>`; }
+
+    function showResult() {
+      const giveCounts = countTypes(state.answers.slice(0, 4));
+      const receiveCounts = countTypes(state.answers.slice(4, 8));
+      const giveType = pickWinner(giveCounts, state.answers[1]);
+      const receiveType = pickWinner(receiveCounts, state.answers[6]);
+      const result = results[`${giveType}${receiveType}`];
+      state.result = result;
+      state.mode = 'result';
+      state.analyzing = false;
+      analysisSection.style.display = 'none';
+      quizSection.style.display = 'none';
+      resultSection.style.display = 'block';
+      resultSection.style.setProperty('--result-accent', result.accent);
+      const displayName = state.nickname ? `${escapeHTML(state.nickname)}，` : '';
+      resultSection.innerHTML = `
+        <div class="result-shell">
+          <div class="result-hero">
+            <div class="result-hero-grid">
+              <div class="animal-orb"><span class="animal-emoji" aria-hidden="true">${result.emoji}</span></div>
+              <div>
+                <p class="result-number">陪伴動物圖鑑 No. ${result.id}</p>
+                <h2 class="result-name">${displayName}${result.animal}</h2>
+                <p class="result-type">${result.title}</p>
+                <span class="family-tag">所屬家族：${result.family}</span>
+                <p class="result-summary">${result.summary}</p>
+              </div>
+            </div>
+          </div>
+          <div class="result-body">
+            <div class="score-grid">
+              <div class="score-item"><span class="score-label">你給出去的陪伴</span><span class="score-value"><em>${axisLabels[giveType]}</em><br>${giveCounts[giveType]}／4・${getIntensity(giveCounts)}</span></div>
+              <div class="score-item"><span class="score-label">你想收到的陪伴</span><span class="score-value"><em>${axisLabels[receiveType]}</em><br>${receiveCounts[receiveType]}／4・${getIntensity(receiveCounts)}</span></div>
+              <div class="score-item"><span class="score-label">你的給出副色</span><span class="score-value">${getSecondary(giveCounts)}</span></div>
+              <div class="score-item"><span class="score-label">你的接收副色</span><span class="score-value">${getSecondary(receiveCounts)}</span></div>
+            </div>
+            <p class="personal-hook">${makePersonalHook()}</p>
+            <div class="result-block wide"><h3>你的代表台詞</h3><p class="quote">「${result.quote}」</p></div>
+            <div class="result-columns">
+              <div class="result-block"><h3>容易被誤會的地方／關係盲點</h3><p>${result.blind}</p></div>
+              <div class="result-block"><h3>台灣日常畫面</h3><p>${result.scene}</p></div>
+            </div>
+            <div class="result-columns">
+              <div class="result-block"><h3>容易互補</h3>${listHTML(result.compatible)}</div>
+              <div class="result-block"><h3>容易雞同鴨講</h3>${listHTML(result.conflict, 'conflict')}</div>
+            </div>
+            <div class="result-block wide"><h3>一句可以立刻拿去用的相處解法</h3><p>${result.solution}</p></div>
+            <div class="result-block discussion"><h3>現場討論題</h3><p>${result.discussion}</p></div>
+            <div class="result-actions">
+              <button class="primary-button" id="share-result" type="button">分享我的結果　↗</button>
+              <button class="secondary-button" id="restart-button" type="button">重新測一次</button>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('share-result').addEventListener('click', shareResult);
+      document.getElementById('restart-button').addEventListener('click', restartQuiz);
+      scrollToContent();
+    }
+
+    async function shareResult() {
+      const name = state.nickname || '我';
+      const shareText = `${name}是「${state.result.animal}｜${state.result.title}」\n${state.result.quote}\n\n陪伴動物圖鑑：你是哪一隻？`;
+      try {
+        if (navigator.share) await navigator.share({ title: '陪伴動物圖鑑', text: shareText });
+        else { await copyText(shareText); showToast('結果已複製，可以貼到群組申訴了。'); }
+      } catch (error) {
+        if (error.name !== 'AbortError') showToast('目前無法分享，請截圖保存結果。');
+      }
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return; }
+      const helper = document.createElement('textarea');
+      helper.value = text;
+      helper.style.position = 'fixed';
+      helper.style.opacity = '0';
+      document.body.appendChild(helper);
+      helper.select();
+      const copied = document.execCommand('copy');
+      helper.remove();
+      if (!copied) throw new Error('copy unavailable');
+    }
+
+    function restartQuiz() {
+      state.mode = 'intro';
+      state.analyzing = false;
+      state.answers = [];
+      state.questionIndex = 0;
+      resultSection.innerHTML = '';
+      resultSection.style.display = 'none';
+      analysisSection.style.display = 'none';
+      quizSection.style.display = 'none';
+      introSection.style.display = 'block';
+      scrollToContent();
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+
+    document.getElementById('start-button').addEventListener('click', startQuiz);
+    document.getElementById('rules-button').addEventListener('click', () => showToast('8 題、每題選最像你的那句；沒有標準答案，只有方便吵架的結果。'));
+    document.getElementById('back-button').addEventListener('click', goBack);
+    document.getElementById('restart-button')?.addEventListener('click', restartQuiz);
+    document.getElementById('fullscreen-button').addEventListener('click', toggleFullscreen);
+    document.getElementById('settings-button').addEventListener('click', () => document.getElementById('control-panel').classList.toggle('open'));
+    document.getElementById('stage-mode').addEventListener('change', event => { settings.stageMode = event.target.checked; saveSettings(); });
+    document.getElementById('font-scale').addEventListener('input', event => { settings.fontScale = Number(event.target.value); saveSettings(); });
+
+    document.addEventListener('keydown', event => {
+      const target = event.target.tagName;
+      if (target === 'INPUT' || target === 'TEXTAREA') return;
+      if (event.key.toLowerCase() === 'f') { event.preventDefault(); toggleFullscreen(); return; }
+      if (event.key === 'Escape') { document.getElementById('control-panel').classList.remove('open'); return; }
+      if (state.mode === 'intro' && (event.code === 'Space' || event.key === 'Enter')) { event.preventDefault(); startQuiz(); return; }
+      if (state.mode === 'quiz' && !state.analyzing) {
+        const number = Number(event.key);
+        if (number >= 1 && number <= 4) { event.preventDefault(); chooseOption(number - 1); }
+        if (event.key === 'ArrowLeft') { event.preventDefault(); goBack(); }
+      }
+      if (state.mode === 'result' && event.key.toLowerCase() === 'r') { event.preventDefault(); restartQuiz(); }
+    });
+
+    applySettings();
+  </script>
+</body>
+</html>
