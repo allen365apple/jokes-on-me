@@ -9,13 +9,14 @@ import {
   canHandleKey,
   stagePosition,
   canPositionStage,
-} from "./core.mjs?v=6";
+  victorySoundPreferences,
+} from "./core.mjs?v=7";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=6";
+} from "./store.mjs?v=7";
 import {
   $,
   escapeHtml as esc,
@@ -30,14 +31,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=6";
+} from "./ui.mjs?v=7";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=6";
+import { revealVotes } from "./reveal.mjs?v=7";
 let store,
   state,
   sync,
@@ -53,10 +54,12 @@ const defaults = {
   font: 100,
   position: 0,
   volume: 30,
-  sound: false,
+  sound: true,
+  soundVersion: 2,
   effects: true,
   reduced: false,
   qr: true,
+  qrSize: 100,
 };
 let prefs = { ...defaults };
 let editorTeams = structuredClone(DEFAULT_TEAMS);
@@ -64,7 +67,9 @@ let editorTeams = structuredClone(DEFAULT_TEAMS);
 /** Load one explicit session; invalid links never create a replacement show. */
 async function init() {
   try {
-    prefs = { ...defaults, ...readLocal("preferences", {}) };
+    const saved = readLocal("preferences", {});
+    prefs = { ...defaults, ...saved, ...victorySoundPreferences(saved) };
+    writeLocal("preferences", prefs);
     applyPreferences();
     $("#mode-label").textContent =
       mode === "demo" ? "排練・模擬票數" : "LIVE VOTE";
@@ -360,6 +365,7 @@ function updateQr() {
 
 function applyPreferences() {
   document.documentElement.style.setProperty("--scale", prefs.font / 100);
+  document.documentElement.style.setProperty("--qr-scale", prefs.qrSize / 100);
   document.documentElement.style.setProperty(
     "--stage-offset",
     `${prefs.position}vh`,
@@ -374,6 +380,7 @@ function applyPreferences() {
     ["font-scale", "font", "font-value", "%"],
     ["top-space", "position", "space-value", "vh"],
     ["volume", "volume", "volume-value", "%"],
+    ["qr-size", "qrSize", "qr-size-value", "%"],
   ].forEach(([id, key, out, unit]) => {
     $("#" + id).value = prefs[key];
     $("#" + out).textContent = prefs[key] + unit;
@@ -572,6 +579,10 @@ function exitTest() {
 }
 
 function bindEvents() {
+  $("#preview-sound").addEventListener("click", async () => {
+    await unlockAudio();
+    playCheer({ ...prefs, sound: true });
+  });
   $(".header-right").append($(".operator-bar"));
   $("#test-button").addEventListener("click", openTest);
   $("#close-test").addEventListener("click", () => $("#test-dialog").close());
@@ -687,6 +698,7 @@ function bindPreferences() {
     ["font-scale", "font"],
     ["top-space", "position"],
     ["volume", "volume"],
+    ["qr-size", "qrSize"],
   ].forEach(([id, key]) =>
     $("#" + id).addEventListener("input", (e) => {
       prefs[key] = Number(e.target.value);

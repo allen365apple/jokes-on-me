@@ -229,3 +229,11 @@ export function stagePosition(position, key) {
     ),
   );
 }
+
+/** Enable the new fanfare once, then preserve deliberate mute choices. */
+export function victorySoundPreferences(saved = {}) {
+  return {
+    sound: saved.soundVersion === 2 ? saved.sound !== false : true,
+    soundVersion: 2,
+  };
+}

@@ -1560,6 +1560,15 @@ fieldset {
 }
 
 /* Full-height projection, translated as one surface to make room above or below. */
+.arena .qr-block {
+  width: calc(clamp(180px, 19vw, 280px) * var(--qr-scale, 1));
+  max-width: min(80vw, calc(80dvh - 220px));
+}
+@media (max-width: 600px) {
+  .arena .qr-block {
+    width: calc(142px * var(--qr-scale, 1));
+  }
+}
 .stage-page {
   height: 100dvh;
   overflow: hidden;

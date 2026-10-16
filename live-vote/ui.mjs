@@ -1,4 +1,4 @@
-import { inkFor, safeAvatar, outcome } from "./core.mjs?v=6";
+import { inkFor, safeAvatar, outcome } from "./core.mjs?v=7";
 
 export const $ = (selector) => document.querySelector(selector);
 /** Escape all names and other data before inserting presentational markup. */
@@ -159,7 +159,7 @@ export function unlockAudio() {
   try {
     audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
     if (audioContext.state === "suspended")
-      audioContext.resume().catch(() => {});
+      return audioContext.resume().catch(() => {});
   } catch {
     /* audio is optional */
   }
@@ -172,7 +172,7 @@ export function stopSound() {
     /* already stopped */
   }
 }
-/** Short locally synthesized crowd swell; no paid audio or external download. */
+/** Original arcade-style victory fanfare; synthesized locally without samples or noise. */
 export function playCheer(prefs) {
   if (!prefs.sound || !audioContext || audioContext.state !== "running") return;
   stopSound();
@@ -181,23 +181,47 @@ export function playCheer(prefs) {
   const gain = ctx.createGain();
   activeSound = gain;
   gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime((prefs.volume / 100) * 0.25, now + 0.18);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-  const buffer = ctx.createBuffer(1, ctx.sampleRate * 2.3, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let n = 0; n < data.length; n++)
-    data[n] =
-      (Math.random() * 2 - 1) *
-      (0.65 + 0.35 * Math.sin((n / ctx.sampleRate) * 27));
-  const source = ctx.createBufferSource();
-  source.buffer = buffer;
-  const filter = ctx.createBiquadFilter();
-  filter.type = "bandpass";
-  filter.frequency.value = 1200;
-  filter.Q.value = 0.5;
-  source.connect(filter);
-  filter.connect(gain);
-  source.start(now);
-  source.stop(now + 2.3);
+  gain.gain.setValueAtTime(Math.max(0, Math.min(100, prefs.volume)) / 100, now);
+  const melody = [
+    [523.25, 0, 0.12],
+    [659.25, 0.14, 0.12],
+    [783.99, 0.28, 0.12],
+    [1046.5, 0.44, 0.22],
+    [987.77, 0.7, 0.11],
+    [1174.66, 0.84, 0.11],
+    [1318.51, 0.98, 0.11],
+    [1046.5, 1.14, 1.0],
+  ];
+  melody.forEach(([hz, at, duration]) =>
+    tone(hz, at, duration, "square", 0.13),
+  );
+  [261.63, 329.63, 392].forEach((hz) => tone(hz, 1.14, 1.15, "triangle", 0.14));
+  [
+    [130.81, 0, 0.38],
+    [196, 0.44, 0.6],
+    [130.81, 1.14, 1.15],
+  ].forEach(([hz, at, duration]) => tone(hz, at, duration, "triangle", 0.19));
+  let remaining = 14;
+  function tone(hz, at, duration, type, peak) {
+    const oscillator = ctx.createOscillator(),
+      envelope = ctx.createGain(),
+      start = now + at;
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(hz, start);
+    envelope.gain.setValueAtTime(0, start);
+    envelope.gain.linearRampToValueAtTime(peak, start + 0.008);
+    envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(envelope);
+    envelope.connect(gain);
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      envelope.disconnect();
+      if (--remaining === 0) {
+        gain.disconnect();
+        if (activeSound === gain) activeSound = null;
+      }
+    };
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.02);
+  }
 }

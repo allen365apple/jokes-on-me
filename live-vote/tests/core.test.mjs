@@ -14,9 +14,21 @@ import {
   inkFor,
   stagePosition,
   canPositionStage,
+  victorySoundPreferences,
 } from "../core.mjs";
 
 const fresh = () => ({ session: newSession("test-session"), votes: {} });
+test("new victory sound defaults on, migrates old mute once, and keeps subsequent mute", () => {
+  assert.equal(victorySoundPreferences().sound, true);
+  assert.deepEqual(victorySoundPreferences({ sound: false }), {
+    sound: true,
+    soundVersion: 2,
+  });
+  assert.equal(
+    victorySoundPreferences({ sound: false, soundVersion: 2 }).sound,
+    false,
+  );
+});
 const open = () => reduceDemo(fresh(), { type: "open" });
 test("projection moves in both directions, clamps and returns home", () => {
   assert.equal(stagePosition(0, "ArrowUp"), -2);
