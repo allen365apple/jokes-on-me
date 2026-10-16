@@ -193,13 +193,13 @@ export function playCheer(prefs) {
     [1046.5, 1.14, 1.0],
   ];
   const stinger = [
-    [392, 0, 0.16, "sawtooth", 0.12],
-    [493.88, 0, 0.16, "triangle", 0.1],
-    [587.33, 0, 0.16, "triangle", 0.1],
-    [523.25, 0.2, 0.58, "sawtooth", 0.13],
-    [659.25, 0.2, 0.58, "triangle", 0.13],
-    [783.99, 0.2, 0.58, "triangle", 0.13],
-    [1046.5, 0.2, 0.58, "triangle", 0.12],
+    [392, 0, 0.36, "sawtooth", 0.12],
+    [493.88, 0, 0.36, "triangle", 0.1],
+    [587.33, 0, 0.36, "triangle", 0.1],
+    [523.25, 0.4, 1.15, "sawtooth", 0.13],
+    [659.25, 0.4, 1.15, "triangle", 0.13],
+    [783.99, 0.4, 1.15, "triangle", 0.13],
+    [1046.5, 0.4, 1.15, "triangle", 0.12],
   ];
   const selected =
     prefs.victoryStyle === "stinger"

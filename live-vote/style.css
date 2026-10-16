@@ -1563,11 +1563,13 @@ fieldset {
 .arena .qr-block {
   position: fixed;
   left: 50%;
-  top: 50dvh;
+  top: calc(50dvh + var(--qr-y-offset, 6vh));
   transform: translate(-50%, -50%);
   width: calc(clamp(180px, 19vw, 280px) * var(--qr-scale, 1));
   max-width: min(80vw, calc(80dvh - 250px));
-  transition: width 160ms ease-out;
+  transition:
+    width 160ms ease-out,
+    top 160ms ease-out;
 }
 .stage-page .arena-team:first-child {
   left: -1.25vw;

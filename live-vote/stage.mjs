@@ -61,6 +61,7 @@ const defaults = {
   reduced: false,
   qr: true,
   qrSize: 100,
+  qrPosition: 6,
 };
 let prefs = { ...defaults };
 let editorTeams = structuredClone(DEFAULT_TEAMS);
@@ -370,6 +371,10 @@ function applyPreferences() {
   document.documentElement.style.setProperty("--scale", prefs.font / 100);
   document.documentElement.style.setProperty("--qr-scale", prefs.qrSize / 100);
   document.documentElement.style.setProperty(
+    "--qr-y-offset",
+    `${prefs.qrPosition}vh`,
+  );
+  document.documentElement.style.setProperty(
     "--stage-offset",
     `${prefs.position}vh`,
   );
@@ -395,9 +400,11 @@ function applyPreferences() {
     ["top-space", "position", "space-value", "vh"],
     ["volume", "volume", "volume-value", "%"],
     ["qr-size", "qrSize", "qr-size-value", "%"],
+    ["qr-position", "qrPosition", "qr-position-value", "vh"],
   ].forEach(([id, key, out, unit]) => {
     $("#" + id).value = prefs[key];
-    $("#" + out).textContent = prefs[key] + unit;
+    const prefix = key === "qrPosition" && prefs[key] > 0 ? "+" : "";
+    $("#" + out).textContent = prefix + prefs[key] + unit;
   });
   $("#sound-enabled").checked = prefs.sound;
   $("#victory-style").value = prefs.victoryStyle;
@@ -733,6 +740,7 @@ function bindPreferences() {
     ["top-space", "position"],
     ["volume", "volume"],
     ["qr-size", "qrSize"],
+    ["qr-position", "qrPosition"],
   ].forEach(([id, key]) =>
     $("#" + id).addEventListener("input", (e) => {
       prefs[key] = Number(e.target.value);
