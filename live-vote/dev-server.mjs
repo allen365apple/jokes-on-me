@@ -15,6 +15,7 @@ const files = [
   "core.mjs",
   "store.mjs",
   "room-store.mjs",
+  "reveal.mjs",
   "config.mjs",
   "vendor/supabase.js",
 ];

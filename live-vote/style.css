@@ -1,4 +1,53 @@
 @charset "UTF-8";
+/* The closed server snapshot is revealed only after the presentation finishes. */
+.countdown-box #qr + div {
+  display: none;
+}
+.arena .countdown-box {
+  aspect-ratio: 1;
+  top: 50%;
+  padding: 0;
+}
+.countdown-box .qr {
+  display: grid;
+  place-items: center;
+  background: #fff;
+  overflow: hidden;
+}
+.countdown-number {
+  font: 950 clamp(100px, 14vw, 220px) / 1 system-ui;
+  color: #111;
+}
+.revealing .team-status {
+  visibility: hidden;
+}
+.counting-votes .bar {
+  transition: none;
+}
+.reveal-complete .arena {
+  overflow: visible;
+}
+.reveal-complete .arena-team.winner {
+  z-index: 3;
+  animation: winner-reveal 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow:
+    0 0 0 5px #fff,
+    0 0 65px var(--team-color);
+}
+@keyframes winner-reveal {
+  0% {
+    transform: scale(0.94) translateY(0);
+  }
+  45% {
+    transform: scale(1.06) translateY(-12px);
+  }
+  75% {
+    transform: scale(1.025) translateY(-5px);
+  }
+  100% {
+    transform: scale(1.035) translateY(-8px);
+  }
+}
 :root {
   color-scheme: dark;
   --paper: #f4f1e9;

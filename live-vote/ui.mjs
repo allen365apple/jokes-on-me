@@ -101,22 +101,55 @@ export function celebrate(session, prefs) {
   const bounds = root.getBoundingClientRect();
   const winners = winner === "tie" ? [0, 1] : [winner];
   winners.forEach((index) => {
-    const bar = $(`#team-${index} .bar`).getBoundingClientRect();
-    for (let n = 0; n < 36; n++) {
+    const bar = $(`#team-${index}`).getBoundingClientRect();
+    for (let n = 0; n < 240; n++) {
       const particle = document.createElement("i");
       particle.className = "confetti";
       Object.assign(particle.style, {
-        left: `${bar.x + bar.width / 2 - bounds.x}px`,
-        top: `${bar.y - bounds.y}px`,
-        background: [session.teams[index].color, "#fff", "#e8ff8a"][n % 3],
+        left: `${bar.x + bar.width * (n % 2 ? 0.82 : 0.18) - bounds.x}px`,
+        top: `${bar.y + bar.height * 0.78 - bounds.y}px`,
+        background: [
+          session.teams[index].color,
+          "#fff",
+          "#e8ff8a",
+          "#ffd166",
+          "#ff61bd",
+        ][n % 5],
+        animation: "none",
+        width: `${5 + Math.random() * 8}px`,
+        height: `${n % 4 === 0 ? 32 : 8 + Math.random() * 12}px`,
+        borderRadius: n % 5 === 0 ? "50%" : "0",
       });
       particle.style.setProperty("--dx", `${(Math.random() - 0.5) * 440}px`);
       particle.style.setProperty("--dy", `${80 + Math.random() * 220}px`);
       particle.style.setProperty("--spin", `${Math.random() * 900}deg`);
-      particle.addEventListener("animationend", () => particle.remove(), {
-        once: true,
-      });
       root.append(particle);
+      const dx = (Math.random() - 0.5) * Math.max(900, bounds.width),
+        rise = bar.height * (0.7 + Math.random() * 0.9),
+        spin = (Math.random() - 0.5) * 2200;
+      particle
+        .animate(
+          [
+            { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
+            {
+              transform: `translate(${dx * 0.4}px,${-rise}px) rotate(${spin * 0.4}deg)`,
+              opacity: 1,
+              offset: 0.35,
+            },
+            {
+              transform: `translate(${dx}px,${bounds.height * 0.7}px) rotate(${spin}deg)`,
+              opacity: 0,
+            },
+          ],
+          {
+            duration: 3300 + Math.random() * 1700,
+            delay: (n % 3) * 320 + Math.random() * 180,
+            easing: "cubic-bezier(.18,.6,.45,1)",
+            fill: "both",
+          },
+        )
+        .finished.then(() => particle.remove())
+        .catch(() => particle.remove());
     }
   });
 }

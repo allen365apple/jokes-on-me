@@ -89,13 +89,13 @@ function render(next) {
         : "GET READY";
   $("#vote-status").textContent =
     next.status === "closed"
-      ? resultLabel(next)
+      ? "投票結束，請看大螢幕揭曉！"
       : next.status === "open"
         ? "選一隊，點一下就投票。"
         : "等待開放投票";
   document.querySelectorAll(".team-choice").forEach((button, i) => {
     const score = button.querySelector(".choice-score");
-    score.hidden = next.status !== "closed";
+    score.hidden = true;
     score.textContent = `${next.counts[i]} 票`;
   });
   renderReceipt();

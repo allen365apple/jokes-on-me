@@ -28,9 +28,12 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=2";
+} from "./ui.mjs?v=4";
 
 const mode = modeFromUrl();
+let revealing = false,
+  cancelReveal = null;
+import { revealVotes } from "./reveal.mjs?v=4";
 let store,
   state,
   sync,
@@ -123,6 +126,13 @@ async function loadSession(id) {
 function render(next) {
   if (!acceptsSnapshot(state, next)) return;
   const previous = state;
+  if (previous && previous.id !== next.id) {
+    $("#burst").replaceChildren();
+    cancelReveal?.();
+    cancelReveal = null;
+    revealing = false;
+    $("#qr-block").hidden = !prefs.qr;
+  }
   state = next;
   if (next.status === pendingTransition) pendingTransition = null;
   const signature = JSON.stringify(next.teams);
@@ -130,19 +140,41 @@ function render(next) {
     renderTeams();
     teamSignature = signature;
   }
+  if (previous?.status === "open" && next.status === "closed" && !revealing) {
+    revealing = true;
+    renderStatus();
+    updateControls();
+    cancelReveal = revealVotes(next, prefs, () => {
+      revealing = false;
+      render(state);
+      celebrate(next, prefs);
+      if (outcome(next.counts) !== "empty") playCheer(prefs);
+    });
+    return;
+  }
+  if (revealing) {
+    updateControls();
+    return;
+  }
+  if (next.status !== "closed") {
+    $("#qr-block").hidden = !prefs.qr;
+    document.querySelector("#stage").classList.remove("reveal-complete");
+  } else $("#qr-block").hidden = true;
   const scale = chartScale(next.counts, next.expected),
     winner = outcome(next.counts);
   next.teams.forEach((team, i) => {
     const root = $(`#team-${i}`);
-    root.querySelector(".score-value").textContent = next.counts[i];
+    const shown = next.status === "closed" ? next.counts[i] : 0;
+    root.querySelector(".score-value").textContent = shown;
     root
       .querySelector(".chart")
       .setAttribute(
         "aria-label",
-        `${team.name} ${next.counts[i]} 票，共同刻度 ${scale}`,
+        next.status === "closed"
+          ? `${team.name} ${shown} 票，共同刻度 ${scale}`
+          : "票數將於截止後揭曉",
       );
-    root.querySelector(".bar").style.transform =
-      `scaleY(${next.counts[i] / scale})`;
+    root.querySelector(".bar").style.transform = `scaleY(${shown / scale})`;
     root.querySelector(".scale-value").textContent = `共同刻度 ${scale}`;
     root.classList.toggle(
       "winner",
@@ -159,23 +191,22 @@ function render(next) {
           : winner === "tie"
             ? "平手"
             : "FINAL"
-        : next.status === "open" && winner === i
-          ? "暫時領先"
+        : next.status === "open"
+          ? "VOTING"
           : "CHALLENGER";
-    if (previous && previous.counts[i] !== next.counts[i]) {
+    if (
+      next.status === "closed" &&
+      previous &&
+      previous.counts[i] !== next.counts[i]
+    ) {
       root.querySelector(".score").classList.remove("pop");
       requestAnimationFrame(() =>
         root.querySelector(".score").classList.add("pop"),
       );
     }
   });
-  showOvertake(winner);
   renderStatus();
   updateControls();
-  if (previous?.status === "open" && next.status === "closed") {
-    celebrate(next, prefs);
-    if (winner !== "empty") playCheer(prefs);
-  }
 }
 
 function renderTeams() {
@@ -210,6 +241,12 @@ function showOvertake(winner) {
 
 function renderStatus() {
   if (!state) return;
+  if (revealing) {
+    $("#status-tag").textContent = "REVEAL";
+    $("#status-text").textContent = "投票已截止，即將揭曉";
+    $("#status-detail").textContent = "";
+    return;
+  }
   const total = state.counts.reduce((a, b) => a + b, 0);
   $("#status-tag").textContent =
     state.status === "open"
@@ -230,12 +267,15 @@ function renderStatus() {
   $("#status-detail").textContent =
     state.status === "ready"
       ? "先選好你的笑點，等主持人一聲令下。"
-      : `已收到 ${total} 票${state.status === "closed" ? " · 本場投票已截止" : " · 你的這一票，可能就是關鍵。"}`;
+      : state.status === "closed"
+        ? `已收到 ${total} 票 · 本輪投票已截止`
+        : "投票進行中，結束後揭曉票數。";
 }
 
 function updateControls() {
   const button = $("#toggle-vote");
-  button.disabled = !store || !isAdmin || !state || busy || !connected;
+  button.disabled =
+    !store || !isAdmin || !state || busy || revealing || !connected;
   button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "截止並揭曉" : state?.status === "closed" ? "清票並開始下一輪" : "開放投票"}`;
   document.querySelectorAll("[data-sim],[data-batch]").forEach((b) => {
     b.disabled = !state || state.status !== "open" || busy;
@@ -244,6 +284,7 @@ function updateControls() {
 
 /** Failed requests never optimistically advance status; retry preserves the intended transition. */
 async function transition() {
+  if (revealing) return;
   if (
     !state ||
     !isAdmin ||
