@@ -1,0 +1,19 @@
+{
+  "name": "jokes-on-me-live-vote",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write '*.mjs' '*.html' '*.css' '*.json' tests/*.mjs README.md",
+    "format:check": "prettier --check '*.mjs' '*.html' '*.css' '*.json' tests/*.mjs README.md",
+    "start": "node dev-server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check core.mjs && node --check store.mjs && node --check ui.mjs && node --check stage.mjs && node --check vote.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10",
+    "prettier": "3.6.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0"
+  }
+}

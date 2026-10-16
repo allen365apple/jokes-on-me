@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0b0b" />
+    <meta name="robots" content="noindex" />
+    <title>看我笑話現場投票｜雙隊 PK</title>
+    <link rel="stylesheet" href="./style.css?v=1" />
+    <script src="../love-improv/vendor/qrcode.js" defer></script>
+    <script type="module" src="./stage.mjs?v=1"></script>
+  </head>
+  <body class="stage-page">
+    <div class="top-space" aria-hidden="true"></div>
+    <main id="stage" class="stage" tabindex="-1">
+      <header class="stage-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">笑</span
+          ><span>看我笑話<span class="brand-sub">現場投票</span></span>
+        </div>
+        <div class="header-right">
+          <span id="mode-label" class="mode-label">載入中</span
+          ><span id="connection" class="connection">正在準備</span>
+        </div>
+      </header>
+      <div class="headline">
+        <p class="eyebrow">看我笑話現場投票</p>
+        <h1>今天哪一隊最有趣？<span>投票吧！</span></h1>
+      </div>
+      <section class="arena" aria-label="兩隊即時票數">
+        <div class="arena-team" id="team-0"></div>
+        <div class="arena-team" id="team-1"></div>
+        <div class="versus" aria-hidden="true">VS<span>笑到最後</span></div>
+        <div class="arena-rule" aria-hidden="true"></div>
+      </section>
+      <footer class="stage-footer">
+        <div class="status-block">
+          <span class="status-tag" id="status-tag">READY</span>
+          <h2 id="status-text" aria-live="polite">正在準備對戰</h2>
+          <p id="status-detail">每個笑聲都算數，你的這一票也是。</p>
+        </div>
+        <div class="qr-block" id="qr-block">
+          <div id="qr" class="qr"></div>
+          <div>
+            <strong id="qr-title">掃碼投票</strong>
+            <p id="qr-caption">一人一票，笑了就投。</p>
+            <a id="audience-link" href="./vote.html">開啟觀眾畫面 ↗</a>
+          </div>
+        </div>
+      </footer>
+      <div id="burst" class="burst" aria-hidden="true"></div>
+    </main>
+    <nav class="operator-bar" aria-label="現場控制">
+      <button id="toggle-vote" class="primary" disabled>
+        <kbd>Enter</kbd> 開放投票
+      </button>
+      <button id="settings-button"><kbd>C</kbd> 控制台</button>
+      <button id="fullscreen-button"><kbd>F</kbd> 全螢幕</button>
+      <button id="qr-button"><kbd>Q</kbd> QR</button>
+      <button id="mute-button" aria-pressed="false">
+        <kbd>M</kbd> 音效關閉
+      </button>
+      <span id="demo-controls" hidden
+        ><button data-sim="0"><kbd>1</kbd> 左隊 +1</button
+        ><button data-sim="1"><kbd>2</kbd> 右隊 +1</button></span
+      >
+    </nav>
+    <p class="operator-note" id="operator-note">票數以最後確認的資料為準。</p>
+    <div class="bottom-space" aria-hidden="true"></div>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <dialog id="settings-dialog" class="settings-dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">BACKSTAGE</p>
+          <h2>現場控制台</h2>
+        </div>
+        <button id="close-settings" aria-label="關閉控制台">✕</button>
+      </div>
+      <p id="settings-mode" class="notice"></p>
+      <section id="login-section" hidden>
+        <h3>管理員登入</h3>
+        <form id="login-form" class="login-form">
+          <label
+            >電子郵件<input
+              name="email"
+              type="email"
+              autocomplete="username"
+              required /></label
+          ><label
+            >密碼<input
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required /></label
+          ><button class="primary" type="submit">登入</button>
+        </form>
+      </section>
+      <form id="session-form">
+        <h3>本場設定 <small id="edit-hint"></small></h3>
+        <fieldset id="session-fields">
+          <div class="form-row">
+            <label>場次名稱<input name="title" maxlength="60" required /></label
+            ><label
+              >預估觀眾<input
+                name="expected"
+                type="number"
+                min="1"
+                max="10000"
+                value="150"
+                required
+            /></label>
+          </div>
+          <div id="team-editors" class="team-editors"></div>
+        </fieldset>
+        <button id="save-settings" type="submit">儲存本場設定</button>
+      </form>
+      <section>
+        <h3>投影與效果 <small>只影響這台裝置，自動記住</small></h3>
+        <div class="preferences">
+          <label
+            >文字大小<input
+              id="font-scale"
+              type="range"
+              min="85"
+              max="125"
+              value="100"
+            /><output id="font-value">100%</output></label
+          >
+          <label
+            >上方留白<input
+              id="top-space"
+              type="range"
+              min="0"
+              max="80"
+              value="45"
+            /><output id="space-value">45vh</output></label
+          >
+          <label
+            >歡呼音量<input
+              id="volume"
+              type="range"
+              min="0"
+              max="100"
+              value="30"
+            /><output id="volume-value">30%</output></label
+          >
+          <label class="check"
+            ><input id="sound-enabled" type="checkbox" /> 勝利音效</label
+          >
+          <label class="check"
+            ><input id="effects-enabled" type="checkbox" checked />
+            彩帶與反超效果</label
+          >
+          <label class="check"
+            ><input id="motion-reduced" type="checkbox" /> 減少動態效果</label
+          >
+        </div>
+      </section>
+      <section id="rehearsal-section" hidden>
+        <h3>排練加票 <small>僅在投票開放時可用</small></h3>
+        <div class="button-row">
+          <button data-batch="0">左隊 +10</button
+          ><button data-batch="1">右隊 +10</button>
+        </div>
+      </section>
+      <section>
+        <h3>場次紀錄</h3>
+        <p class="hint">
+          新場保留現在的隊伍設定，使用新的 QR Code，不清除舊票。
+        </p>
+        <div class="button-row">
+          <button id="new-session">建立新場次</button
+          ><button id="logout-button" hidden>登出管理員</button>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </section>
+      <p id="settings-message" class="form-message" role="status"></p>
+    </dialog>
+    <noscript>請啟用 JavaScript，才能顯示票數與投票控制。</noscript>
+  </body>
+</html>
