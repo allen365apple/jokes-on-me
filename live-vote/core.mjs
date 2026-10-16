@@ -118,6 +118,13 @@ export function chartScale(counts, expected = 150) {
 }
 /** Only accept monotonic versions within one explicit session. */
 export function acceptsSnapshot(current, incoming) {
+  if (
+    current &&
+    Number.isInteger(current.round) &&
+    Number.isInteger(incoming?.round) &&
+    incoming.round > current.round
+  )
+    return true;
   return (
     !!incoming &&
     (!current ||

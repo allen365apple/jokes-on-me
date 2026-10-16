@@ -1,5 +1,5 @@
-import { acceptsSnapshot, outcome } from "./core.mjs";
-import { createStore, modeFromUrl } from "./store.mjs";
+import { acceptsSnapshot, outcome } from "./core.mjs?v=2";
+import { createStore, modeFromUrl } from "./store.mjs?v=2";
 import {
   $,
   escapeHtml as esc,
@@ -8,10 +8,10 @@ import {
   applyTeamColor,
   showConnection,
   resultLabel,
-} from "./ui.mjs";
+} from "./ui.mjs?v=2";
 
-const mode = modeFromUrl(),
-  id = new URL(location.href).searchParams.get("session");
+const mode = modeFromUrl();
+let id = new URL(location.href).searchParams.get("session");
 let store,
   state,
   sync,
@@ -28,8 +28,14 @@ async function init() {
     mode === "demo" ? "排練・不計正式票" : "現場投票";
   $("#mode-label").classList.toggle("demo", mode === "demo");
   try {
-    if (!id) throw new Error("這個連結沒有場次，請重新掃描現場 QR Code。");
     store = await createStore(mode, true);
+    if (mode === "live") {
+      const initial = await store.current();
+      id = initial.id;
+      render(initial);
+      history.replaceState(null, "", new URL("./vote.html", location.href));
+    }
+    if (!id) throw new Error("請重新掃描現場 QR Code。");
     render(await store.read(id));
     await restoreIdentity();
     sync = store.subscribe(id, render, (status) => {
@@ -54,13 +60,19 @@ async function restoreIdentity() {
 /** Do not reveal live counts before submission; the projector still receives them. */
 function render(next) {
   if (!acceptsSnapshot(state, next)) return;
+  if (state?.id !== next.id) {
+    id = next.id;
+    voted = null;
+    selection = null;
+  }
+  if (Object.hasOwn(next, "my_vote")) voted = next.my_vote;
   state = next;
   const nextSignature = JSON.stringify(next.teams);
   if (signature !== nextSignature) {
     $("#vote-teams").innerHTML = next.teams
       .map(
         (team, i) =>
-          `<button class="team-choice" data-team="${esc(team.id)}" type="button" aria-pressed="false"><div class="side-label">TEAM ${i ? "02 / RIGHT" : "01 / LEFT"}</div><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2><span class="choice-indicator" aria-hidden="true"></span>${membersMarkup(team.members)}<span class="choice-score" hidden></span></button>`,
+          `<button class="team-choice" data-team="${esc(team.id)}" type="button" aria-pressed="false"><span class="vote-action">投給</span><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2><span class="choice-indicator" aria-hidden="true"></span><span class="choice-score" hidden></span></button>`,
       )
       .join("");
     next.teams.forEach((team, i) =>
@@ -79,8 +91,8 @@ function render(next) {
     next.status === "closed"
       ? resultLabel(next)
       : next.status === "open"
-        ? "投票開放中，輪到你決定了。"
-        : "等待主持人開放投票";
+        ? "選一隊，點一下就投票。"
+        : "等待開放投票";
   document.querySelectorAll(".team-choice").forEach((button, i) => {
     const score = button.querySelector(".choice-score");
     score.hidden = next.status !== "closed";
@@ -95,8 +107,7 @@ function renderReceipt() {
   const team = state.teams.find((t) => t.id === voted);
   $("#receipt").hidden = !team;
   if (team)
-    $("#receipt").innerHTML =
-      `<strong>這一票，${esc(team.name)}收到了！</strong>謝謝你把笑聲投給他們。${state.status === "closed" ? "本場已結束，結果就在上方。" : "接下來，把掌聲留給現場。"}${mode === "demo" ? "<br>這是排練選票，不會計入正式結果。" : ""}`;
+    $("#receipt").innerHTML = `<strong>已投給${esc(team.name)} ✓</strong>`;
 }
 
 function updateButton() {
@@ -107,6 +118,8 @@ function updateButton() {
     const chosen = button.dataset.team === (voted || selection);
     button.setAttribute("aria-pressed", String(chosen));
     button.querySelector(".choice-indicator").textContent = chosen ? "✓" : "";
+    button.querySelector(".vote-action").textContent =
+      chosen && voted ? "已投給" : "投給";
   });
   $("#submit-vote").disabled = !eligible || !selection;
   $("#submit-vote").textContent = busy
@@ -194,7 +207,7 @@ $("#vote-teams").addEventListener("click", (e) => {
   const button = e.target.closest("[data-team]");
   if (!button || button.disabled) return;
   selection = button.dataset.team;
-  updateButton();
+  submit();
 });
 $("#submit-vote").addEventListener("click", submit);
 $("#retry-button").addEventListener("click", retry);

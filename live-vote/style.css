@@ -1202,3 +1202,181 @@ fieldset {
     border-color: #fff;
   }
 }
+/* Fixed room: central scan target, with team scores kept on either side. */
+.arena .versus {
+  display: none;
+}
+.arena .qr-block {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  width: clamp(180px, 19vw, 280px);
+  padding: 14px;
+  background: #fff;
+  color: #111;
+  z-index: 5;
+  border: 5px solid #111;
+  text-align: center;
+}
+.arena .qr {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  padding: 0;
+  min-height: 120px;
+}
+.arena .qr-block strong {
+  font-size: 24px;
+}
+.arena .qr-block p {
+  color: #333;
+  margin-top: 3px;
+}
+.arena .qr-block a {
+  font-size: 10px;
+  margin-top: 5px;
+}
+.stage-footer {
+  justify-content: center;
+  text-align: center;
+}
+.vote-page {
+  height: 100dvh;
+  overflow: hidden;
+}
+.vote-page .voter {
+  max-width: none;
+  height: 100dvh;
+  padding: 0;
+}
+.vote-page .voter-header {
+  height: 60px;
+  padding: 0 16px;
+}
+.vote-page .voter-header .brand {
+  font-size: 12px;
+}
+.vote-page .voter-header .brand-mark {
+  width: 28px;
+  height: 28px;
+  font-size: 19px;
+}
+.vote-page #mode-label {
+  font-size: 9px;
+}
+.vote-page .vote-teams {
+  position: absolute;
+  inset: 60px 0 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.vote-page .team-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 8px;
+  border: 0;
+  min-width: 0;
+  gap: 10px;
+  text-align: center;
+}
+.vote-page .team-choice .team-name {
+  font-size: clamp(30px, 9vw, 65px);
+  text-align: center;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+}
+.vote-page .team-choice .team-name.long-name {
+  font-size: clamp(24px, 6vw, 40px);
+}
+.vote-action {
+  font-size: 18px;
+  font-weight: 700;
+}
+.vote-page .choice-indicator {
+  position: static;
+  width: 36px;
+  height: 36px;
+  margin-top: 20px;
+  font-size: 23px;
+}
+.vote-page .choice-score {
+  position: static !important;
+  margin: 10px 0 0;
+  font-size: 32px;
+}
+.vote-page .voter-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  min-height: 60px;
+  margin: 0;
+  justify-content: center;
+  padding: 12px;
+  font-size: 12px;
+  text-align: center;
+}
+.vote-page #status-tag {
+  display: none;
+}
+.vote-page .receipt {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 17px;
+  background: #111;
+  border: 0;
+  text-align: center;
+  min-height: 60px;
+}
+.vote-page .receipt strong {
+  font-size: 16px;
+}
+.vote-page #connection {
+  display: none;
+}
+.vote-page .inline-error {
+  position: fixed;
+  bottom: 65px;
+  left: 12px;
+  right: 12px;
+  z-index: 6;
+  margin: 0;
+}
+.vote-page #retry-button {
+  position: fixed;
+  bottom: 125px;
+  left: 12px;
+  right: 12px;
+  width: calc(100% - 24px);
+  z-index: 7;
+  background: #111;
+}
+@media (max-width: 600px) {
+  .arena .qr-block {
+    width: 142px;
+    padding: 8px;
+    top: 57%;
+  }
+  .arena .qr-block strong {
+    font-size: 17px;
+  }
+  .arena .qr-block p {
+    display: none;
+  }
+  .arena .qr {
+    min-height: 105px;
+  }
+  .arena-team .score {
+    font-size: 52px;
+  }
+}

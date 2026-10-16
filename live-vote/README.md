@@ -1,5 +1,11 @@
 # 看我笑話現場投票
 
+> 2026-10-16 正式版更新：已接上既有 Supabase。投影固定網址為 `https://allen365apple.github.io/jokes-on-me/live-vote/`，觀眾固定網址為 `https://allen365apple.github.io/jokes-on-me/live-vote/vote.html`。Enter 依序開放、截止、清票並開放下一輪。每個瀏覽器每輪一票。手機左右點擊直接投票，中央 QR 永久固定。
+>
+> 控制端按 C，輸入本機 `operator.local.txt` 的私有操作碼後啟用。操作碼不在程式碼、QR、公開網址或 Git 裡。後端使用 `supabase-live.sql` 與 `room-store.mjs`，不需要匿名 Auth，因此不受共用 Wi-Fi 的匿名登入數限制。此識別方式符合本案輕量防重複需求，不能視為嚴格一人一票。
+>
+> 以下為初版排練架構與安裝歷史說明，與新版衝突處以上方正式版操作為準。
+
 雙隊 PK、整場最後投一次，預估最多 150 位觀眾。包含投影控制頁、手機投票頁、排練模式，以及待安裝的 Supabase 後端。
 
 ## 目前狀態

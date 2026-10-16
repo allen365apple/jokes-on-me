@@ -7,8 +7,13 @@ import {
   chartScale,
   acceptsSnapshot,
   canHandleKey,
-} from "./core.mjs";
-import { createStore, modeFromUrl, readLocal, writeLocal } from "./store.mjs";
+} from "./core.mjs?v=2";
+import {
+  createStore,
+  modeFromUrl,
+  readLocal,
+  writeLocal,
+} from "./store.mjs?v=2";
 import {
   $,
   escapeHtml as esc,
@@ -23,7 +28,7 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs";
+} from "./ui.mjs?v=2";
 
 const mode = modeFromUrl();
 let store,
@@ -61,7 +66,10 @@ async function init() {
     $("#rehearsal-section").hidden = mode !== "demo";
     store = await createStore(mode);
     isAdmin = await store.admin();
-    let id = new URL(location.href).searchParams.get("session");
+    let id =
+      mode === "live"
+        ? (await store.current()).id
+        : new URL(location.href).searchParams.get("session");
     if (!id && mode === "demo") {
       id = readLocal("last-demo-session");
       if (!id) id = (await store.create()).id;
@@ -94,8 +102,13 @@ async function loadSession(id) {
   lastLeader = null;
   pendingTransition = null;
   const url = new URL(location.href);
-  url.searchParams.set("mode", mode);
-  url.searchParams.set("session", id);
+  if (mode === "live") {
+    url.search = "";
+    url.hash = "";
+  } else {
+    url.searchParams.set("rehearsal", "1");
+    url.searchParams.set("session", id);
+  }
   history.replaceState(null, "", url);
   render(initial);
   updateQr();
@@ -222,14 +235,8 @@ function renderStatus() {
 
 function updateControls() {
   const button = $("#toggle-vote");
-  button.disabled =
-    !store ||
-    !isAdmin ||
-    !state ||
-    busy ||
-    !connected ||
-    state.status === "closed";
-  button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "截止並揭曉" : state?.status === "closed" ? "投票已結束" : "開放投票"}`;
+  button.disabled = !store || !isAdmin || !state || busy || !connected;
+  button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "截止並揭曉" : state?.status === "closed" ? "清票並開始下一輪" : "開放投票"}`;
   document.querySelectorAll("[data-sim],[data-batch]").forEach((b) => {
     b.disabled = !state || state.status !== "open" || busy;
   });
@@ -242,19 +249,35 @@ async function transition() {
     !isAdmin ||
     busy ||
     !connected ||
-    Date.now() - lastTransitionAt < 650 ||
-    (state.status === "closed" && !pendingTransition)
+    Date.now() - lastTransitionAt < 650
   )
     return;
   lastTransitionAt = Date.now();
   unlockAudio();
   busy = true;
-  pendingTransition ||= state.status === "ready" ? "open" : "closed";
+  pendingTransition ||=
+    state.status === "ready"
+      ? "open"
+      : state.status === "closed"
+        ? "restart"
+        : "closed";
   updateControls();
   renderStatus();
   try {
     const target = pendingTransition;
-    const next = await store[target === "open" ? "open" : "close"](state.id);
+    let next;
+    if (target === "restart" && mode === "demo") {
+      next = await store.create({
+        title: state.title,
+        teams: state.teams,
+        expected: state.expected,
+      });
+      next = await store.open(next.id);
+      await loadSession(next.id);
+    } else
+      next = await store[
+        target === "open" ? "open" : target === "restart" ? "restart" : "close"
+      ](state.id);
     pendingTransition = null;
     render(next);
   } catch (error) {
@@ -270,8 +293,10 @@ async function transition() {
 function updateQr() {
   if (!state) return;
   const url = new URL("./vote.html", location.href);
-  url.searchParams.set("mode", mode);
-  url.searchParams.set("session", state.id);
+  if (mode === "demo") {
+    url.searchParams.set("rehearsal", "1");
+    url.searchParams.set("session", state.id);
+  }
   $("#audience-link").href = url.href;
   if (mode === "demo") {
     $("#qr").textContent = "DEMO\n同瀏覽器排練";
@@ -331,14 +356,17 @@ function openSettings() {
   $("#session-form").elements.expected.value = state?.expected || 150;
   editorTeams = structuredClone(state?.teams || DEFAULT_TEAMS);
   renderEditors();
-  const editable = isAdmin && (!state || state.status === "ready");
+  const editable = isAdmin && (!state || state.status !== "open");
   $("#session-fields").disabled = !editable;
   $("#save-settings").disabled = !editable || !state;
   $("#new-session").disabled = !isAdmin || state?.status === "open";
+  $("#new-session").hidden = mode === "live";
   $("#edit-hint").textContent =
-    state && state.status !== "ready"
-      ? "投票開始後鎖定，請另建新場"
-      : "投票開放前可修改";
+    state?.status === "open"
+      ? "投票中鎖定"
+      : state?.status === "closed"
+        ? "儲存後套用到下一輪"
+        : "投票開放前可修改";
   $("#settings-dialog").showModal();
   loadHistory();
 }
@@ -400,7 +428,7 @@ async function loadHistory() {
       .slice(0, 20)
       .map(
         (s) =>
-          `<a href="?mode=${mode}&session=${encodeURIComponent(s.id)}">${esc(s.title)} · ${s.status === "closed" ? "已結束" : s.status === "open" ? "投票中" : "準備中"} · ${s.counts.join(" : ")} <span>↗</span></a>`,
+          `<div>第 ${s.round || "-"} 輪 · ${s.counts.join(" : ")} · 已結束</div>`,
       )
       .join("");
   } catch (error) {
@@ -580,12 +608,9 @@ function bindForms() {
     panelAction(async () => {
       const form = e.target;
       try {
-        await store.login(
-          form.elements.email.value,
-          form.elements.password.value,
-        );
+        await store.login(form.elements.token.value);
       } finally {
-        form.elements.password.value = "";
+        form.elements.token.value = "";
       }
       isAdmin = await store.admin();
       $("#settings-dialog").close();

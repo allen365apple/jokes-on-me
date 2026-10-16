@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=1" />
+    <link rel="stylesheet" href="./style.css?v=2" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=1"></script>
+    <script type="module" src="./stage.mjs?v=2"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -31,6 +31,14 @@
         <div class="arena-team" id="team-0"></div>
         <div class="arena-team" id="team-1"></div>
         <div class="versus" aria-hidden="true">VS<span>笑到最後</span></div>
+        <div class="qr-block" id="qr-block">
+          <div id="qr" class="qr"></div>
+          <div>
+            <strong id="qr-title">掃碼投票</strong>
+            <p id="qr-caption">每輪一票</p>
+            <a id="audience-link" href="./vote.html">開啟投票頁 ↗</a>
+          </div>
+        </div>
         <div class="arena-rule" aria-hidden="true"></div>
       </section>
       <footer class="stage-footer">
@@ -38,14 +46,6 @@
           <span class="status-tag" id="status-tag">READY</span>
           <h2 id="status-text" aria-live="polite">正在準備對戰</h2>
           <p id="status-detail">每個笑聲都算數，你的這一票也是。</p>
-        </div>
-        <div class="qr-block" id="qr-block">
-          <div id="qr" class="qr"></div>
-          <div>
-            <strong id="qr-title">掃碼投票</strong>
-            <p id="qr-caption">一人一票，笑了就投。</p>
-            <a id="audience-link" href="./vote.html">開啟觀眾畫面 ↗</a>
-          </div>
         </div>
       </footer>
       <div id="burst" class="burst" aria-hidden="true"></div>
@@ -78,21 +78,15 @@
       </div>
       <p id="settings-mode" class="notice"></p>
       <section id="login-section" hidden>
-        <h3>管理員登入</h3>
+        <h3>啟用控制端</h3>
         <form id="login-form" class="login-form">
           <label
-            >電子郵件<input
-              name="email"
-              type="email"
-              autocomplete="username"
-              required /></label
-          ><label
-            >密碼<input
-              name="password"
+            >私有操作碼<input
+              name="token"
               type="password"
-              autocomplete="current-password"
+              autocomplete="off"
               required /></label
-          ><button class="primary" type="submit">登入</button>
+          ><button class="primary" type="submit">啟用</button>
         </form>
       </section>
       <form id="session-form">
@@ -164,9 +158,9 @@
         </div>
       </section>
       <section>
-        <h3>場次紀錄</h3>
+        <h3>投票紀錄</h3>
         <p class="hint">
-          新場保留現在的隊伍設定，使用新的 QR Code，不清除舊票。
+          網址與 QR 固定不變；截止後按 Enter 清票並開放下一輪，歷史紀錄保留。
         </p>
         <div class="button-row">
           <button id="new-session">建立新場次</button

@@ -1,10 +1,11 @@
-import { CONFIG } from "./config.mjs";
+import { CONFIG } from "./config.mjs?v=2";
+import { FixedStore } from "./room-store.mjs?v=2";
 import {
   acceptsSnapshot,
   newSession,
   reduceDemo,
   validateTeams,
-} from "./core.mjs";
+} from "./core.mjs?v=2";
 
 const PREFIX = "jokes-live-vote-v1:";
 const UUID =
@@ -25,6 +26,8 @@ export function writeLocal(key, value) {
 }
 /** Explicit URLs keep stale QR codes on their original sessions. */
 export function modeFromUrl(url = new URL(location.href)) {
+  if (CONFIG.fixedRoom)
+    return url.searchParams.get("rehearsal") === "1" ? "demo" : "live";
   const requested = url.searchParams.get("mode");
   return requested === "demo"
     ? "demo"
@@ -61,7 +64,9 @@ export async function createStore(mode, audience = false) {
         }),
     },
   });
-  return new LiveStore(client, audience);
+  return CONFIG.fixedRoom
+    ? new FixedStore(client, audience)
+    : new LiveStore(client, audience);
 }
 
 /** Load the pinned local SDK only for real voting, without a third-party runtime CDN. */
