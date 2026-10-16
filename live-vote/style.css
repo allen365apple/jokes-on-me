@@ -1299,6 +1299,24 @@ fieldset {
   font-size: 18px;
   font-weight: 700;
 }
+@media (min-width: 900px) {
+  .stage-header {
+    padding: 10px 0;
+  }
+  .headline {
+    padding: 10px 0 16px;
+  }
+  .arena {
+    height: clamp(360px, 53vh, 520px);
+    min-height: 360px;
+  }
+  .stage-footer {
+    padding: 12px 0;
+  }
+  .stage-footer .status-block h2 {
+    font-size: clamp(24px, 2.2vw, 34px);
+  }
+}
 .vote-page .choice-indicator {
   position: static;
   width: 36px;
