@@ -40,13 +40,18 @@ declare s jsonb; previous text; slot integer; counts jsonb; begin
  select snapshot into s from public.jlv_live_room where id='main' for update;
  if (s->>'id')::uuid is distinct from p_round then raise exception '已進入下一輪，請重新選隊。'; end if;
  select team into previous from public.jlv_live_ballots where round_id=p_round and device=p_device;
- if found then return jsonb_build_object('session',s,'team',previous); end if;
+ if previous=p_team then return jsonb_build_object('session',s,'team',previous); end if;
  if s->>'status'<>'open' then raise exception '這輪投票尚未開放或已截止。'; end if;
  if p_team is null or p_team not in('blue','orange') then raise exception '請選擇一隊。'; end if;
  slot:=case when p_team='blue' then 0 else 1 end;
  if s->'teams'->slot->>'id' is distinct from p_team then raise exception '隊伍不正確。'; end if;
- insert into public.jlv_live_ballots(round_id,device,team) values(p_round,p_device,p_team);
- counts:=jsonb_set(s->'counts',array[slot::text],to_jsonb((s->'counts'->>slot)::integer+1));
+ counts:=s->'counts';
+ if previous is not null then
+  counts:=jsonb_set(counts,array[(1-slot)::text],to_jsonb((counts->>(1-slot))::integer-1));
+ end if;
+ insert into public.jlv_live_ballots(round_id,device,team) values(p_round,p_device,p_team)
+ on conflict(round_id,device) do update set team=excluded.team,received_at=clock_timestamp();
+ counts:=jsonb_set(counts,array[slot::text],to_jsonb((counts->>slot)::integer+1));
  s:=s||jsonb_build_object('counts',counts,'version',(s->>'version')::bigint+1);
  update public.jlv_live_room set snapshot=s where id='main';
  return jsonb_build_object('session',s,'team',p_team);

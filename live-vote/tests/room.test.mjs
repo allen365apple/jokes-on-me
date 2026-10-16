@@ -53,13 +53,23 @@ test("fixed room: 150 browsers, duplicates, cutoff, idempotent next round and pe
     const people = Array.from({ length: 150 }, randomUUID);
     for (let i = 0; i < 150; i++) {
       await vote(first, people[i], i < 82 ? "blue" : "orange");
-      await vote(first, people[i], "orange");
+      await vote(first, people[i], i < 82 ? "blue" : "orange");
     }
     assert.deepEqual((await state(people[0])).session.counts, [82, 68]);
     assert.equal((await state(people[0])).team, "blue");
+    await vote(first, people[0], "orange");
+    assert.deepEqual((await state(people[0])).session.counts, [81, 69]);
+    assert.equal((await state(people[0])).team, "orange");
+    await vote(first, people[0], "orange");
+    assert.deepEqual((await state()).session.counts, [81, 69]);
+    await vote(first, people[0], "blue");
+    assert.deepEqual((await state()).session.counts, [82, 68]);
     s = await command(first, "close");
     assert.deepEqual(s.counts, [82, 68]);
     await assert.rejects(() => vote(first, device, "blue"), /已截止/);
+    await assert.rejects(() => vote(first, people[0], "orange"), /已截止/);
+    assert.equal((await vote(first, people[0], "blue")).team, "blue");
+    assert.deepEqual((await state()).session.counts, [82, 68]);
     const request = randomUUID();
     s = await command(first, "restart", request);
     assert.equal(s.status, "open");

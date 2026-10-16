@@ -1428,6 +1428,117 @@ fieldset {
   z-index: 7;
   background: #111;
 }
+
+/* Compact broadcast chrome: all status and controls live above the arena. */
+.stage-header {
+  align-items: flex-start;
+}
+.stage-header .header-right {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 72%;
+}
+.stage-header .status-block {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+.stage-header #mode-label,
+.stage-header #connection {
+  display: none;
+}
+.stage-header .operator-bar {
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  gap: 5px;
+}
+.stage-header .operator-bar button {
+  font-size: 10px;
+  padding: 6px 8px;
+}
+.stage-page .operator-note,
+.stage-page .bottom-space {
+  display: none;
+}
+.arena-team::before {
+  display: none;
+}
+.stage-page .arena {
+  height: clamp(430px, 65vh, 760px);
+  grid-template-rows: 1fr;
+}
+.stage-page .arena-team {
+  display: flex;
+  grid-row: 1;
+  align-items: center;
+  padding-bottom: 24px;
+}
+.stage-page .arena-team .members {
+  align-self: center;
+}
+.stage-page .arena-team .chart {
+  flex: 1;
+}
+#exit-test {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: #e8ff8a;
+  color: #111;
+  font-weight: 800;
+}
+.vote-page .vote-teams {
+  bottom: calc(148px + env(safe-area-inset-bottom));
+}
+.vote-page .voter-status {
+  bottom: calc(115px + env(safe-area-inset-bottom));
+  min-height: 33px;
+  padding: 7px;
+  font-size: 11px;
+}
+.vote-page .receipt {
+  display: none;
+}
+.vote-page .vote-dock {
+  padding: 12px 18px max(16px, env(safe-area-inset-bottom));
+}
+.vote-page .vote-dock > span {
+  min-height: 17px;
+  font-size: 12px;
+}
+.vote-page .vote-dock button {
+  justify-content: center;
+  min-height: 48px;
+}
+.vote-page .inline-error {
+  bottom: calc(152px + env(safe-area-inset-bottom));
+}
+.vote-page #retry-button {
+  bottom: calc(212px + env(safe-area-inset-bottom));
+}
+@media (max-width: 650px) {
+  .stage-header .brand {
+    font-size: 12px;
+  }
+  .stage-header .brand-sub {
+    display: block;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .stage-header .header-right {
+    max-width: 70%;
+  }
+  .stage-header .operator-bar button {
+    padding: 5px;
+    font-size: 9px;
+  }
+}
 @media (max-width: 600px) {
   .arena .qr-block {
     width: 142px;

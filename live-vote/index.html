@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=4" />
+    <link rel="stylesheet" href="./style.css?v=5" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=4"></script>
+    <script type="module" src="./stage.mjs?v=5"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -19,6 +19,11 @@
           ><span>看我笑話<span class="brand-sub">現場投票</span></span>
         </div>
         <div class="header-right">
+          <div class="status-block">
+            <span class="status-tag" id="status-tag" hidden>READY</span>
+            <span id="status-text" aria-live="polite">正在準備對戰</span>
+            <span id="status-detail" hidden></span>
+          </div>
           <span id="mode-label" class="mode-label">載入中</span
           ><span id="connection" class="connection">正在準備</span>
         </div>
@@ -35,19 +40,11 @@
           <div id="qr" class="qr"></div>
           <div>
             <strong id="qr-title">掃碼投票</strong>
-            <p id="qr-caption">每輪一票</p>
-            <a id="audience-link" href="./vote.html">開啟投票頁 ↗</a>
+            <p id="qr-caption" hidden></p>
           </div>
         </div>
         <div class="arena-rule" aria-hidden="true"></div>
       </section>
-      <footer class="stage-footer">
-        <div class="status-block">
-          <span class="status-tag" id="status-tag">READY</span>
-          <h2 id="status-text" aria-live="polite">正在準備對戰</h2>
-          <p id="status-detail">每個笑聲都算數，你的這一票也是。</p>
-        </div>
-      </footer>
       <div id="burst" class="burst" aria-hidden="true"></div>
     </main>
     <nav class="operator-bar" aria-label="現場控制">
@@ -55,6 +52,7 @@
         <kbd>Enter</kbd> 開放投票
       </button>
       <button id="settings-button"><kbd>C</kbd> 控制台</button>
+      <button id="test-button"><kbd>T</kbd> 測試</button>
       <button id="fullscreen-button"><kbd>F</kbd> 全螢幕</button>
       <button id="qr-button"><kbd>Q</kbd> QR</button>
       <button id="mute-button" aria-pressed="false">
@@ -77,6 +75,11 @@
         <button id="close-settings" aria-label="關閉控制台">✕</button>
       </div>
       <p id="settings-mode" class="notice"></p>
+      <p>
+        <a id="audience-link" href="./vote.html" target="_blank" rel="noopener"
+          >開啟投票頁 ↗</a
+        >
+      </p>
       <section id="login-section" hidden>
         <h3>啟用控制端</h3>
         <form id="login-form" class="login-form">
@@ -170,6 +173,43 @@
       </section>
       <p id="settings-message" class="form-message" role="status"></p>
     </dialog>
+    <dialog id="test-dialog" class="settings-dialog">
+      <form id="test-form">
+        <div class="dialog-heading">
+          <h2>測試票數</h2>
+          <button type="button" id="close-test" aria-label="關閉測試設定">
+            ✕
+          </button>
+        </div>
+        <p class="notice">只測試這台螢幕的動畫，不會送出或更動正式選票。</p>
+        <div class="form-row">
+          <label
+            ><span id="test-name-0">藍隊</span
+            ><input
+              name="left"
+              type="number"
+              min="0"
+              max="10000"
+              step="1"
+              value="85"
+              required
+          /></label>
+          <label
+            ><span id="test-name-1">橘隊</span
+            ><input
+              name="right"
+              type="number"
+              min="0"
+              max="10000"
+              step="1"
+              value="65"
+              required
+          /></label>
+        </div>
+        <button type="submit" class="primary">測試揭曉動畫</button>
+      </form>
+    </dialog>
+    <button id="exit-test" hidden>測試模式・返回正式畫面（Esc）</button>
     <noscript>請啟用 JavaScript，才能顯示票數與投票控制。</noscript>
   </body>
 </html>

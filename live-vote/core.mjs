@@ -150,7 +150,8 @@ export function canHandleKey(event, modalOpen, busy) {
 export function reduceDemo(record, action) {
   const next = structuredClone(record);
   const s = next.session;
-  if (action.type === "vote" && next.votes[action.user]) return next;
+  if (action.type === "vote" && next.votes[action.user] === action.team)
+    return next;
   if (action.type === "open" && s.status === "ready") {
     s.status = "open";
     s.opened_at = new Date().toISOString();
@@ -160,6 +161,8 @@ export function reduceDemo(record, action) {
   } else if (action.type === "vote" && s.status === "open") {
     const i = s.teams.findIndex((t) => t.id === action.team);
     if (i < 0 || !action.user) throw new Error("無效的選票。");
+    const previous = s.teams.findIndex((t) => t.id === next.votes[action.user]);
+    if (previous >= 0) s.counts[previous] -= 1;
     next.votes[action.user] = action.team;
     s.counts[i] += 1;
   } else if (action.type === "simulate" && s.status === "open") {

@@ -1,5 +1,5 @@
-import { acceptsSnapshot, outcome } from "./core.mjs?v=2";
-import { createStore, modeFromUrl } from "./store.mjs?v=2";
+import { acceptsSnapshot, outcome } from "./core.mjs?v=5";
+import { createStore, modeFromUrl } from "./store.mjs?v=5";
 import {
   $,
   escapeHtml as esc,
@@ -8,7 +8,7 @@ import {
   applyTeamColor,
   showConnection,
   resultLabel,
-} from "./ui.mjs?v=2";
+} from "./ui.mjs?v=5";
 
 const mode = modeFromUrl();
 let id = new URL(location.href).searchParams.get("session");
@@ -65,7 +65,10 @@ function render(next) {
     voted = null;
     selection = null;
   }
-  if (Object.hasOwn(next, "my_vote")) voted = next.my_vote;
+  if (Object.hasOwn(next, "my_vote")) {
+    if (!selection || selection === voted) selection = next.my_vote;
+    voted = next.my_vote;
+  }
   state = next;
   const nextSignature = JSON.stringify(next.teams);
   if (signature !== nextSignature) {
@@ -91,7 +94,7 @@ function render(next) {
     next.status === "closed"
       ? "投票結束，請看大螢幕揭曉！"
       : next.status === "open"
-        ? "選一隊，點一下就投票。"
+        ? "選隊後，按下投票。"
         : "等待開放投票";
   document.querySelectorAll(".team-choice").forEach((button, i) => {
     const score = button.querySelector(".choice-score");
@@ -112,31 +115,39 @@ function renderReceipt() {
 
 function updateButton() {
   const eligible =
-    identityReady && connected && state?.status === "open" && !voted && !busy;
+    identityReady && connected && state?.status === "open" && !busy;
   document.querySelectorAll(".team-choice").forEach((button) => {
     button.disabled = !eligible;
-    const chosen = button.dataset.team === (voted || selection);
+    const chosen = button.dataset.team === (selection || voted);
     button.setAttribute("aria-pressed", String(chosen));
     button.querySelector(".choice-indicator").textContent = chosen ? "✓" : "";
     button.querySelector(".vote-action").textContent =
-      chosen && voted ? "已投給" : "投給";
+      button.dataset.team === voted ? "已投給" : "投給";
   });
-  $("#submit-vote").disabled = !eligible || !selection;
+  $("#submit-vote").disabled = !eligible || !selection || selection === voted;
   $("#submit-vote").textContent = busy
     ? "正在確認你的選票⋯"
-    : voted
-      ? "已完成投票 ✓"
-      : state?.status === "closed"
-        ? "本場投票已結束"
-        : state?.status === "ready"
-          ? "等待開放投票"
-          : "確認投票 ↗";
+    : state?.status === "closed"
+      ? "本場投票已結束"
+      : state?.status === "ready"
+        ? "等待開放投票"
+        : selection === voted && voted
+          ? "已投票 ✓"
+          : voted
+            ? "確認改投"
+            : "投票";
   const selected = state?.teams.find((t) => t.id === selection);
-  $("#selection-label").textContent = voted
-    ? "每個瀏覽器限投一次，謝謝你的參與。"
-    : selected
-      ? `你選擇了${selected.name}，確認送出後不能改票。`
-      : "先選一隊，把笑聲變成一票。";
+  const receipt = state?.teams.find((t) => t.id === voted);
+  $("#selection-label").textContent =
+    state?.status === "closed"
+      ? receipt
+        ? `已投給${receipt.name}，投票已截止。`
+        : "投票已截止"
+      : selected && selection !== voted
+        ? `已選${selected.name}，按下${voted ? "確認改投" : "投票"}送出。`
+        : receipt
+          ? `已投給${receipt.name} ✓　截止前都能改投。`
+          : "先選一隊，再按投票。";
 }
 
 function showError(message) {
@@ -149,7 +160,7 @@ async function submit() {
   if (
     busy ||
     !selection ||
-    voted ||
+    selection === voted ||
     !connected ||
     !identityReady ||
     state?.status !== "open"
@@ -158,10 +169,14 @@ async function submit() {
   busy = true;
   updateButton();
   $("#vote-error").hidden = true;
+  const submittedRound = id;
   try {
     const result = await store.vote(id, selection);
-    voted = result.team;
-    render(result.session);
+    if (id === submittedRound && acceptsSnapshot(state, result.session)) {
+      selection = result.team;
+      voted = result.team;
+      render({ ...result.session, my_vote: result.team });
+    }
     $("#retry-button").hidden = true;
   } catch (error) {
     showError(`${error.message} 請按「重新確認」，先查詢這一票是否已收到。`);
@@ -207,7 +222,7 @@ $("#vote-teams").addEventListener("click", (e) => {
   const button = e.target.closest("[data-team]");
   if (!button || button.disabled) return;
   selection = button.dataset.team;
-  submit();
+  updateButton();
 });
 $("#submit-vote").addEventListener("click", submit);
 $("#retry-button").addEventListener("click", retry);

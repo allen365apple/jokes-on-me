@@ -1,4 +1,4 @@
-import { readLocal, writeLocal } from "./store.mjs?v=2";
+import { readLocal, writeLocal } from "./store.mjs?v=5";
 
 /** Fixed room, no Auth signup. UUID is a practical browser identifier, not proof of personhood. */
 export class FixedStore {
@@ -48,15 +48,17 @@ export class FixedStore {
     return this.read();
   }
   async myVote(id) {
-    if (this.receipt?.id !== id) await this.read();
+    await this.read();
     return this.receipt?.id === id ? this.receipt.team : null;
   }
   async vote(id, team) {
-    return this.rpc("vote", {
+    const result = await this.rpc("vote", {
       p_round: id,
       p_device: await this.identity(),
       p_team: team,
     });
+    this.receipt = { id: result.session.id, team: result.team };
+    return result;
   }
   async command(id, operation, settings = null) {
     const key = id + ":" + operation;

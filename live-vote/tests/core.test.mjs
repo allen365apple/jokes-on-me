@@ -29,7 +29,7 @@ test("initial roster is correct and settings snapshots are independent", () => {
   s.teams[0].name = "changed";
   assert.equal(DEFAULT_TEAMS[0].name, "藍隊");
 });
-test("one identity one ballot; alternate team retries keep original receipt", () => {
+test("one identity one ballot; switching replaces the previous choice", () => {
   const first = reduceDemo(open(), {
     type: "vote",
     user: "same",
@@ -40,9 +40,9 @@ test("one identity one ballot; alternate team retries keep original receipt", ()
     user: "same",
     team: "orange",
   });
-  assert.deepEqual(next.session.counts, [1, 0]);
-  assert.equal(next.votes.same, "blue");
-  assert.equal(first.session.version, next.session.version);
+  assert.deepEqual(next.session.counts, [0, 1]);
+  assert.equal(next.votes.same, "orange");
+  assert.equal(first.session.version + 1, next.session.version);
 });
 test("150 voters with retries produce exactly 150 votes", () => {
   let record = open();
@@ -76,8 +76,11 @@ test("before/after window reject new votes; receipts still recover after cutoff"
   assert.throws(() =>
     reduceDemo(closed, { type: "vote", user: "b", team: "orange" }),
   );
+  assert.throws(() =>
+    reduceDemo(closed, { type: "vote", user: "a", team: "orange" }),
+  );
   assert.deepEqual(
-    reduceDemo(closed, { type: "vote", user: "a", team: "orange" }).session
+    reduceDemo(closed, { type: "vote", user: "a", team: "blue" }).session
       .counts,
     [1, 0],
   );

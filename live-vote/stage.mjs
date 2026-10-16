@@ -7,13 +7,13 @@ import {
   chartScale,
   acceptsSnapshot,
   canHandleKey,
-} from "./core.mjs?v=2";
+} from "./core.mjs?v=5";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=2";
+} from "./store.mjs?v=5";
 import {
   $,
   escapeHtml as esc,
@@ -28,12 +28,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=4";
+} from "./ui.mjs?v=5";
 
 const mode = modeFromUrl();
 let revealing = false,
-  cancelReveal = null;
-import { revealVotes } from "./reveal.mjs?v=4";
+  cancelReveal = null,
+  testing = false,
+  latestLive = null;
+import { revealVotes } from "./reveal.mjs?v=5";
 let store,
   state,
   sync,
@@ -124,6 +126,10 @@ async function loadSession(id) {
 
 /** Apply versioned server snapshots; counters remain exact integers throughout animation. */
 function render(next) {
+  if (testing) {
+    if (acceptsSnapshot(latestLive || state, next)) latestLive = next;
+    return;
+  }
   if (!acceptsSnapshot(state, next)) return;
   const previous = state;
   if (previous && previous.id !== next.id) {
@@ -214,7 +220,7 @@ function renderTeams() {
     const root = $(`#team-${i}`);
     applyTeamColor(root, team);
     root.dataset.side = i ? "02" : "01";
-    root.innerHTML = `<div class="team-topline"><span>TEAM ${i ? "02 / RIGHT" : "01 / LEFT"}</span><span class="team-status">CHALLENGER</span></div><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2>${membersMarkup(team.members)}<div class="chart" role="img" aria-label="${esc(team.name)}得票數"><div class="bar-track"></div><div class="bar"></div><div class="score"><span class="score-value">0</span><small>票</small></div></div><div class="chart-foot"><span>你的笑聲，他們的分數。</span><span class="scale-value"></span></div>`;
+    root.innerHTML = `<div class="team-topline" hidden><span class="team-status">CHALLENGER</span></div><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2>${membersMarkup(team.members)}<div class="chart" role="img" aria-label="${esc(team.name)}得票數"><div class="bar-track"></div><div class="bar"></div><div class="score"><span class="score-value">0</span><small>票</small></div></div><span class="scale-value" hidden></span>`;
     hydratePortraits(root);
   });
 }
@@ -275,7 +281,7 @@ function renderStatus() {
 function updateControls() {
   const button = $("#toggle-vote");
   button.disabled =
-    !store || !isAdmin || !state || busy || revealing || !connected;
+    !store || !isAdmin || !state || busy || revealing || testing || !connected;
   button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "截止並揭曉" : state?.status === "closed" ? "清票並開始下一輪" : "開放投票"}`;
   document.querySelectorAll("[data-sim],[data-batch]").forEach((b) => {
     b.disabled = !state || state.status !== "open" || busy;
@@ -284,7 +290,7 @@ function updateControls() {
 
 /** Failed requests never optimistically advance status; retry preserves the intended transition. */
 async function transition() {
-  if (revealing) return;
+  if (revealing || testing) return;
   if (
     !state ||
     !isAdmin ||
@@ -382,6 +388,7 @@ function rememberPreferences() {
 }
 
 function openSettings() {
+  if (testing) return;
   if ($("#settings-dialog").open) {
     $("#settings-dialog").close();
     return;
@@ -478,7 +485,8 @@ async function loadHistory() {
 }
 
 async function simulate(index, amount = 1) {
-  if (mode !== "demo" || !state || state.status !== "open" || busy) return;
+  if (testing || mode !== "demo" || !state || state.status !== "open" || busy)
+    return;
   busy = true;
   updateControls();
   try {
@@ -501,7 +509,79 @@ async function fullscreen() {
   }
 }
 
+/** Local preview only: no store commands or ballot writes are issued. */
+function openTest() {
+  if (!state || busy || revealing || testing) return;
+  state.teams.forEach(
+    (team, i) => ($("#test-name-" + i).textContent = team.name),
+  );
+  $("#test-dialog").showModal();
+}
+
+/** Paint a synthetic snapshot without replacing the authoritative live state. */
+function paintTest(snapshot) {
+  const live = state;
+  testing = false;
+  state = null;
+  render(snapshot);
+  state = live;
+  testing = true;
+  $("#mode-label").textContent = "測試模式・不計正式票";
+  updateControls();
+}
+
+function startTest(counts) {
+  if (!state || counts.some((n) => !Number.isInteger(n) || n < 0 || n > 10000))
+    return;
+  $("#test-dialog").close();
+  unlockAudio();
+  cancelReveal?.();
+  $("#burst").replaceChildren();
+  latestLive = state;
+  const preview = { ...structuredClone(state), status: "closed", counts };
+  paintTest({ ...preview, status: "ready", counts: [0, 0] });
+  $("#exit-test").hidden = false;
+  $("#status-text").textContent = "測試模式・即將揭曉";
+  cancelReveal = revealVotes(preview, prefs, () => {
+    paintTest(preview);
+    $("#status-text").textContent = "測試結果・" + resultLabel(preview);
+    celebrate(preview, prefs);
+    if (outcome(counts) !== "empty") playCheer(prefs);
+  });
+}
+
+function exitTest() {
+  if (!testing) return;
+  cancelReveal?.();
+  cancelReveal = null;
+  $("#burst").replaceChildren();
+  $("#exit-test").hidden = true;
+  testing = false;
+  const live = latestLive || state;
+  latestLive = null;
+  state = null;
+  $("#mode-label").textContent = mode === "demo" ? "排練模式" : "現場投票";
+  render(live);
+  $("#stage").focus({ preventScroll: true });
+}
+
 function bindEvents() {
+  $(".header-right").append($(".operator-bar"));
+  $("#test-button").addEventListener("click", openTest);
+  $("#close-test").addEventListener("click", () => $("#test-dialog").close());
+  $("#test-dialog").addEventListener("close", () =>
+    $("#stage").focus({ preventScroll: true }),
+  );
+  $("#exit-test").addEventListener("click", exitTest);
+  $("#test-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    if (!form.reportValidity()) return;
+    startTest([
+      Number(form.elements.left.value),
+      Number(form.elements.right.value),
+    ]);
+  });
   $("#toggle-vote").addEventListener("click", transition);
   $("#settings-button").addEventListener("click", openSettings);
   $("#close-settings").addEventListener("click", () =>
@@ -544,15 +624,34 @@ function bindEvents() {
       b.addEventListener("click", () => simulate(Number(b.dataset.batch), 10)),
     );
   document.addEventListener("keydown", (e) => {
+    if (testing) {
+      if (
+        !e.repeat &&
+        !e.isComposing &&
+        (e.key === "Escape" || e.key.toLowerCase() === "t")
+      ) {
+        e.preventDefault();
+        exitTest();
+      }
+      return;
+    }
     if (e.key === "Enter" && e.repeat && e.target === $("#toggle-vote")) {
       e.preventDefault();
       return;
     }
-    if (!canHandleKey(e, $("#settings-dialog").open, busy)) return;
+    if (
+      !canHandleKey(
+        e,
+        $("#settings-dialog").open || $("#test-dialog").open,
+        busy,
+      )
+    )
+      return;
     const actions = {
       Enter: transition,
       f: fullscreen,
       c: openSettings,
+      t: openTest,
       q: () => $("#qr-button").click(),
       m: () => $("#mute-button").click(),
       1: () => simulate(0),
