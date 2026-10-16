@@ -1,7 +1,7 @@
 # 看我笑話現場投票｜製作規劃
 
 更新日期：2026-10-16  
-文件狀態：規劃稿，尚未開始實作或部署。使用者確認製作後再執行。
+文件狀態：保留原始製作規劃供核對需求。排練版已實作並發布至 GitHub Pages；正式 Supabase 尚未接上，最新操作說明見 `live-vote/README.md`。
 
 ## 1. 目標與已確認需求
 
@@ -367,4 +367,4 @@ QR Code 對應明確的場次識別碼。新一場建立後更新 QR Code；掃�
 - Supabase 資料列權限：https://supabase.com/docs/guides/database/postgres/row-level-security
 - Supabase 資料庫函式：https://supabase.com/docs/guides/database/functions
 
-本文件為後續製作依據；新增網站、修改後端與公開部署尚未執行。
+本文件保留原始需求與驗收規劃。排練版已實作並公開部署；正式後端尚未安裝與連接，不能跨裝置收正式選票。
