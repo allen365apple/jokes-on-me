@@ -10,13 +10,13 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
-} from "./core.mjs?v=10";
+} from "./core.mjs?v=11";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=10";
+} from "./store.mjs?v=11";
 import {
   $,
   escapeHtml as esc,
@@ -31,14 +31,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=10";
+} from "./ui.mjs?v=11";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=10";
+import { revealVotes } from "./reveal.mjs?v=11";
 let store,
   state,
   sync,
@@ -59,7 +59,8 @@ const defaults = {
   effects: true,
   reduced: false,
   qr: true,
-  qrSize: 100,
+  qrSize: 130,
+  qrSizeVersion: 1,
   qrPosition: 0,
   qrPositionVersion: 1,
 };
@@ -73,6 +74,11 @@ async function init() {
     if (saved.qrPositionVersion !== 1) {
       saved.qrPosition = 0;
       saved.qrPositionVersion = 1;
+    }
+    if (saved.qrSizeVersion !== 1) {
+      if (saved.qrSize == null || Number(saved.qrSize) === 100)
+        saved.qrSize = 130;
+      saved.qrSizeVersion = 1;
     }
     prefs = { ...defaults, ...saved, ...victorySoundPreferences(saved) };
     writeLocal("preferences", prefs);
