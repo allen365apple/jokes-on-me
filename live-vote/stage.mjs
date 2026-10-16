@@ -7,13 +7,15 @@ import {
   chartScale,
   acceptsSnapshot,
   canHandleKey,
-} from "./core.mjs?v=5";
+  stagePosition,
+  canPositionStage,
+} from "./core.mjs?v=6";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=5";
+} from "./store.mjs?v=6";
 import {
   $,
   escapeHtml as esc,
@@ -28,14 +30,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=5";
+} from "./ui.mjs?v=6";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=5";
+import { revealVotes } from "./reveal.mjs?v=6";
 let store,
   state,
   sync,
@@ -49,7 +51,7 @@ let lastLeader = null,
   lastTransitionAt = 0;
 const defaults = {
   font: 100,
-  top: 45,
+  position: 0,
   volume: 30,
   sound: false,
   effects: true,
@@ -94,7 +96,7 @@ async function init() {
     toast(error.message);
   } finally {
     updateControls();
-    requestAnimationFrame(() => $("#stage").scrollIntoView({ block: "start" }));
+    $("#stage").focus({ preventScroll: true });
   }
 }
 
@@ -358,15 +360,19 @@ function updateQr() {
 
 function applyPreferences() {
   document.documentElement.style.setProperty("--scale", prefs.font / 100);
-  document.documentElement.style.setProperty("--top-space", `${prefs.top}vh`);
+  document.documentElement.style.setProperty(
+    "--stage-offset",
+    `${prefs.position}vh`,
+  );
   document.body.classList.toggle("reduced-motion", prefs.reduced);
-  $("#qr-block").hidden = !prefs.qr;
+  if (!revealing && !testing)
+    $("#qr-block").hidden = state?.status === "closed" || !prefs.qr;
   $("#mute-button").innerHTML =
     `<kbd>M</kbd> ${prefs.sound ? "音效開啟" : "音效關閉"}`;
   $("#mute-button").setAttribute("aria-pressed", String(prefs.sound));
   [
     ["font-scale", "font", "font-value", "%"],
-    ["top-space", "top", "space-value", "vh"],
+    ["top-space", "position", "space-value", "vh"],
     ["volume", "volume", "volume-value", "%"],
   ].forEach(([id, key, out, unit]) => {
     $("#" + id).value = prefs[key];
@@ -503,7 +509,7 @@ async function fullscreen() {
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await document.documentElement.requestFullscreen();
-    $("#stage").scrollIntoView();
+    $("#stage").focus({ preventScroll: true });
   } catch {
     toast("這個瀏覽器未開放全螢幕，請使用瀏覽器全螢幕功能。");
   }
@@ -624,6 +630,13 @@ function bindEvents() {
       b.addEventListener("click", () => simulate(Number(b.dataset.batch), 10)),
     );
   document.addEventListener("keydown", (e) => {
+    const modalOpen = $("#settings-dialog").open || $("#test-dialog").open;
+    if (canPositionStage(e, modalOpen)) {
+      e.preventDefault();
+      prefs.position = stagePosition(prefs.position, e.key);
+      applyPreferences();
+      return;
+    }
     if (testing) {
       if (
         !e.repeat &&
@@ -672,7 +685,7 @@ function bindEvents() {
 function bindPreferences() {
   [
     ["font-scale", "font"],
-    ["top-space", "top"],
+    ["top-space", "position"],
     ["volume", "volume"],
   ].forEach(([id, key]) =>
     $("#" + id).addEventListener("input", (e) => {

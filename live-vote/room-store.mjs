@@ -1,4 +1,4 @@
-import { readLocal, writeLocal } from "./store.mjs?v=5";
+import { readLocal, writeLocal } from "./store.mjs?v=6";
 
 /** Fixed room, no Auth signup. UUID is a practical browser identifier, not proof of personhood. */
 export class FixedStore {

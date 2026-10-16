@@ -1,4 +1,4 @@
-import { inkFor, safeAvatar, outcome } from "./core.mjs?v=5";
+import { inkFor, safeAvatar, outcome } from "./core.mjs?v=6";
 
 export const $ = (selector) => document.querySelector(selector);
 /** Escape all names and other data before inserting presentational markup. */

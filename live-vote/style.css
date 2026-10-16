@@ -1558,3 +1558,81 @@ fieldset {
     font-size: 52px;
   }
 }
+
+/* Full-height projection, translated as one surface to make room above or below. */
+.stage-page {
+  height: 100dvh;
+  overflow: hidden;
+}
+.stage-page .top-space {
+  display: none;
+}
+.stage-page .stage {
+  height: 100dvh;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0 4vw 12px;
+  transform: translateY(var(--stage-offset, 0vh));
+  outline: none;
+}
+.stage-page .stage-header,
+.stage-page .headline {
+  flex: 0 0 auto;
+}
+.stage-page .arena {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+.stage-page .arena-team .chart {
+  min-height: 0;
+}
+.stage-header .brand {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.stage-header .brand .status-block {
+  color: #999;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-align: left;
+}
+.stage-header .header-right {
+  max-width: 48%;
+}
+.stage-header .operator-bar button {
+  background: transparent;
+  border-color: transparent;
+  color: #999;
+  font-weight: 500;
+}
+.stage-header .operator-bar button:hover:not(:disabled),
+.stage-header .operator-bar button:focus-visible {
+  color: #eee;
+  background: #ffffff0d;
+}
+.stage-header .operator-bar button:disabled {
+  opacity: 0.35;
+}
+@media (max-height: 620px) and (min-width: 700px) {
+  .stage-page .headline h1 {
+    font-size: 34px;
+  }
+  .stage-page .headline {
+    padding: 8px 0 12px;
+  }
+  .stage-page .arena-team {
+    padding-top: 12px;
+  }
+  .stage-page .arena-team .team-name {
+    font-size: 42px;
+  }
+  .stage-page .arena-team .members {
+    margin-top: 8px;
+  }
+  .stage-page .arena-team .score {
+    font-size: 70px;
+  }
+}

@@ -203,3 +203,29 @@ export function inkFor(hex) {
   const l = rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
   return l > 0.179 ? "#111111" : "#ffffff";
 }
+
+/** Shift the complete projection in viewport units; Home restores its origin. */
+export function canPositionStage(event, modalOpen) {
+  return (
+    ["ArrowUp", "ArrowDown", "Home"].includes(event.key) &&
+    !modalOpen &&
+    !event.isComposing &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.altKey &&
+    !["INPUT", "TEXTAREA", "SELECT"].includes(event.target?.tagName) &&
+    !event.target?.isContentEditable
+  );
+}
+
+/** Clamp projection movement so Home always provides a predictable recovery. */
+export function stagePosition(position, key) {
+  if (key === "Home") return 0;
+  return Math.max(
+    -80,
+    Math.min(
+      80,
+      position + (key === "ArrowUp" ? -2 : key === "ArrowDown" ? 2 : 0),
+    ),
+  );
+}

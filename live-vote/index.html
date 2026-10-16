@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=5" />
+    <link rel="stylesheet" href="./style.css?v=6" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=5"></script>
+    <script type="module" src="./stage.mjs?v=6"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -17,13 +17,13 @@
         <div class="brand">
           <span class="brand-mark" aria-hidden="true">笑</span
           ><span>看我笑話<span class="brand-sub">現場投票</span></span>
-        </div>
-        <div class="header-right">
           <div class="status-block">
             <span class="status-tag" id="status-tag" hidden>READY</span>
             <span id="status-text" aria-live="polite">正在準備對戰</span>
             <span id="status-detail" hidden></span>
           </div>
+        </div>
+        <div class="header-right">
           <span id="mode-label" class="mode-label">載入中</span
           ><span id="connection" class="connection">正在準備</span>
         </div>
@@ -124,13 +124,13 @@
             /><output id="font-value">100%</output></label
           >
           <label
-            >上方留白<input
+            >畫面上下位置（↑／↓，Home 歸位）<input
               id="top-space"
               type="range"
-              min="0"
+              min="-80"
               max="80"
-              value="45"
-            /><output id="space-value">45vh</output></label
+              value="0"
+            /><output id="space-value">0vh</output></label
           >
           <label
             >歡呼音量<input

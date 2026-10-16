@@ -12,10 +12,39 @@ import {
   canHandleKey,
   safeAvatar,
   inkFor,
+  stagePosition,
+  canPositionStage,
 } from "../core.mjs";
 
 const fresh = () => ({ session: newSession("test-session"), votes: {} });
 const open = () => reduceDemo(fresh(), { type: "open" });
+test("projection moves in both directions, clamps and returns home", () => {
+  assert.equal(stagePosition(0, "ArrowUp"), -2);
+  assert.equal(stagePosition(0, "ArrowDown"), 2);
+  assert.equal(stagePosition(-80, "ArrowUp"), -80);
+  assert.equal(stagePosition(80, "ArrowDown"), 80);
+  assert.equal(stagePosition(-46, "Home"), 0);
+  assert.equal(stagePosition(12, "Enter"), 12);
+});
+test("position keys repeat and work on controls but never intercept typing or dialogs", () => {
+  const event = {
+    key: "ArrowDown",
+    repeat: true,
+    target: { tagName: "BUTTON" },
+  };
+  assert.equal(canPositionStage(event, false), true);
+  assert.equal(canPositionStage(event, true), false);
+  for (const target of [
+    { tagName: "INPUT" },
+    { tagName: "TEXTAREA" },
+    { tagName: "SELECT" },
+    { isContentEditable: true },
+  ]) {
+    assert.equal(canPositionStage({ ...event, target }, false), false);
+  }
+  assert.equal(canPositionStage({ ...event, ctrlKey: true }, false), false);
+  assert.equal(canPositionStage({ ...event, key: "Enter" }, false), false);
+});
 test("initial roster is correct and settings snapshots are independent", () => {
   const s = newSession("one");
   assert.equal(

@@ -1,5 +1,5 @@
-import { acceptsSnapshot, outcome } from "./core.mjs?v=5";
-import { createStore, modeFromUrl } from "./store.mjs?v=5";
+import { acceptsSnapshot, outcome } from "./core.mjs?v=6";
+import { createStore, modeFromUrl } from "./store.mjs?v=6";
 import {
   $,
   escapeHtml as esc,
@@ -8,7 +8,7 @@ import {
   applyTeamColor,
   showConnection,
   resultLabel,
-} from "./ui.mjs?v=5";
+} from "./ui.mjs?v=6";
 
 const mode = modeFromUrl();
 let id = new URL(location.href).searchParams.get("session");
