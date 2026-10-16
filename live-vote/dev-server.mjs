@@ -18,6 +18,7 @@ const files = [
   "reveal.mjs",
   "config.mjs",
   "vendor/supabase.js",
+  "音效素材 001 戰鬥勝利.mp3",
 ];
 const allowed = new Set(files.map((name) => "/live-vote/" + name));
 allowed.add("/love-improv/vendor/qrcode.js");
@@ -29,6 +30,7 @@ const types = {
   ".mjs": "text/javascript; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".jpg": "image/jpeg",
+  ".mp3": "audio/mpeg",
 };
 
 /** Local preview serves only public page assets, never SQL, credentials or neighboring files. */

@@ -1,4 +1,4 @@
-import { inkFor, safeAvatar, outcome } from "./core.mjs?v=8";
+import { inkFor, safeAvatar, outcome } from "./core.mjs?v=9";
 
 export const $ = (selector) => document.querySelector(selector);
 /** Escape all names and other data before inserting presentational markup. */
@@ -153,102 +153,35 @@ export function celebrate(session, prefs) {
     }
   });
 }
-let audioContext, activeSound;
-/** Unlock on an operator gesture; never try automatic audio on initial load. */
-export function unlockAudio() {
+let victoryAudioUnlocked = false;
+/** Unlock the supplied victory clip only after a deliberate operator gesture. */
+export async function unlockAudio() {
+  const audio = $("#victory-audio");
+  if (!audio || victoryAudioUnlocked) return;
+  audio.muted = true;
   try {
-    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-    if (audioContext.state === "suspended")
-      return audioContext.resume().catch(() => {});
+    await audio.play();
+    audio.pause();
+    audio.currentTime = 0;
+    victoryAudioUnlocked = true;
   } catch {
-    /* audio is optional */
+    /* The next operator gesture can retry if playback is still restricted. */
+  } finally {
+    audio.muted = false;
   }
 }
-/** Immediately stop the current celebratory sound when muted. */
+/** Immediately stop the victory clip when the operator mutes the sound. */
 export function stopSound() {
-  try {
-    activeSound?.disconnect();
-  } catch {
-    /* already stopped */
-  }
+  const audio = $("#victory-audio");
+  if (!audio) return;
+  audio.pause();
+  audio.currentTime = 0;
 }
-/** Play either locally synthesized victory cue without samples or noise. */
+/** Play the single supplied victory clip at the operator's selected volume. */
 export function playCheer(prefs) {
-  if (!prefs.sound || !audioContext || audioContext.state !== "running") return;
+  const audio = $("#victory-audio");
+  if (!prefs.sound || !audio) return;
   stopSound();
-  const ctx = audioContext,
-    now = ctx.currentTime;
-  const gain = ctx.createGain();
-  activeSound = gain;
-  gain.connect(ctx.destination);
-  gain.gain.setValueAtTime(Math.max(0, Math.min(100, prefs.volume)) / 100, now);
-  const arcade = [
-    [523.25, 0, 0.12],
-    [659.25, 0.14, 0.12],
-    [783.99, 0.28, 0.12],
-    [1046.5, 0.44, 0.22],
-    [987.77, 0.7, 0.11],
-    [1174.66, 0.84, 0.11],
-    [1318.51, 0.98, 0.11],
-    [1046.5, 1.14, 1.0],
-  ];
-  const stinger = [
-    [392, 0, 0.36, "sawtooth", 0.12],
-    [493.88, 0, 0.36, "triangle", 0.1],
-    [587.33, 0, 0.36, "triangle", 0.1],
-    [523.25, 0.4, 1.15, "sawtooth", 0.13],
-    [659.25, 0.4, 1.15, "triangle", 0.13],
-    [783.99, 0.4, 1.15, "triangle", 0.13],
-    [1046.5, 0.4, 1.15, "triangle", 0.12],
-  ];
-  const selected =
-    prefs.victoryStyle === "stinger"
-      ? stinger
-      : arcade
-          .map(([hz, at, duration]) => [hz, at, duration, "square", 0.13])
-          .concat(
-            [261.63, 329.63, 392].map((hz) => [
-              hz,
-              1.14,
-              1.15,
-              "triangle",
-              0.14,
-            ]),
-          )
-          .concat(
-            [
-              [130.81, 0, 0.38],
-              [196, 0.44, 0.6],
-              [130.81, 1.14, 1.15],
-            ].map(([hz, at, duration]) => [hz, at, duration, "triangle", 0.19]),
-          );
-  const voices = selected.map(([hz, at, duration, type, peak]) =>
-    tone(hz, at, duration, type, peak),
-  );
-  let remaining = voices.length;
-  voices.forEach(({ oscillator, envelope }) => {
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      envelope.disconnect();
-      if (--remaining === 0) {
-        gain.disconnect();
-        if (activeSound === gain) activeSound = null;
-      }
-    };
-  });
-  function tone(hz, at, duration, type, peak) {
-    const oscillator = ctx.createOscillator(),
-      envelope = ctx.createGain(),
-      start = now + at;
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(hz, start);
-    envelope.gain.setValueAtTime(0, start);
-    envelope.gain.linearRampToValueAtTime(peak, start + 0.008);
-    envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    oscillator.connect(envelope);
-    envelope.connect(gain);
-    oscillator.start(start);
-    oscillator.stop(start + duration + 0.02);
-    return { oscillator, envelope };
-  }
+  audio.volume = Math.max(0, Math.min(100, prefs.volume)) / 100;
+  audio.play().catch(() => {});
 }

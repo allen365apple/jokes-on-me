@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=8" />
+    <link rel="stylesheet" href="./style.css?v=9" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=8"></script>
+    <script type="module" src="./stage.mjs?v=9"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -47,6 +47,11 @@
       </section>
       <div id="burst" class="burst" aria-hidden="true"></div>
     </main>
+    <audio
+      id="victory-audio"
+      src="./音效素材 001 戰鬥勝利.mp3"
+      preload="auto"
+    ></audio>
     <nav class="operator-bar" aria-label="現場控制">
       <button id="toggle-vote" class="primary" disabled>
         <kbd>Enter</kbd> 開放投票
@@ -94,7 +99,7 @@
             aria-label="QR Code 大小"
           />
           <label for="qr-position"
-            >上下位置 <output id="qr-position-value">+6vh</output></label
+            >上下位置 <output id="qr-position-value">0vh</output></label
           >
           <input
             id="qr-position"
@@ -196,12 +201,6 @@
           <label class="check"
             ><input id="sound-enabled" type="checkbox" checked />
             遊戲勝利音效</label
-          >
-          <label
-            >勝利音效類型<select id="victory-style">
-              <option value="arcade">經典勝利旋律</option>
-              <option value="stinger">短促兩音節・激昂</option>
-            </select></label
           >
           <button id="preview-sound" type="button">試聽勝利音效</button>
           <label class="check"

@@ -10,13 +10,13 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
-} from "./core.mjs?v=8";
+} from "./core.mjs?v=9";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=8";
+} from "./store.mjs?v=9";
 import {
   $,
   escapeHtml as esc,
@@ -31,14 +31,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=8";
+} from "./ui.mjs?v=9";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=8";
+import { revealVotes } from "./reveal.mjs?v=9";
 let store,
   state,
   sync,
@@ -56,12 +56,12 @@ const defaults = {
   volume: 30,
   sound: true,
   soundVersion: 2,
-  victoryStyle: "arcade",
   effects: true,
   reduced: false,
   qr: true,
   qrSize: 100,
-  qrPosition: 6,
+  qrPosition: 0,
+  qrPositionVersion: 1,
 };
 let prefs = { ...defaults };
 let editorTeams = structuredClone(DEFAULT_TEAMS);
@@ -70,6 +70,10 @@ let editorTeams = structuredClone(DEFAULT_TEAMS);
 async function init() {
   try {
     const saved = readLocal("preferences", {});
+    if (saved.qrPositionVersion !== 1) {
+      saved.qrPosition = 0;
+      saved.qrPositionVersion = 1;
+    }
     prefs = { ...defaults, ...saved, ...victorySoundPreferences(saved) };
     writeLocal("preferences", prefs);
     applyPreferences();
@@ -407,7 +411,6 @@ function applyPreferences() {
     $("#" + out).textContent = prefix + prefs[key] + unit;
   });
   $("#sound-enabled").checked = prefs.sound;
-  $("#victory-style").value = prefs.victoryStyle;
   $("#effects-enabled").checked = prefs.effects;
   $("#motion-reduced").checked = prefs.reduced;
   if (!prefs.sound) stopSound();
@@ -758,10 +761,6 @@ function bindPreferences() {
       rememberPreferences();
     }),
   );
-  $("#victory-style").addEventListener("change", (e) => {
-    prefs.victoryStyle = e.target.value;
-    rememberPreferences();
-  });
 }
 
 function bindEditor() {

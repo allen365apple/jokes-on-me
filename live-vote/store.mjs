@@ -1,11 +1,11 @@
-import { CONFIG } from "./config.mjs?v=8";
-import { FixedStore } from "./room-store.mjs?v=8";
+import { CONFIG } from "./config.mjs?v=9";
+import { FixedStore } from "./room-store.mjs?v=9";
 import {
   acceptsSnapshot,
   newSession,
   reduceDemo,
   validateTeams,
-} from "./core.mjs?v=8";
+} from "./core.mjs?v=9";
 
 const PREFIX = "jokes-live-vote-v1:";
 const UUID =
