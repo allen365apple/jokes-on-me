@@ -1,4 +1,4 @@
-export const VOTE_COUNT_UP_DURATION_MS = 1000;
+export const VOTE_COUNT_UP_DURATION_MS = 3400;
 
 /** A cancelable presentation sequence; authoritative ballots are already closed. */
 export function revealVotes(session, prefs, done) {

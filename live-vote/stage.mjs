@@ -38,7 +38,7 @@ let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=13";
+import { revealVotes } from "./reveal.mjs?v=14";
 let store,
   state,
   sync,
