@@ -1,4 +1,4 @@
-import { inkFor, safeAvatar, outcome } from "./core.mjs?v=11";
+import { inkFor, safeAvatar, outcome } from "./core.mjs?v=12";
 
 export const $ = (selector) => document.querySelector(selector);
 /** Escape all names and other data before inserting presentational markup. */
@@ -12,7 +12,7 @@ export const escapeHtml = (value) =>
   );
 /** Portrait fallback always retains a readable performer name. */
 export function membersMarkup(members) {
-  return `<div class="members">${members
+  return `<span class="members">${members
     .map((m) => {
       let avatar = "";
       try {
@@ -22,7 +22,7 @@ export function membersMarkup(members) {
       }
       return `<span class="member"><span class="portrait" style="--position:${Number(m.position) || 0}%"><span>${escapeHtml(m.name.slice(0, 1))}</span>${avatar ? `<img src="${escapeHtml(avatar)}" alt="" loading="eager" style="display:none">` : ""}</span><span class="member-name">${escapeHtml(m.name)}</span></span>`;
     })
-    .join("")}</div>`;
+    .join("")}</span>`;
 }
 /** Activate images without inline event handlers or broken-image icons. */
 export function hydratePortraits(root) {

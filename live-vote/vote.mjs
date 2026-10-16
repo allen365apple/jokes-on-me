@@ -1,5 +1,5 @@
-import { acceptsSnapshot, outcome } from "./core.mjs?v=11";
-import { createStore, modeFromUrl } from "./store.mjs?v=11";
+import { acceptsSnapshot, outcome } from "./core.mjs?v=12";
+import { createStore, modeFromUrl } from "./store.mjs?v=12";
 import {
   $,
   escapeHtml as esc,
@@ -8,7 +8,7 @@ import {
   applyTeamColor,
   showConnection,
   resultLabel,
-} from "./ui.mjs?v=11";
+} from "./ui.mjs?v=12";
 
 const mode = modeFromUrl();
 let id = new URL(location.href).searchParams.get("session");
@@ -75,7 +75,7 @@ function render(next) {
     $("#vote-teams").innerHTML = next.teams
       .map(
         (team, i) =>
-          `<button class="team-choice" data-team="${esc(team.id)}" type="button" aria-pressed="false"><span class="vote-action">投給</span><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2><span class="choice-indicator" aria-hidden="true"></span><span class="choice-score" hidden></span></button>`,
+          `<button class="team-choice" data-team="${esc(team.id)}" type="button" aria-pressed="false"><span class="vote-action">投給</span><h2 class="team-name ${team.name.length > 5 ? "long-name" : ""}">${esc(team.name)}</h2>${membersMarkup(team.members)}<span class="choice-indicator" aria-hidden="true"></span><span class="choice-score" hidden></span></button>`,
       )
       .join("");
     next.teams.forEach((team, i) =>

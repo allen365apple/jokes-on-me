@@ -1344,6 +1344,23 @@ fieldset {
 .vote-page .team-choice .team-name.long-name {
   font-size: clamp(24px, 6vw, 40px);
 }
+.vote-page .team-choice .members {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+  gap: 3px;
+}
+.vote-page .team-choice .member {
+  min-width: 0;
+}
+.vote-page .team-choice .portrait {
+  width: clamp(28px, 8vw, 38px);
+  height: clamp(28px, 8vw, 38px);
+}
+.vote-page .team-choice .member-name {
+  font-size: clamp(8px, 2.5vw, 10px);
+  white-space: nowrap;
+}
 .vote-action {
   font-size: 18px;
   font-weight: 700;
