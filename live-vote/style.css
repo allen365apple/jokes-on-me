@@ -1561,8 +1561,80 @@ fieldset {
 
 /* Full-height projection, translated as one surface to make room above or below. */
 .arena .qr-block {
+  position: fixed;
+  left: 50%;
+  top: 50dvh;
+  transform: translate(-50%, -50%);
   width: calc(clamp(180px, 19vw, 280px) * var(--qr-scale, 1));
-  max-width: min(80vw, calc(80dvh - 220px));
+  max-width: min(80vw, calc(80dvh - 250px));
+  transition: width 160ms ease-out;
+}
+.stage-page .arena-team:first-child {
+  left: -1.25vw;
+}
+.stage-page .arena-team:nth-child(2) {
+  left: 1.25vw;
+}
+.operator-bar {
+  position: relative;
+}
+.qr-control {
+  position: relative;
+}
+.qr-popover[hidden] {
+  display: none;
+}
+.qr-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 40;
+  width: min(300px, calc(100vw - 24px));
+  padding: 14px 16px 12px;
+  color: #eee;
+  text-align: left;
+  background: #171717f5;
+  border: 1px solid #555;
+  box-shadow: 0 14px 38px #0009;
+  backdrop-filter: blur(16px);
+}
+.qr-popover-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.qr-popover-heading button {
+  display: grid;
+  place-items: center;
+  padding: 5px;
+}
+.qr-popover svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.qr-popover label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #bbb;
+}
+.qr-popover input[type="range"] {
+  width: 100%;
+  margin: 8px 0 2px;
+}
+.stage-header .qr-popover button {
+  color: #eee;
+  border: 1px solid #555;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena .qr-block {
+    transition: none;
+  }
 }
 @media (max-width: 600px) {
   .arena .qr-block {

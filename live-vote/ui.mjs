@@ -1,4 +1,4 @@
-import { inkFor, safeAvatar, outcome } from "./core.mjs?v=7";
+import { inkFor, safeAvatar, outcome } from "./core.mjs?v=8";
 
 export const $ = (selector) => document.querySelector(selector);
 /** Escape all names and other data before inserting presentational markup. */
@@ -172,7 +172,7 @@ export function stopSound() {
     /* already stopped */
   }
 }
-/** Original arcade-style victory fanfare; synthesized locally without samples or noise. */
+/** Play either locally synthesized victory cue without samples or noise. */
 export function playCheer(prefs) {
   if (!prefs.sound || !audioContext || audioContext.state !== "running") return;
   stopSound();
@@ -182,7 +182,7 @@ export function playCheer(prefs) {
   activeSound = gain;
   gain.connect(ctx.destination);
   gain.gain.setValueAtTime(Math.max(0, Math.min(100, prefs.volume)) / 100, now);
-  const melody = [
+  const arcade = [
     [523.25, 0, 0.12],
     [659.25, 0.14, 0.12],
     [783.99, 0.28, 0.12],
@@ -192,16 +192,50 @@ export function playCheer(prefs) {
     [1318.51, 0.98, 0.11],
     [1046.5, 1.14, 1.0],
   ];
-  melody.forEach(([hz, at, duration]) =>
-    tone(hz, at, duration, "square", 0.13),
+  const stinger = [
+    [392, 0, 0.16, "sawtooth", 0.12],
+    [493.88, 0, 0.16, "triangle", 0.1],
+    [587.33, 0, 0.16, "triangle", 0.1],
+    [523.25, 0.2, 0.58, "sawtooth", 0.13],
+    [659.25, 0.2, 0.58, "triangle", 0.13],
+    [783.99, 0.2, 0.58, "triangle", 0.13],
+    [1046.5, 0.2, 0.58, "triangle", 0.12],
+  ];
+  const selected =
+    prefs.victoryStyle === "stinger"
+      ? stinger
+      : arcade
+          .map(([hz, at, duration]) => [hz, at, duration, "square", 0.13])
+          .concat(
+            [261.63, 329.63, 392].map((hz) => [
+              hz,
+              1.14,
+              1.15,
+              "triangle",
+              0.14,
+            ]),
+          )
+          .concat(
+            [
+              [130.81, 0, 0.38],
+              [196, 0.44, 0.6],
+              [130.81, 1.14, 1.15],
+            ].map(([hz, at, duration]) => [hz, at, duration, "triangle", 0.19]),
+          );
+  const voices = selected.map(([hz, at, duration, type, peak]) =>
+    tone(hz, at, duration, type, peak),
   );
-  [261.63, 329.63, 392].forEach((hz) => tone(hz, 1.14, 1.15, "triangle", 0.14));
-  [
-    [130.81, 0, 0.38],
-    [196, 0.44, 0.6],
-    [130.81, 1.14, 1.15],
-  ].forEach(([hz, at, duration]) => tone(hz, at, duration, "triangle", 0.19));
-  let remaining = 14;
+  let remaining = voices.length;
+  voices.forEach(({ oscillator, envelope }) => {
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      envelope.disconnect();
+      if (--remaining === 0) {
+        gain.disconnect();
+        if (activeSound === gain) activeSound = null;
+      }
+    };
+  });
   function tone(hz, at, duration, type, peak) {
     const oscillator = ctx.createOscillator(),
       envelope = ctx.createGain(),
@@ -213,15 +247,8 @@ export function playCheer(prefs) {
     envelope.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(envelope);
     envelope.connect(gain);
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      envelope.disconnect();
-      if (--remaining === 0) {
-        gain.disconnect();
-        if (activeSound === gain) activeSound = null;
-      }
-    };
     oscillator.start(start);
     oscillator.stop(start + duration + 0.02);
+    return { oscillator, envelope };
   }
 }

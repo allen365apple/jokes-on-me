@@ -10,13 +10,13 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
-} from "./core.mjs?v=7";
+} from "./core.mjs?v=8";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=7";
+} from "./store.mjs?v=8";
 import {
   $,
   escapeHtml as esc,
@@ -31,14 +31,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=7";
+} from "./ui.mjs?v=8";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=7";
+import { revealVotes } from "./reveal.mjs?v=8";
 let store,
   state,
   sync,
@@ -56,6 +56,7 @@ const defaults = {
   volume: 30,
   sound: true,
   soundVersion: 2,
+  victoryStyle: "arcade",
   effects: true,
   reduced: false,
   qr: true,
@@ -347,6 +348,8 @@ async function transition() {
 function updateQr() {
   if (!state) return;
   const url = new URL("./vote.html", location.href);
+  const qrHidden = !prefs.qr || state.status === "closed";
+  $("#qr-block").hidden = qrHidden;
   if (mode === "demo") {
     url.searchParams.set("rehearsal", "1");
     url.searchParams.set("session", state.id);
@@ -376,6 +379,17 @@ function applyPreferences() {
   $("#mute-button").innerHTML =
     `<kbd>M</kbd> ${prefs.sound ? "音效開啟" : "音效關閉"}`;
   $("#mute-button").setAttribute("aria-pressed", String(prefs.sound));
+  $("#qr-button").setAttribute(
+    "aria-expanded",
+    String(!$("#qr-popover").hidden),
+  );
+  $("#qr-visibility").setAttribute("aria-pressed", String(prefs.qr));
+  $("#qr-visibility").setAttribute(
+    "aria-label",
+    prefs.qr ? "隱藏 QR Code" : "顯示 QR Code",
+  );
+  $("#qr-visibility").title = prefs.qr ? "隱藏 QR Code" : "顯示 QR Code";
+  $("#qr-visibility .eye-slash").hidden = prefs.qr;
   [
     ["font-scale", "font", "font-value", "%"],
     ["top-space", "position", "space-value", "vh"],
@@ -386,6 +400,7 @@ function applyPreferences() {
     $("#" + out).textContent = prefs[key] + unit;
   });
   $("#sound-enabled").checked = prefs.sound;
+  $("#victory-style").value = prefs.victoryStyle;
   $("#effects-enabled").checked = prefs.effects;
   $("#motion-reduced").checked = prefs.reduced;
   if (!prefs.sound) stopSound();
@@ -622,8 +637,20 @@ function bindEvents() {
   $("#fullscreen-button").hidden = !document.fullscreenEnabled;
   $("#fullscreen-button").addEventListener("click", fullscreen);
   $("#qr-button").addEventListener("click", () => {
+    const popover = $("#qr-popover");
+    popover.hidden = !popover.hidden;
+    $("#qr-button").setAttribute("aria-expanded", String(!popover.hidden));
+    if (!popover.hidden) $("#qr-size").focus({ preventScroll: true });
+  });
+  $("#qr-visibility").addEventListener("click", () => {
     prefs.qr = !prefs.qr;
     rememberPreferences();
+  });
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".qr-control") && !$("#qr-popover").hidden) {
+      $("#qr-popover").hidden = true;
+      $("#qr-button").setAttribute("aria-expanded", "false");
+    }
   });
   $("#mute-button").addEventListener("click", () => {
     unlockAudio();
@@ -641,6 +668,13 @@ function bindEvents() {
       b.addEventListener("click", () => simulate(Number(b.dataset.batch), 10)),
     );
   document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("#qr-popover").hidden) {
+      e.preventDefault();
+      $("#qr-popover").hidden = true;
+      $("#qr-button").setAttribute("aria-expanded", "false");
+      $("#qr-button").focus({ preventScroll: true });
+      return;
+    }
     const modalOpen = $("#settings-dialog").open || $("#test-dialog").open;
     if (canPositionStage(e, modalOpen)) {
       e.preventDefault();
@@ -716,6 +750,10 @@ function bindPreferences() {
       rememberPreferences();
     }),
   );
+  $("#victory-style").addEventListener("change", (e) => {
+    prefs.victoryStyle = e.target.value;
+    rememberPreferences();
+  });
 }
 
 function bindEditor() {

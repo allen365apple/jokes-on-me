@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=7" />
+    <link rel="stylesheet" href="./style.css?v=8" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=7"></script>
+    <script type="module" src="./stage.mjs?v=8"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -54,7 +54,47 @@
       <button id="settings-button"><kbd>C</kbd> 控制台</button>
       <button id="test-button"><kbd>T</kbd> 測試</button>
       <button id="fullscreen-button"><kbd>F</kbd> 全螢幕</button>
-      <button id="qr-button"><kbd>Q</kbd> QR</button>
+      <div class="qr-control">
+        <button id="qr-button" aria-expanded="false" aria-controls="qr-popover">
+          <kbd>Q</kbd> QR
+        </button>
+        <div
+          id="qr-popover"
+          class="qr-popover"
+          role="group"
+          aria-label="QR Code 控制"
+          hidden
+        >
+          <div class="qr-popover-heading">
+            <strong>QR Code</strong
+            ><button
+              id="qr-visibility"
+              type="button"
+              aria-label="隱藏 QR Code"
+              aria-pressed="true"
+              title="隱藏 QR Code"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+                <path class="eye-slash" d="m3 3 18 18" hidden />
+              </svg>
+            </button>
+          </div>
+          <label for="qr-size"
+            >大小 <output id="qr-size-value">100%</output></label
+          >
+          <input
+            id="qr-size"
+            type="range"
+            min="70"
+            max="220"
+            step="5"
+            value="100"
+            aria-label="QR Code 大小"
+          />
+        </div>
+      </div>
       <button id="mute-button" aria-pressed="false">
         <kbd>M</kbd> 音效開啟
       </button>
@@ -133,16 +173,6 @@
             /><output id="space-value">0vh</output></label
           >
           <label
-            >QR Code 大小<input
-              id="qr-size"
-              type="range"
-              min="70"
-              max="220"
-              step="5"
-              value="100"
-            /><output id="qr-size-value">100%</output></label
-          >
-          <label
             >勝利音量<input
               id="volume"
               type="range"
@@ -154,6 +184,12 @@
           <label class="check"
             ><input id="sound-enabled" type="checkbox" checked />
             遊戲勝利音效</label
+          >
+          <label
+            >勝利音效類型<select id="victory-style">
+              <option value="arcade">經典勝利旋律</option>
+              <option value="stinger">短促兩音節・激昂</option>
+            </select></label
           >
           <button id="preview-sound" type="button">試聽勝利音效</button>
           <label class="check"
