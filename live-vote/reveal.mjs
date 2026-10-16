@@ -1,3 +1,5 @@
+export const VOTE_COUNT_UP_DURATION_MS = 1000;
+
 /** A cancelable presentation sequence; authoritative ballots are already closed. */
 export function revealVotes(session, prefs, done) {
   let canceled = false,
@@ -36,7 +38,7 @@ export function revealVotes(session, prefs, done) {
     document.querySelector("#stage").classList.add("counting-votes");
     document.querySelector("#status-text").textContent = "票數揭曉中⋯";
     const start = performance.now(),
-      duration = reduced ? 150 : 3400;
+      duration = reduced ? 150 : VOTE_COUNT_UP_DURATION_MS;
     const scale = Math.max(
       session.expected,
       Math.ceil(Math.max(...session.counts) / 50) * 50,
