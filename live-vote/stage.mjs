@@ -10,13 +10,13 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
-} from "./core.mjs?v=9";
+} from "./core.mjs?v=10";
 import {
   createStore,
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=9";
+} from "./store.mjs?v=10";
 import {
   $,
   escapeHtml as esc,
@@ -31,14 +31,14 @@ import {
   unlockAudio,
   stopSound,
   playCheer,
-} from "./ui.mjs?v=9";
+} from "./ui.mjs?v=10";
 
 const mode = modeFromUrl();
 let revealing = false,
   cancelReveal = null,
   testing = false,
   latestLive = null;
-import { revealVotes } from "./reveal.mjs?v=9";
+import { revealVotes } from "./reveal.mjs?v=10";
 let store,
   state,
   sync,
