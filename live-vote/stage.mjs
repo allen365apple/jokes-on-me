@@ -290,7 +290,9 @@ function renderStatus() {
           : state.status === "open"
             ? "開始投票"
             : "準備投票";
-  if (state.status === "open") $("#headline-title").textContent = "開始投票中";
+  if (state.status === "open")
+    $("#headline-title").textContent =
+      `投給今天最有趣的隊伍！目前已有 ${total} 人投票`;
   else if (state.status === "closed")
     $("#headline-title").textContent = "投票結束";
   $("#status-detail").textContent =
