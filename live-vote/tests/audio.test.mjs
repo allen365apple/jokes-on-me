@@ -2,66 +2,43 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { unlockAudio, playCheer, stopSound } from "../ui.mjs";
 
-test("victory fanfare uses pitched notes and a chord, respects mute/volume and stops immediately", async () => {
-  const notes = [],
-    buses = [];
-  const param = () => ({
-    setValueAtTime(value) {
-      this.value = value;
+test("victory clip unlocks, respects mute/volume, and stops immediately", async () => {
+  const originalDocument = globalThis.document;
+  const playCalls = [];
+  let pauseCalls = 0;
+  const audio = {
+    muted: false,
+    volume: 1,
+    currentTime: 4,
+    async play() {
+      playCalls.push({ muted: this.muted, volume: this.volume });
     },
-    linearRampToValueAtTime() {},
-    exponentialRampToValueAtTime() {},
-  });
-  class AudioContext {
-    state = "suspended";
-    currentTime = 3;
-    destination = {};
-    async resume() {
-      this.state = "running";
-    }
-    createGain() {
-      const node = {
-        gain: param(),
-        connect() {},
-        disconnect() {
-          this.disconnected = true;
-        },
-      };
-      buses.push(node);
-      return node;
-    }
-    createOscillator() {
-      const node = {
-        frequency: param(),
-        connect() {},
-        disconnect() {},
-        start(at) {
-          this.at = at;
-        },
-        stop(at) {
-          this.end = at;
-        },
-      };
-      notes.push(node);
-      return node;
-    }
-  }
-  globalThis.window = { AudioContext };
+    pause() {
+      pauseCalls++;
+    },
+  };
+  globalThis.document = {
+    querySelector: (selector) => (selector === "#victory-audio" ? audio : null),
+  };
   try {
     await unlockAudio();
+    assert.deepEqual(playCalls[0], { muted: true, volume: 1 });
+    assert.equal(pauseCalls, 1);
+    assert.equal(audio.currentTime, 0);
+    assert.equal(audio.muted, false);
+
     playCheer({ sound: false, volume: 30 });
-    assert.equal(notes.length, 0);
+    assert.equal(playCalls.length, 1);
+
     playCheer({ sound: true, volume: 30 });
-    assert.equal(notes.length, 14);
-    assert.equal(buses[0].gain.value, 0.3);
-    assert.ok(notes.every((n) => n.frequency.value > 0 && n.end > n.at));
-    assert.equal(notes.filter((n) => n.at === 4.14).length, 5);
-    assert.ok(notes.some((n) => n.type === "square"));
-    assert.ok(notes.some((n) => n.type === "triangle"));
+    assert.deepEqual(playCalls[1], { muted: false, volume: 0.3 });
+    assert.equal(pauseCalls, 2);
+
+    audio.currentTime = 2;
     stopSound();
-    assert.equal(buses[0].disconnected, true);
-    notes.forEach((n) => n.onended());
+    assert.equal(pauseCalls, 3);
+    assert.equal(audio.currentTime, 0);
   } finally {
-    globalThis.window = undefined;
+    globalThis.document = originalDocument;
   }
 });
