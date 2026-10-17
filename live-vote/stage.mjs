@@ -267,8 +267,9 @@ function showOvertake(winner) {
 function renderStatus() {
   if (!state) return;
   if (revealing) {
+    $("#headline-title").textContent = "投票結束";
     $("#status-tag").textContent = "REVEAL";
-    $("#status-text").textContent = "投票已截止，即將揭曉";
+    $("#status-text").textContent = "公布結果";
     $("#status-detail").textContent = "";
     return;
   }
@@ -285,10 +286,13 @@ function renderStatus() {
       : pendingTransition === "open"
         ? "正在開放投票⋯"
         : state.status === "closed"
-          ? resultLabel(state)
+          ? "公布結果"
           : state.status === "open"
-            ? "投票開始，笑了就投！"
-            : "等待開放投票";
+            ? "開始投票"
+            : "準備投票";
+  if (state.status === "open") $("#headline-title").textContent = "開始投票中";
+  else if (state.status === "closed")
+    $("#headline-title").textContent = "投票結束";
   $("#status-detail").textContent =
     state.status === "ready"
       ? "先選好你的笑點，等主持人一聲令下。"
@@ -301,7 +305,7 @@ function updateControls() {
   const button = $("#toggle-vote");
   button.disabled =
     !store || !isAdmin || !state || busy || revealing || testing || !connected;
-  button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "截止並揭曉" : state?.status === "closed" ? "清票並開始下一輪" : "開放投票"}`;
+  button.innerHTML = `<kbd>Enter</kbd> ${busy ? "正在確認⋯" : state?.status === "open" ? "結束投票" : state?.status === "closed" ? "清票並開始下一輪" : "開始投票"}`;
   document.querySelectorAll("[data-sim],[data-batch]").forEach((b) => {
     b.disabled = !state || state.status !== "open" || busy;
   });

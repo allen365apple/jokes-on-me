@@ -8,7 +8,7 @@
     <title>看我笑話現場投票｜雙隊 PK</title>
     <link rel="stylesheet" href="./style.css?v=12" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=14"></script>
+    <script type="module" src="./stage.mjs?v=15"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -29,7 +29,7 @@
         </div>
       </header>
       <div class="headline">
-        <h1>今天哪一隊最有趣？<span>投票吧！</span></h1>
+        <h1 id="headline-title">今天哪一隊最有趣？<span>投票吧！</span></h1>
       </div>
       <section class="arena" aria-label="兩隊即時票數">
         <div class="arena-team" id="team-0"></div>
@@ -138,6 +138,9 @@
       </p>
       <section id="login-section" hidden>
         <h3>啟用控制端</h3>
+        <p class="hint">
+          每台電腦或無痕視窗都要各自輸入同一組操作碼；授權不會跨瀏覽器同步。
+        </p>
         <form id="login-form" class="login-form">
           <label
             >私有操作碼<input
