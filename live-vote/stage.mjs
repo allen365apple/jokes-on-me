@@ -55,6 +55,7 @@ const defaults = {
   position: 0,
   volume: 30,
   sound: true,
+  prize: "將獲得傑哥請吃橘色涮涮鍋！",
   soundVersion: 2,
   effects: true,
   reduced: false,
@@ -264,6 +265,33 @@ function showOvertake(winner) {
   lastLeader = winner;
 }
 
+/** Render only confirmed results; all editable labels use text nodes. */
+function renderHeadline(total) {
+  const title = $("#headline-title");
+  if (state.status === "open") {
+    const progress = document.createElement("span");
+    progress.className = "vote-progress";
+    progress.textContent = `目前已有 ${total} 人投票`;
+    title.replaceChildren("投給今天最有趣的隊伍！", progress);
+  } else if (state.status === "closed") {
+    const winner = outcome(state.counts);
+    if (typeof winner !== "number") {
+      title.textContent = winner === "tie" ? "兩隊平手！" : "本輪沒有有效選票";
+      return;
+    }
+    const team = state.teams[winner];
+    const name = document.createElement("span");
+    name.className = "winner-name";
+    name.style.color = team.color;
+    name.textContent = Array.from(team.name)[0];
+    title.replaceChildren(
+      name,
+      Array.from(team.name).slice(1).join("") + "獲勝",
+    );
+    if (prefs.prize.trim()) title.append("，" + prefs.prize.trim());
+  } else title.textContent = "今天哪一隊最有趣？投票吧！";
+}
+
 function renderStatus() {
   if (!state) return;
   if (revealing) {
@@ -290,11 +318,7 @@ function renderStatus() {
           : state.status === "open"
             ? "開始投票"
             : "準備投票";
-  if (state.status === "open")
-    $("#headline-title").textContent =
-      `投給今天最有趣的隊伍！目前已有 ${total} 人投票`;
-  else if (state.status === "closed")
-    $("#headline-title").textContent = "投票結束";
+  renderHeadline(total);
   $("#status-detail").textContent =
     state.status === "ready"
       ? "先選好你的笑點，等主持人一聲令下。"
@@ -397,9 +421,11 @@ function applyPreferences() {
   document.body.classList.toggle("reduced-motion", prefs.reduced);
   if (!revealing && !testing)
     $("#qr-block").hidden = state?.status === "closed" || !prefs.qr;
-  $("#mute-button").innerHTML =
-    `<kbd>M</kbd> ${prefs.sound ? "音效開啟" : "音效關閉"}`;
-  $("#mute-button").setAttribute("aria-pressed", String(prefs.sound));
+  $("#mute-button").setAttribute(
+    "aria-expanded",
+    String(!$("#sound-popover").hidden),
+  );
+  $("#mute-button").classList.toggle("sound-muted", !prefs.sound);
   $("#qr-button").setAttribute(
     "aria-expanded",
     String(!$("#qr-popover").hidden),
@@ -423,6 +449,8 @@ function applyPreferences() {
     $("#" + out).textContent = prefix + prefs[key] + unit;
   });
   $("#sound-enabled").checked = prefs.sound;
+  $("#prize-text").value = prefs.prize;
+  $("#victory-audio").volume = Math.max(0, Math.min(100, prefs.volume)) / 100;
   $("#effects-enabled").checked = prefs.effects;
   $("#motion-reduced").checked = prefs.reduced;
   if (!prefs.sound) stopSound();
@@ -657,6 +685,8 @@ function bindEvents() {
   $("#fullscreen-button").hidden = !document.fullscreenEnabled;
   $("#fullscreen-button").addEventListener("click", fullscreen);
   $("#qr-button").addEventListener("click", () => {
+    $("#sound-popover").hidden = true;
+    $("#mute-button").setAttribute("aria-expanded", "false");
     const popover = $("#qr-popover");
     popover.hidden = !popover.hidden;
     $("#qr-button").setAttribute("aria-expanded", String(!popover.hidden));
@@ -671,11 +701,19 @@ function bindEvents() {
       $("#qr-popover").hidden = true;
       $("#qr-button").setAttribute("aria-expanded", "false");
     }
+    if (!e.target.closest(".sound-control") && !$("#sound-popover").hidden) {
+      $("#sound-popover").hidden = true;
+      $("#mute-button").setAttribute("aria-expanded", "false");
+    }
   });
   $("#mute-button").addEventListener("click", () => {
     unlockAudio();
-    prefs.sound = !prefs.sound;
-    rememberPreferences();
+    $("#qr-popover").hidden = true;
+    $("#qr-button").setAttribute("aria-expanded", "false");
+    const popover = $("#sound-popover");
+    popover.hidden = !popover.hidden;
+    $("#mute-button").setAttribute("aria-expanded", String(!popover.hidden));
+    if (!popover.hidden) $("#volume").focus({ preventScroll: true });
   });
   document
     .querySelectorAll("[data-sim]")
@@ -688,6 +726,28 @@ function bindEvents() {
       b.addEventListener("click", () => simulate(Number(b.dataset.batch), 10)),
     );
   document.addEventListener("keydown", (e) => {
+    if (
+      e.key.toLowerCase() === "m" &&
+      e.target.closest?.(".sound-control") &&
+      !e.repeat &&
+      !e.isComposing &&
+      !e.ctrlKey &&
+      !e.metaKey &&
+      !e.altKey &&
+      !$("#settings-dialog").open &&
+      !$("#test-dialog").open
+    ) {
+      e.preventDefault();
+      $("#mute-button").click();
+      return;
+    }
+    if (e.key === "Escape" && !$("#sound-popover").hidden) {
+      e.preventDefault();
+      $("#sound-popover").hidden = true;
+      $("#mute-button").setAttribute("aria-expanded", "false");
+      $("#mute-button").focus({ preventScroll: true });
+      return;
+    }
     if (e.key === "Escape" && !$("#qr-popover").hidden) {
       e.preventDefault();
       $("#qr-popover").hidden = true;
@@ -748,6 +808,11 @@ function bindEvents() {
 }
 
 function bindPreferences() {
+  $("#prize-text").addEventListener("input", (e) => {
+    prefs.prize = e.target.value;
+    rememberPreferences();
+    if (!revealing && !testing && state) renderStatus();
+  });
   [
     ["font-scale", "font"],
     ["top-space", "position"],

@@ -245,6 +245,22 @@ fieldset {
   color: #e8ff8a;
   margin-left: 0.15em;
 }
+.headline h1 {
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.headline h1 .vote-progress {
+  display: inline-block;
+  font-size: 0.5em;
+  color: #929292;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-left: 0.8em;
+}
+.headline h1 .winner-name {
+  display: inline;
+  margin-left: 0;
+}
 .arena {
   position: relative;
   display: grid;
@@ -1596,7 +1612,8 @@ fieldset {
 .operator-bar {
   position: relative;
 }
-.qr-control {
+.qr-control,
+.sound-control {
   position: relative;
 }
 .qr-popover[hidden] {
@@ -1644,6 +1661,13 @@ fieldset {
 .qr-popover input[type="range"] {
   width: 100%;
   margin: 8px 0 2px;
+}
+.qr-popover .sound-switch {
+  align-items: center;
+  margin: 12px 0;
+}
+.operator-bar .sound-muted {
+  opacity: 0.5;
 }
 .stage-header .qr-popover button {
   color: #eee;

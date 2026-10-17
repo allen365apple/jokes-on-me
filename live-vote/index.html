@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#0b0b0b" />
     <meta name="robots" content="noindex" />
     <title>看我笑話現場投票｜雙隊 PK</title>
-    <link rel="stylesheet" href="./style.css?v=12" />
+    <link rel="stylesheet" href="./style.css?v=13" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=17"></script>
+    <script type="module" src="./stage.mjs?v=18"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -111,9 +111,33 @@
           />
         </div>
       </div>
-      <button id="mute-button" aria-pressed="false">
-        <kbd>M</kbd> 音效開啟
-      </button>
+      <div class="sound-control">
+        <button
+          id="mute-button"
+          aria-expanded="false"
+          aria-controls="sound-popover"
+        >
+          <kbd>M</kbd> 音效
+        </button>
+        <div
+          id="sound-popover"
+          class="qr-popover"
+          role="group"
+          aria-label="音效控制"
+          hidden
+        >
+          <div class="qr-popover-heading"><strong>音效</strong></div>
+          <label for="volume"
+            >音量 <output id="volume-value">30%</output></label
+          >
+          <input id="volume" type="range" min="0" max="100" value="30" />
+          <label class="sound-switch"
+            ><span>播放勝利音效</span
+            ><input id="sound-enabled" type="checkbox" checked
+          /></label>
+          <button id="preview-sound" type="button">試聽勝利音效</button>
+        </div>
+      </div>
       <span id="demo-controls" hidden
         ><button data-sim="0"><kbd>1</kbd> 左隊 +1</button
         ><button data-sim="1"><kbd>2</kbd> 右隊 +1</button></span
@@ -162,6 +186,14 @@
         <h3>投影與效果 <small>只影響這台裝置，自動記住</small></h3>
         <div class="preferences">
           <label
+            >勝隊獎勵文字<input
+              id="prize-text"
+              type="text"
+              maxlength="120"
+              value="將獲得傑哥請吃橘色涮涮鍋！"
+              placeholder="將獲得……（留空則只顯示勝隊）"
+          /></label>
+          <label
             >文字大小<input
               id="font-scale"
               type="range"
@@ -179,20 +211,6 @@
               value="0"
             /><output id="space-value">0vh</output></label
           >
-          <label
-            >勝利音量<input
-              id="volume"
-              type="range"
-              min="0"
-              max="100"
-              value="30"
-            /><output id="volume-value">30%</output></label
-          >
-          <label class="check"
-            ><input id="sound-enabled" type="checkbox" checked />
-            遊戲勝利音效</label
-          >
-          <button id="preview-sound" type="button">試聽勝利音效</button>
           <label class="check"
             ><input id="effects-enabled" type="checkbox" checked />
             彩帶與反超效果</label
