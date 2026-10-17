@@ -1,5 +1,5 @@
 import { CONFIG } from "./config.mjs?v=12";
-import { FixedStore } from "./room-store.mjs?v=12";
+import { FixedStore } from "./room-store.mjs?v=13";
 import {
   acceptsSnapshot,
   newSession,

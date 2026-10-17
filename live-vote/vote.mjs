@@ -1,5 +1,5 @@
 import { acceptsSnapshot, outcome } from "./core.mjs?v=12";
-import { createStore, modeFromUrl } from "./store.mjs?v=12";
+import { createStore, modeFromUrl } from "./store.mjs?v=13";
 import {
   $,
   escapeHtml as esc,

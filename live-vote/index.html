@@ -8,7 +8,7 @@
     <title>看我笑話現場投票｜雙隊 PK</title>
     <link rel="stylesheet" href="./style.css?v=12" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=15"></script>
+    <script type="module" src="./stage.mjs?v=16"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -136,21 +136,9 @@
           >開啟投票頁 ↗</a
         >
       </p>
-      <section id="login-section" hidden>
-        <h3>啟用控制端</h3>
-        <p class="hint">
-          每台電腦或無痕視窗都要各自輸入同一組操作碼；授權不會跨瀏覽器同步。
-        </p>
-        <form id="login-form" class="login-form">
-          <label
-            >私有操作碼<input
-              name="token"
-              type="password"
-              autocomplete="off"
-              required /></label
-          ><button class="primary" type="submit">啟用</button>
-        </form>
-      </section>
+      <p class="notice">
+        公開控制：任何取得此網址的人都能操作投票及修改隊伍，請勿將網址分享給觀眾。
+      </p>
       <form id="session-form">
         <h3>本場設定 <small id="edit-hint"></small></h3>
         <fieldset id="session-fields">
@@ -227,8 +215,7 @@
           網址與 QR 固定不變；截止後按 Enter 清票並開放下一輪，歷史紀錄保留。
         </p>
         <div class="button-row">
-          <button id="new-session">建立新場次</button
-          ><button id="logout-button" hidden>登出管理員</button>
+          <button id="new-session">建立新場次</button>
         </div>
         <div id="history-list" class="history-list"></div>
       </section>

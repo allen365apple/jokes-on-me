@@ -16,7 +16,7 @@ import {
   modeFromUrl,
   readLocal,
   writeLocal,
-} from "./store.mjs?v=12";
+} from "./store.mjs?v=13";
 import {
   $,
   escapeHtml as esc,
@@ -101,7 +101,7 @@ async function init() {
     if (id) await loadSession(id);
     else {
       $("#status-text").textContent = "尚未選擇場次";
-      $("#status-detail").textContent = "按 C 登入管理員，再建立新場次。";
+      $("#status-detail").textContent = "按 C 開啟控制台，再建立新場次。";
     }
     $("#operator-note").textContent =
       mode === "demo"
@@ -445,9 +445,7 @@ function openSettings() {
   $("#settings-mode").textContent =
     mode === "demo"
       ? "排練模式：只有本瀏覽器的模擬資料，不會影響正式投票。"
-      : "正式模式：開始、截止與修改隊伍，都由伺服器確認管理權限。";
-  $("#login-section").hidden = mode === "demo" || isAdmin;
-  $("#logout-button").hidden = mode === "demo" || !isAdmin;
+      : "公開控制：任何取得此網址的人都能開始、截止、重開投票及修改隊伍。";
   $("#session-form").elements.title.value = state?.title || "看我笑話・現場 PK";
   $("#session-form").elements.expected.value = state?.expected || 150;
   editorTeams = structuredClone(state?.teams || DEFAULT_TEAMS);
@@ -821,28 +819,6 @@ function bindForms() {
       await loadSession(next.id);
       $("#settings-dialog").close();
       toast("已建立新場次，舊場紀錄仍然保留。");
-    }),
-  );
-  $("#login-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    panelAction(async () => {
-      const form = e.target;
-      try {
-        await store.login(form.elements.token.value);
-      } finally {
-        form.elements.token.value = "";
-      }
-      isAdmin = await store.admin();
-      $("#settings-dialog").close();
-      openSettings();
-    });
-  });
-  $("#logout-button").addEventListener("click", () =>
-    panelAction(async () => {
-      await store.logout();
-      isAdmin = false;
-      $("#settings-dialog").close();
-      toast("已登出；投影仍維持唯讀顯示。");
     }),
   );
 }

@@ -1,4 +1,4 @@
-import { readLocal, writeLocal } from "./store.mjs?v=12";
+import { readLocal, writeLocal } from "./store.mjs?v=13";
 
 /** Fixed room, no Auth signup. UUID is a practical browser identifier, not proof of personhood. */
 export class FixedStore {
@@ -25,17 +25,8 @@ export class FixedStore {
       ? navigator.locks.request("jlv-browser-identity", work)
       : work();
   }
-  async login(secret) {
-    if (!(await this.rpc("access", { p_secret: secret.trim() })))
-      throw new Error("操作碼不正確。");
-    writeLocal("operator-secret", secret.trim());
-  }
-  async logout() {
-    writeLocal("operator-secret", null);
-  }
   async admin() {
-    const secret = readLocal("operator-secret");
-    return secret ? this.rpc("access", { p_secret: secret }) : false;
+    return true;
   }
   async read() {
     const r = await this.rpc("state", {
@@ -65,7 +56,7 @@ export class FixedStore {
     if (this.pending?.key !== key)
       this.pending = { key, id: crypto.randomUUID() };
     const result = await this.rpc("command", {
-      p_secret: readLocal("operator-secret"),
+      p_secret: null,
       p_round: id,
       p_operation: operation,
       p_command: this.pending.id,
@@ -87,7 +78,7 @@ export class FixedStore {
     return this.command(id, "save", settings);
   }
   async history() {
-    return this.rpc("history", { p_secret: readLocal("operator-secret") });
+    return this.rpc("history", { p_secret: null });
   }
   subscribe(id, onChange, onConnection) {
     let stopped = false,

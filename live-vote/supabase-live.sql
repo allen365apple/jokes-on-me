@@ -1,4 +1,4 @@
--- Fixed public URL, browser-per-round ballots, private controller capability.
+-- Fixed public URL, browser-per-round ballots, publicly callable controller RPCs.
 begin;
 create table if not exists public.jlv_live_private(id text primary key, secret text not null);
 create table if not exists public.jlv_live_rounds(id uuid primary key, snapshot jsonb not null);
@@ -29,7 +29,8 @@ do $$ declare s jsonb; begin
  end if;
 end $$;
 create or replace function public.jlv_live_access(p_secret text) returns boolean language sql stable security definer set search_path='' as $$
- select p_secret is not null and exists(select 1 from public.jlv_live_private where id='main' and secret=p_secret);
+ -- Intentionally public: possession of the page URL is the only control gate.
+ select true;
 $$;
 create or replace function public.jlv_live_state(p_device uuid default null) returns jsonb language sql stable security definer set search_path='' as $$
  select jsonb_build_object('session',r.snapshot,'team',(select b.team from public.jlv_live_ballots b where b.round_id=(r.snapshot->>'id')::uuid and b.device=p_device)) from public.jlv_live_room r where r.id='main';

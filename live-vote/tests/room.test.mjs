@@ -13,18 +13,29 @@ test("fixed room: 150 browsers, duplicates, cutoff, idempotent next round and pe
     );
     await db.exec(sql);
     await db.exec(sql);
-    const secret = (
-      await db.query(
-        "select secret from public.jlv_live_private where id='main'",
-      )
-    ).rows[0].secret;
+    await db.exec(`
+      create or replace function public.jlv_live_access(p_secret text)
+      returns boolean language sql stable security definer set search_path=''
+      as $$ select p_secret = 'old-private-key'; $$;
+    `);
+    const migration = await readFile(
+      new URL("../supabase-public-control-migration.sql", import.meta.url),
+      "utf8",
+    );
+    await db.exec(migration);
+    await db.exec(migration);
+    assert.equal(
+      (await db.query("select public.jlv_live_access(null) as allowed")).rows[0]
+        .allowed,
+      true,
+    );
     const state = async (device) =>
       (
         await db.query("select public.jlv_live_state($1) as r", [
           device || null,
         ])
       ).rows[0].r;
-    const command = async (round, op, id = randomUUID(), token = secret) =>
+    const command = async (round, op, id = randomUUID(), token = null) =>
       (
         await db.query("select public.jlv_live_command($1,$2,$3,$4) as r", [
           token,
@@ -45,10 +56,6 @@ test("fixed room: 150 browsers, duplicates, cutoff, idempotent next round and pe
     const first = s.id,
       device = randomUUID();
     await assert.rejects(() => vote(first, device, "blue"), /尚未開放或已截止/);
-    await assert.rejects(
-      () => command(first, "open", randomUUID(), "wrong"),
-      /操作碼/,
-    );
     s = await command(first, "open");
     const people = Array.from({ length: 150 }, randomUUID);
     for (let i = 0; i < 150; i++) {
