@@ -16,6 +16,9 @@ member-only-content/*
 !member-only-content/member-only-content-preview-*.html
 # 例外：latest.html 是自動跳轉到最新一期的入口頁，不含內容，可公開
 !member-only-content/latest.html
+# 例外：每月 IG 輪播預覽圖（公開圖，給 Buffer 草稿用）
+!member-only-content/ig/
+!member-only-content/ig/**
 
 # 早期放在根目錄的舊預覽檔（已改放 member-only-content/），不再追蹤
 /member-only-content-preview*.html
