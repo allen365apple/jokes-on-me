@@ -1,5 +1,11 @@
+// 最後更新：2026-11-19 04:26
+// 誰幫忙的：Claude Code（Claude Opus 5.5）
+// 修改摘要：勝隊獎勵文字改成「輸贏附帶」：控制台可選勝隊獎勵或輸隊懲罰，揭曉大標依類型顯示
 import {
   DEFAULT_TEAMS,
+  DEFAULT_STAKE,
+  stakePreferences,
+  stakeClause,
   ROSTER,
   member,
   validateTeams,
@@ -10,7 +16,7 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
-} from "./core.mjs?v=12";
+} from "./core.mjs?v=13";
 import {
   createStore,
   modeFromUrl,
@@ -55,7 +61,7 @@ const defaults = {
   position: 0,
   volume: 30,
   sound: true,
-  prize: "將獲得傑哥請吃橘色涮涮鍋！",
+  ...DEFAULT_STAKE,
   soundVersion: 2,
   effects: true,
   reduced: false,
@@ -81,7 +87,13 @@ async function init() {
         saved.qrSize = 130;
       saved.qrSizeVersion = 1;
     }
-    prefs = { ...defaults, ...saved, ...victorySoundPreferences(saved) };
+    prefs = {
+      ...defaults,
+      ...saved,
+      ...victorySoundPreferences(saved),
+      ...stakePreferences(saved),
+    };
+    delete prefs.prize;
     writeLocal("preferences", prefs);
     applyPreferences();
     $("#mode-label").textContent =
@@ -279,17 +291,41 @@ function renderHeadline(total) {
       title.textContent = winner === "tie" ? "兩隊平手！" : "本輪沒有有效選票";
       return;
     }
-    const team = state.teams[winner];
-    const name = document.createElement("span");
-    name.className = "winner-name";
-    name.style.color = team.color;
-    name.textContent = Array.from(team.name)[0];
+    const clause = stakeClause(prefs, winner);
     title.replaceChildren(
-      name,
-      Array.from(team.name).slice(1).join("") + "獲勝",
+      ...teamLabel(state.teams[winner]),
+      "獲勝" + (clause ? clause.joiner : ""),
     );
-    if (prefs.prize.trim()) title.append("，" + prefs.prize.trim());
+    if (clause?.team != null)
+      title.append(...teamLabel(state.teams[clause.team]));
+    if (clause) title.append(clause.text);
   } else title.textContent = "今天哪一隊最有趣？投票吧！";
+}
+
+/** 隊名首字用隊色，其餘照常；用文字節點，隊名不會被當成 HTML。 */
+function teamLabel(team) {
+  const first = document.createElement("span");
+  first.className = "winner-name";
+  first.style.color = team.color;
+  first.textContent = Array.from(team.name)[0];
+  return [first, Array.from(team.name).slice(1).join("")];
+}
+
+const STAKE_COPY = {
+  penalty: {
+    label: "輸隊懲罰文字",
+    placeholder: "要……（前面自動接輸隊名稱；留空只顯示勝隊）",
+  },
+  reward: { label: "勝隊獎勵文字", placeholder: "將獲得……（留空只顯示勝隊）" },
+};
+
+function syncStakeFields() {
+  const copy = STAKE_COPY[prefs.stakeType] || STAKE_COPY.penalty;
+  $("#stake-type").value = prefs.stakeType;
+  $("#stake-label").textContent = copy.label;
+  $("#stake-text").placeholder = copy.placeholder;
+  if ($("#stake-text").value !== prefs.stake)
+    $("#stake-text").value = prefs.stake;
 }
 
 function renderStatus() {
@@ -449,7 +485,7 @@ function applyPreferences() {
     $("#" + out).textContent = prefix + prefs[key] + unit;
   });
   $("#sound-enabled").checked = prefs.sound;
-  $("#prize-text").value = prefs.prize;
+  syncStakeFields();
   $("#victory-audio").volume = Math.max(0, Math.min(100, prefs.volume)) / 100;
   $("#effects-enabled").checked = prefs.effects;
   $("#motion-reduced").checked = prefs.reduced;
@@ -808,8 +844,13 @@ function bindEvents() {
 }
 
 function bindPreferences() {
-  $("#prize-text").addEventListener("input", (e) => {
-    prefs.prize = e.target.value;
+  $("#stake-type").addEventListener("change", (e) => {
+    prefs.stakeType = e.target.value === "reward" ? "reward" : "penalty";
+    rememberPreferences();
+    if (!revealing && !testing && state) renderStatus();
+  });
+  $("#stake-text").addEventListener("input", (e) => {
+    prefs.stake = e.target.value;
     rememberPreferences();
     if (!revealing && !testing && state) renderStatus();
   });

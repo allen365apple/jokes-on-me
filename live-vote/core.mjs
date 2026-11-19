@@ -1,3 +1,6 @@
+// 最後更新：2026-11-19 04:26
+// 誰幫忙的：Claude Code（Claude Opus 5.5）
+// 修改摘要：新增輸贏附帶（勝隊獎勵／輸隊懲罰）的預設值、舊設定換新與揭曉文字組法；預設隊名為攻隊／受隊
 export const ROSTER = [
   "傑哥",
   "芭樂",
@@ -12,13 +15,13 @@ export const ROSTER = [
 export const DEFAULT_TEAMS = [
   {
     id: "blue",
-    name: "藍隊",
+    name: "攻隊",
     color: "#2854ed",
     members: ROSTER.slice(0, 4).map(member),
   },
   {
     id: "orange",
-    name: "橘隊",
+    name: "受隊",
     color: "#ff7836",
     members: ROSTER.slice(4, 8).map(member),
   },
@@ -236,4 +239,33 @@ export function victorySoundPreferences(saved = {}) {
     sound: saved.soundVersion === 2 ? saved.sound !== false : true,
     soundVersion: 2,
   };
+}
+
+/** 輸贏附帶的本場預設：輸的那隊要穿囚服拍照。 */
+export const DEFAULT_STAKE = Object.freeze({
+  stakeType: "penalty",
+  stake: "要穿囚服拍照！",
+  stakeVersion: 1,
+});
+
+/** 舊版只有「勝隊獎勵文字」：第一次載入新版時換成本場預設，之後保留控制台手動改的內容。 */
+export function stakePreferences(saved = {}) {
+  if (saved.stakeVersion !== 1) return { ...DEFAULT_STAKE };
+  return {
+    stakeType: saved.stakeType === "reward" ? "reward" : "penalty",
+    stake: typeof saved.stake === "string" ? saved.stake : "",
+    stakeVersion: 1,
+  };
+}
+
+/**
+ * 揭曉大標「勝隊獲勝」後面要接什麼；沒有文字時回 null，只顯示勝隊。
+ * 勝隊獎勵：「攻隊獲勝，將獲得……」；輸隊懲罰：「攻隊獲勝！受隊要……」，team 是輸隊的索引。
+ */
+export function stakeClause(prefs, winner) {
+  const text = String(prefs?.stake ?? "").trim();
+  if (!text) return null;
+  return prefs.stakeType === "reward"
+    ? { joiner: "，", team: null, text }
+    : { joiner: "！", team: 1 - winner, text };
 }

@@ -1,3 +1,6 @@
+// 最後更新：2026-11-19 04:26
+// 誰幫忙的：Claude Code（Claude Opus 5.5）
+// 修改摘要：新增輸贏附帶的設定換新與揭曉文字測試；預設隊名斷言為攻隊
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -15,6 +18,9 @@ import {
   stagePosition,
   canPositionStage,
   victorySoundPreferences,
+  DEFAULT_STAKE,
+  stakePreferences,
+  stakeClause,
 } from "../core.mjs";
 
 const fresh = () => ({ session: newSession("test-session"), votes: {} });
@@ -68,7 +74,7 @@ test("initial roster is correct and settings snapshots are independent", () => {
     "柏文、大弋、巧達、又又",
   );
   s.teams[0].name = "changed";
-  assert.equal(DEFAULT_TEAMS[0].name, "藍隊");
+  assert.equal(DEFAULT_TEAMS[0].name, "攻隊");
 });
 test("one identity one ballot; switching replaces the previous choice", () => {
   const first = reduceDemo(open(), {
@@ -184,4 +190,32 @@ test("invalid teams and avatar schemes are rejected; no name interpolation into 
 test("foreground adapts to custom team colors", () => {
   assert.equal(inkFor("#ffffff"), "#111111");
   assert.equal(inkFor("#000000"), "#ffffff");
+});
+
+test("old prize-only preferences switch to the prison-uniform penalty once", () => {
+  assert.deepEqual(
+    stakePreferences({ prize: "將獲得傑哥請吃橘色涮涮鍋！" }),
+    DEFAULT_STAKE,
+  );
+  assert.deepEqual(
+    stakePreferences({ stakeVersion: 1, stakeType: "reward", stake: "請吃飯" }),
+    { stakeType: "reward", stake: "請吃飯", stakeVersion: 1 },
+  );
+  assert.equal(
+    stakePreferences({ stakeVersion: 1, stakeType: "bogus", stake: 3 })
+      .stakeType,
+    "penalty",
+  );
+});
+test("stake clause names the loser for penalties and follows the winner for rewards", () => {
+  assert.deepEqual(stakeClause(DEFAULT_STAKE, 0), {
+    joiner: "！",
+    team: 1,
+    text: "要穿囚服拍照！",
+  });
+  assert.deepEqual(
+    stakeClause({ stakeType: "reward", stake: " 將獲得獎品 " }, 1),
+    { joiner: "，", team: null, text: "將獲得獎品" },
+  );
+  assert.equal(stakeClause({ stakeType: "penalty", stake: "  " }, 0), null);
 });

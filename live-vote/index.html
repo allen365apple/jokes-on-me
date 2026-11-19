@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+  最後更新：2026-11-19 04:26
+  誰幫忙的：Claude Code（Claude Opus 5.5）
+  修改摘要：控制台「勝隊獎勵文字」改成「輸贏附帶」：可選勝隊獎勵或輸隊懲罰，預設輸隊要穿囚服拍照
+-->
 <html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
@@ -8,7 +13,7 @@
     <title>看我笑話現場投票｜雙隊 PK</title>
     <link rel="stylesheet" href="./style.css?v=13" />
     <script src="../love-improv/vendor/qrcode.js" defer></script>
-    <script type="module" src="./stage.mjs?v=18"></script>
+    <script type="module" src="./stage.mjs?v=19"></script>
   </head>
   <body class="stage-page">
     <div class="top-space" aria-hidden="true"></div>
@@ -186,12 +191,19 @@
         <h3>投影與效果 <small>只影響這台裝置，自動記住</small></h3>
         <div class="preferences">
           <label
-            >勝隊獎勵文字<input
-              id="prize-text"
+            >輸贏附帶<select id="stake-type">
+              <option value="penalty">輸隊懲罰</option>
+              <option value="reward">勝隊獎勵</option>
+            </select></label
+          >
+          <label
+            ><span id="stake-label">輸隊懲罰文字</span
+            ><input
+              id="stake-text"
               type="text"
               maxlength="120"
-              value="將獲得傑哥請吃橘色涮涮鍋！"
-              placeholder="將獲得……（留空則只顯示勝隊）"
+              value="要穿囚服拍照！"
+              placeholder="要……（前面自動接輸隊名稱；留空只顯示勝隊）"
           /></label>
           <label
             >文字大小<input
@@ -250,7 +262,7 @@
         <p class="notice">只測試這台螢幕的動畫，不會送出或更動正式選票。</p>
         <div class="form-row">
           <label
-            ><span id="test-name-0">藍隊</span
+            ><span id="test-name-0">攻隊</span
             ><input
               name="left"
               type="number"
@@ -261,7 +273,7 @@
               required
           /></label>
           <label
-            ><span id="test-name-1">橘隊</span
+            ><span id="test-name-1">受隊</span
             ><input
               name="right"
               type="number"

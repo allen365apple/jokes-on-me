@@ -1,3 +1,6 @@
+-- 最後更新：2026-11-19 04:11
+-- 誰幫忙的：Claude Code（Claude Opus 5.5）
+-- 修改摘要：初始房間種子的隊名改成攻隊／受隊（只影響全新建立的房間）
 -- Fixed public URL, browser-per-round ballots, publicly callable controller RPCs.
 begin;
 create table if not exists public.jlv_live_private(id text primary key, secret text not null);
@@ -22,7 +25,7 @@ insert into public.jlv_live_private values('main',replace(gen_random_uuid()::tex
 do $$ declare s jsonb; begin
  if not exists(select 1 from public.jlv_live_room where id='main') then
  s:=jsonb_build_object('id',gen_random_uuid(),'round',1,'version',1,'status','ready','counts',jsonb_build_array(0,0),'expected',150,'title','看我笑話現場投票','created_at',clock_timestamp(),'teams',
- '[{"id":"blue","name":"藍隊","color":"#2854ed","members":[{"name":"傑哥","avatar":"../love-improv/profiles/thumbs/傑哥.jpg","position":35},{"name":"芭樂","avatar":"../love-improv/profiles/thumbs/芭樂.jpg","position":35},{"name":"竹節蟲","avatar":"../love-improv/profiles/thumbs/竹節蟲.jpg","position":35},{"name":"兔子","avatar":"../love-improv/profiles/thumbs/兔子.jpg","position":35}]},{"id":"orange","name":"橘隊","color":"#ff7836","members":[{"name":"柏文","avatar":"../love-improv/profiles/thumbs/柏文.jpg","position":35},{"name":"大弋","avatar":"../love-improv/profiles/thumbs/大弋.jpg","position":35},{"name":"巧達","avatar":"../love-improv/profiles/thumbs/巧達.jpg","position":35},{"name":"又又","avatar":"../love-improv/profiles/thumbs/又又.jpg","position":35}]}]'::jsonb);
+ '[{"id":"blue","name":"攻隊","color":"#2854ed","members":[{"name":"傑哥","avatar":"../love-improv/profiles/thumbs/傑哥.jpg","position":35},{"name":"芭樂","avatar":"../love-improv/profiles/thumbs/芭樂.jpg","position":35},{"name":"竹節蟲","avatar":"../love-improv/profiles/thumbs/竹節蟲.jpg","position":35},{"name":"兔子","avatar":"../love-improv/profiles/thumbs/兔子.jpg","position":35}]},{"id":"orange","name":"受隊","color":"#ff7836","members":[{"name":"柏文","avatar":"../love-improv/profiles/thumbs/柏文.jpg","position":35},{"name":"大弋","avatar":"../love-improv/profiles/thumbs/大弋.jpg","position":35},{"name":"巧達","avatar":"../love-improv/profiles/thumbs/巧達.jpg","position":35},{"name":"又又","avatar":"../love-improv/profiles/thumbs/又又.jpg","position":35}]}]'::jsonb);
  insert into public.jlv_live_rounds values((s->>'id')::uuid,s);
  insert into public.jlv_live_room values('main',s,null);
  insert into public.jlv_live_signal values('main',1,1);

@@ -1,4 +1,7 @@
-import { acceptsSnapshot, outcome } from "./core.mjs?v=12";
+// 最後更新：2026-11-19 04:26
+// 誰幫忙的：Claude Code（Claude Opus 5.5）
+// 修改摘要：core.mjs 有改，快取版本號跟著加一，避免瀏覽器拿到舊檔
+import { acceptsSnapshot, outcome } from "./core.mjs?v=13";
 import { createStore, modeFromUrl } from "./store.mjs?v=13";
 import {
   $,
