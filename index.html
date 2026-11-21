@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  最後更新：2026-11-21 16:10
+  誰幫忙的：Claude Code（Claude Opus 5.5）
+  修改摘要：現場投票卡片改連到看我笑話平台的新網址，說明改成攻隊對受隊
+-->
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -273,9 +278,9 @@ a.ebtn { text-decoration: none; display: inline-block; }
       <h2><span class="emj">💗</span>看我戀愛</h2>
       <p>現場即興劇投影、選角、觀眾投稿與答案抽選工具。</p>
     </a>
-    <a class="card" href="live-vote/index.html">
+    <a class="card" href="https://jokesonme.jesse-chen.workers.dev/live-vote/" target="_blank" rel="noopener">
       <h2><span class="emj">⚔️</span>看我笑話現場投票</h2>
-      <p>藍隊對橘隊。觀眾手機一場一票，最後一起揭曉勝隊。</p>
+      <p>攻隊對受隊。觀眾手機一場一票，最後一起揭曉勝隊。</p>
     </a>
     <a class="card" href="mahjong-draw.html">
       <h2><span class="emj">🀄</span>看我摸牌</h2>
@@ -353,7 +358,7 @@ function renderCards() {
     map[g].push(r);
   });
   const localTool = { idx: 'local-love-show', cells: ['現場演出工具', '看我戀愛', '現場即興劇投影、選角、觀眾投稿與答案抽選工具。', 'love-improv/index.html', '💗', '否'] };
-  const liveVoteTool = { idx: 'local-live-vote', cells: ['現場演出工具', '看我笑話現場投票', '雙隊即時 PK。觀眾掃碼每輪一票，Enter 開放、截止、開始下一輪。', 'live-vote/index.html', '⚔️', '否'] };
+  const liveVoteTool = { idx: 'local-live-vote', cells: ['現場演出工具', '看我笑話現場投票', '雙隊即時 PK。觀眾掃碼每輪一票，Enter 開放、截止、開始下一輪。', 'https://jokesonme.jesse-chen.workers.dev/live-vote/', '⚔️', '否'] };
   if (!map['現場演出工具']) { groups.push('現場演出工具'); map['現場演出工具'] = []; }
   map['現場演出工具'] = map['現場演出工具'].filter(r => (r.cells[1] || '').trim() !== '看我戀愛');
   map['現場演出工具'] = map['現場演出工具'].filter(r => (r.cells[1] || '').trim() !== '看我笑話現場投票');
